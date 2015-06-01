@@ -22,6 +22,7 @@ Custom library developed to extend the functionality of CC3D. It has the followi
 
 
 #### Administrative Details
-Supervisor: Dr. Simon Gravel (@sgravel)
-Student: Mr. Zafarali Ahmed (@zafarali)
-Funding Agency: Canadian Institutes of Health Research (CIHR) Summer Studentship Award for Computational Biology (Cancer)
+- *Supervisor*: Dr. Simon Gravel (@sgravel)
+- *Student*: Mr. Zafarali Ahmed (@zafarali)
+- *Funding Agency*: Canadian Institutes of Health Research (CIHR) Summer Studentship Award for Computational Biology (Cancer)
+- *Location of Work*: McGill University, Montreal, Quebec, Canada
