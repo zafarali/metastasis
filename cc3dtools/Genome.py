@@ -55,7 +55,7 @@ class Genome(object):
 		#	(3) select the first few numbers
 		#	(4) map the strings to floats
 		# 	(5) map the floats to mutations
-		loci = set( map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = 4 ) ) )
+		loci = set( map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) ) )
 		# print loci
 		# store the loci in mutated_loci if they aren't already there to represent
 		
