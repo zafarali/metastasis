@@ -73,8 +73,8 @@ class Genome(object):
 		
 		# self.mutated_loci = self.mutated_loci.union( loci )
 
-		# return self to allow chaining to occur
-		return self
+		# return mutated loci
+		return loci
 
 	def get_mutated_loci ( self , form = 'list' ):
 		""" 
