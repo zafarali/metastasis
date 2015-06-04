@@ -374,8 +374,22 @@ class MultiLineage(object):
             to_be_returned.append( ( lineage['members'][0] , lineage['lineage'].draw( 20 ) ) ) # lineage.draw returns a list of points
 
         return to_be_returned
+
     def num_lineages ( self ):
+        """
+            returns the number of lineages in this object
+        """
         return len( self.lineages )
+    def to_newick( self ):
+        """
+            returns a list of strings which contain newick representations of the lineages
+        """
+        to_be_returned = []
+
+        for lineage in self.lineages:
+            to_be_returned.append( lineage['lineage'].to_newick() )
+
+        return to_be_returned
 
     def find_by_root ( self , root ):
         """
