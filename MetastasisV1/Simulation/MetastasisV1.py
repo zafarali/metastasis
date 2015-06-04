@@ -5,6 +5,7 @@ from os import getcwd
 import string
 
 sys.path.append(environ["PYTHON_MODULE_PATH"])
+sys.path.append('/Users/zafaraliahmed/summer15/metastasis/')
 
 
 import CompuCellSetup
@@ -22,6 +23,12 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 # holder = {}
 
+
+from cc3dtools.Tracker import Tracker
+
+tracker = Tracker(fileName='../division_output4615.csv')
+
+
 from MetastasisV1Steppables import ConstraintInitializerSteppable
 ConstraintInitializerSteppableInstance=ConstraintInitializerSteppable(sim,_frequency=1)
 steppableRegistry.registerSteppable(ConstraintInitializerSteppableInstance)
@@ -33,7 +40,7 @@ steppableRegistry.registerSteppable(GrowthSteppableInstance)
         
 
 from MetastasisV1Steppables import MitosisSteppable
-MitosisSteppableInstance=MitosisSteppable(sim,_frequency=10)
+MitosisSteppableInstance=MitosisSteppable(sim, tracker_instance=tracker, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
 

@@ -64,9 +64,16 @@ class GrowthSteppable(SteppableBasePy):
         
 
 class MitosisSteppable(MitosisSteppableBase):
-    def __init__(self,_simulator,_frequency=1):
+    def __init__(self,_simulator, tracker_instance ,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
-    
+        self.tracker_instance = tracker_instance
+    def start(self):
+        # we initialize the stash function
+        for cell in self.cellList:
+                                            # R for 'root'
+            self.tracker_instance.stashDivision( 'R' , cell.id, cell.id, cell.id )
+
+
     def step(self,mcs):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
@@ -99,9 +106,10 @@ class MitosisSteppable(MitosisSteppableBase):
         
         childCell.type = parentCell.type
 
+        self.tracker_instance.stashDivision( divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id )
 
-
-
+    def finish(self):
+        self.tracker_instance.saveStash()
         
 
 class DeathSteppable(SteppableBasePy):
