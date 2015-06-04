@@ -5,8 +5,8 @@
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="120" y="120" z="1"/>
       <Steps>10000</Steps>
-      <Temperature>10.0</Temperature>
-      <NeighborOrder>2</NeighborOrder>
+      <Temperature>5.0</Temperature>
+      <NeighborOrder>3</NeighborOrder>
    </Potts>
    
    <Plugin Name="CellType">
@@ -25,16 +25,21 @@
       <!-- Module tracking center of mass of each cell -->
    </Plugin>
    
+
+
+
    <Plugin Name="Contact">
       <!-- Specification of adhesion energies -->
       <Energy Type1="Medium" Type2="Medium">10</Energy>
       <Energy Type1="Medium" Type2="Normal">10</Energy>
-      <Energy Type1="Medium" Type2="Cancer1">2.0</Energy>
-      <Energy Type1="Medium" Type2="Cancer2">2.0</Energy>
-      <Energy Type1="Normal" Type2="Normal">5.0</Energy>
-      <Energy Type1="Normal" Type2="Cancer1">11.0</Energy>
-      <Energy Type1="Normal" Type2="Cancer2">11.0</Energy>
-      <Energy Type1="Cancer1" Type2="Cancer1">16.0</Energy>
+      <Energy Type1="Medium" Type2="Cancer1">10</Energy>
+      <Energy Type1="Medium" Type2="Cancer2">10</Energy>
+
+      <Energy Type1="Normal" Type2="Normal">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer1">8</Energy>
+      <Energy Type1="Normal" Type2="Cancer2">10</Energy>
+
+      <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
       <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>
       <Energy Type1="Cancer2" Type2="Cancer2">10.0</Energy>
       <NeighborOrder>2</NeighborOrder>
@@ -44,8 +49,8 @@
       
       <!-- Initial layout of cells in the form of rectangular slab -->
       <Region>
-         <BoxMin x="20" y="20" z="0"/>
-         <BoxMax x="80" y="80" z="1"/>
+         <BoxMin x="40" y="40" z="0"/>
+         <BoxMax x="60" y="60" z="1"/>
          <Gap>0</Gap>
          <Width>5</Width>
          <!-- Remove al cancer cells, we will only have one cancer cell that we have induced -->
