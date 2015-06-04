@@ -36,7 +36,7 @@
       <Energy Type1="Medium" Type2="Cancer2">10</Energy>
 
       <Energy Type1="Normal" Type2="Normal">10</Energy>
-      <Energy Type1="Normal" Type2="Cancer1">8</Energy>
+      <Energy Type1="Normal" Type2="Cancer1">7.5</Energy>
       <Energy Type1="Normal" Type2="Cancer2">10</Energy>
 
       <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
