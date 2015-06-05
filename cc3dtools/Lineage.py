@@ -114,7 +114,8 @@ class Lineage:
 
         # plot the vertical line 
         plt.plot( [ center , center ] , [ generation , generation - 1 ] , 'b' )
-
+        if self.sub2 is None:
+            return
         n1 = self.sub1.num_descendants() or 1
         n2 = self.sub2.num_descendants() or 1
         w1 = n1 * 1. / ( n1 + n2 ) * width
@@ -276,8 +277,10 @@ class Lineage:
             return self.sub2.num_descendants() + 1
         elif isinstance( self.sub1 , Lineage ) and isinstance( self.sub2 , Individual ):
             return self.sub1.num_descendants() + 1
-        else:
+        elif self.sub2:
             return self.sub1.num_descendants() + self.sub2.num_descendants()
+        else:
+            return self.sub1.num_descendants()
 
     # def descendants ( self ):
     #     if isinstance( self.sub1 , Individual ) and isinstance( self.sub2 , Individual ) :
@@ -312,4 +315,94 @@ class Lineage:
                     time = int ( info['t'] ) )
         return out
 
+
+
+
+class MultiLineage(object):
+    def __init__ ( self , file_name , format = ( 't' , 'p' , 'c1' , 'c2' ) ):
+        """
+            allows manipulation of division_outputs which might have multiple roots and 
+            thus multiple lineages
+            @params:
+                file_name / str
+                    file where the tracker output is saved
+        """
+        import csv
+        
+        lineages = []
+
+        with open( file_name , 'r' ) as f:
+            reader = csv.reader( f )
+            for row in reader:
+                info = dict( zip( format , row ) )
+                try:
+                    t = int( info['t'] )
+                    # this is a non-root node, we can proceed to search all lineages 
+                    p = int ( info['p'] )
+
+                    for lineage in lineages:
+                        if p in lineage['members']:
+
+                            lineage['members'].append( int( info['c1'] ) ) # save members
+
+                            lineage['lineage'].divide( parent = info['p'] , \
+                                child1 = Individual( int( info['c1'] ) , name = info['c1'] ) , \
+                                child2 = Individual( int( info['c2'] ) , name = info['c2'] ) , \
+                                time = int( info['t'] ) ) # divide lineage
+
+                except ValueError:
+                    # this is a root node, we must include a new lineage
+                    lineages.append( { \
+                        'members' : [ int( info['p'] ) ], \
+                        'lineage' : Lineage( sub1 = Individual( int( info['p'] ) , name = str( info['p' ] ) ) , \
+                            time = 0 , isRoot = True ) \
+                            } )
+
+        self.lineages = lineages
+
+    def draw( self , width = 20 ):
+        """
+            draws all lineages in the MultiLineage
+            @params:
+                width / int / 20
+            @return:
+                list of tuples in the form: ( root , final_points )
+        """
+        to_be_returned = []
+
+        for lineage in self.lineages:
+            to_be_returned.append( ( lineage['members'][0] , lineage['lineage'].draw( 20 ) ) ) # lineage.draw returns a list of points
+
+        return to_be_returned
+
+    def num_lineages ( self ):
+        """
+            returns the number of lineages in this object
+        """
+        return len( self.lineages )
+    def to_newick( self ):
+        """
+            returns a list of strings which contain newick representations of the lineages
+        """
+        to_be_returned = []
+
+        for lineage in self.lineages:
+            to_be_returned.append( lineage['lineage'].to_newick() )
+
+        return to_be_returned
+
+    def find_by_root ( self , root ):
+        """
+            returns a Lineage which had specified root 
+            @params:
+                root / int - id of the root 
+            @returns:
+                lineage / Lineage  - object which matched the root
+                False if no root was found
+        """
+        for lineage in self.lineages:
+            if lineage['members'][0] == root:
+                return lineage['lineage']
+
+        return False
 

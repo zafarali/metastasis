@@ -34,6 +34,10 @@ class Genome(object):
 		self.mutated_loci = set()
 	
 	def replicate ( self ):
+		"""
+			replicates the current genome and all its features
+			and returns the new one
+		"""
 			replicated_genome = Genome( mutation_rate = self.mutation_rate , size = self.size , genome_order = self.genome_order )
 			replicated_genome.mutated_loci = replicated_genome.mutated_loci.union( self.mutated_loci )
 			replicated_genome.annotations = dict( self.annotations )
@@ -42,7 +46,7 @@ class Genome(object):
 
 
 	def mutate ( self ):
-		"""self.mutated_loci = []
+		"""
 			mutates the genome
 		"""	
 		# generate how many mutations we want
