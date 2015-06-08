@@ -8,7 +8,7 @@ class Tracker:
     def __init__ ( self, fileName = '../divisionTrackerOutput.csv' ):
         self.fileName = fileName
         self.stash = []
-        print 'Tracker will be deprecated soon, use Tracker2 and its extensions'
+        print 'cc3dtools.Tracker is no longer being maintained, use cc3dtools.Tracker2 and its extensions'
     ## this function saves a division event into the file
     ## in the format: time, parent, child1, child2
     def saveDivision ( self , time = 0 , parent = 1 , child1 = 2, child2 = 3 ):
@@ -49,7 +49,7 @@ class Tracker2( object ):
         assert file_name is not None , 'file_name must be supplied to use Tracker2'
         
         self.file_name = file_name
-        self.stash = [] # stores the rows for stashing
+        self.internal_stash = [] # stores the rows for stashing
 
     def save_now( self , to_save ):
         """
@@ -72,7 +72,7 @@ class Tracker2( object ):
                     list of entries to stash
         """
         assert type( to_stash ) is list , 'to_stash must be a list'
-        self.stash.append( to_stash )
+        self.internal_stash.append( to_stash )
 
     def save_stash( self , flag = 'a' ):
         """
@@ -87,6 +87,6 @@ class Tracker2( object ):
 
         with open( self.file_name , flag ) as f:
             c = csv.writer( f )
-            for row in self.stash:
+            for row in self.internal_stash:
                 c.writerow( row )
 
