@@ -4,7 +4,7 @@
       
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="120" y="120" z="1"/>
-      <Steps>2500</Steps>
+      <Steps>10000</Steps>
       <Temperature>5.0</Temperature>
       <NeighborOrder>3</NeighborOrder>
    </Potts>
@@ -37,7 +37,7 @@
 
       <Energy Type1="Normal" Type2="Normal">10</Energy>
       <Energy Type1="Normal" Type2="Cancer1">7.5</Energy>
-      <Energy Type1="Normal" Type2="Cancer2">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer2">7.5</Energy>
 
       <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
       <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>

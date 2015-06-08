@@ -26,7 +26,7 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 
 from cc3dtools.Tracker import Tracker
 
-tracker = Tracker(fileName='../division_output4615.csv')
+tracker = Tracker(fileName='../division_output8615.csv')
 
 
 from MetastasisV1Steppables import ConstraintInitializerSteppable
