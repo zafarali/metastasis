@@ -1,0 +1,5 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/MetastasisV2.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MetastasisV2.py</PythonScript>
+   <Resource Type="Python">Simulation/MetastasisV2Steppables.py</Resource>
+</Simulation>

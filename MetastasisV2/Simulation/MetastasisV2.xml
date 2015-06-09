@@ -1,0 +1,231 @@
+<CompuCell3D Revision="20141124" Version="3.7.3">
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="150" y="150" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>20.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="NORM"/>
+      <CellType TypeId="2" TypeName="TMIGR"/>
+      <CellType TypeId="3" TypeName="TPROL"/>
+      <CellType TypeId="4" TypeName="WALL" />
+      <CellType TypeId="5" TypeName="BLOOD"/>
+   </Plugin>
+   
+   <Plugin Name="Volume"/>
+   
+   <Plugin Name="CenterOfMass">
+      
+      <!-- Module tracking center of mass of each cell -->
+   </Plugin>
+   
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10.0</Energy>
+      <Energy Type1="Medium" Type2="NORM">10.0</Energy>
+      <Energy Type1="Medium" Type2="TMIGR">10.0</Energy>
+      <Energy Type1="Medium" Type2="TPROL">10.0</Energy>
+      <Energy Type1="Medium" Type2="WALL">10.0</Energy>
+      <Energy Type1="Medium" Type2="BLOOD">10.0</Energy>
+
+      <Energy Type1="NORM" Type2="NORM">10.0</Energy>
+      <Energy Type1="NORM" Type2="TMIGR">10.0</Energy>
+      <Energy Type1="NORM" Type2="TPROL">15.0</Energy>
+      <Energy Type1="NORM" Type2="WALL">70.0</Energy>
+      <Energy Type1="NORM" Type2="BLOOD">0.0</Energy>
+
+      <Energy Type1="TMIGR" Type2="TMIGR">10.0</Energy>
+      <Energy Type1="TMIGR" Type2="TPROL">15.0</Energy>
+      <Energy Type1="TMIGR" Type2="WALL">45.0</Energy>
+      <Energy Type1="TMIGR" Type2="BLOOD">7.0</Energy>
+
+      <Energy Type1="TPROL" Type2="TPROL">10.0</Energy>
+      <Energy Type1="TPROL" Type2="WALL">10.0</Energy>
+      <Energy Type1="TPROL" Type2="BLOOD">10.0</Energy>
+
+      <Energy Type1="WALL" Type2="WALL">0.0</Energy>
+      <Energy Type1="WALL" Type2="BLOOD">70.0</Energy>
+
+      <Energy Type1="BLOOD" Type2="BLOOD">10.0</Energy>
+      <NeighborOrder>1</NeighborOrder>
+   </Plugin>
+   
+   <Plugin Name="Chemotaxis">
+      
+      <!-- You may repeat ChemicalField element for each chemical field declared in the PDE solvers -->
+      <!-- Specification of chemotaxis properties of select cell types. -->
+      <ChemicalField Name="OXYGEN" Source="DiffusionSolverFE">
+         <ChemotaxisByType ChemotactTowards="NORM" Lambda="10.0" Type="TMIGR"/>
+      </ChemicalField>
+      <ChemicalField Name="MMP" Source="DiffusionSolverFE">
+
+      </ChemicalField>
+   </Plugin>
+   
+
+   
+   <Steppable Type="DiffusionSolverFE">
+      <!-- Specification of PDE solvers -->
+      <!-- Specification of PDE solvers -->
+      <DiffusionField Name="OXYGEN">
+         <DiffusionData>
+            
+            <FieldName>OXYGEN</FieldName>
+            <GlobalDiffusionConstant>0.5</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+            <!-- Additional options are: -->
+            <!-- <InitialConcentrationExpression>x*y</InitialConcentrationExpression> -->
+            <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
+            <DiffusionCoefficient CellType="NORM">0.5</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="TMIGR">0.5</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="TPROL">0.5</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="WALL">0.5</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="BLOOD">0.5</DiffusionCoefficient>
+            
+            <DecayCoefficient CellType="NORM">0.1</DecayCoefficient>
+            <DecayCoefficient CellType="TMIGR">0.1</DecayCoefficient>
+            <DecayCoefficient CellType="TPROL">0.2</DecayCoefficient>
+            <DecayCoefficient CellType="WALL">0.1</DecayCoefficient>
+            <DecayCoefficient CellType="BLOOD">0.0</DecayCoefficient>
+
+         </DiffusionData>
+         <SecretionData>
+            <!-- When secretion is defined inside DissufionSolverFEall secretio nconstants are scaled automaticly to account for extra calls of the solver when handling large diffusion constants -->
+            
+            <!-- Uniform secretion Definition -->
+            <Secretion Type="NORM">0</Secretion>
+            <Secretion Type="TMIGR">0</Secretion>
+            <Secretion Type="TPROL">0</Secretion>
+            <Secretion Type="WALL">0</Secretion>
+            <Secretion Type="BLOOD">0.3</Secretion>
+
+<!--             <Uptake Type="NORM"  MaxUptake="0.4" RelativeUptakeRate="0.2"/>
+            <Uptake Type="WALL"  MaxUptake="0.4" RelativeUptakeRate="0.2"/>
+            <Uptake Type="TPROL"  MaxUptake="0.8" RelativeUptakeRate="0.8"/>
+            <Uptake Type="TMIGR"  MaxUptake="0.8" RelativeUptakeRate="0.8"/> -->
+
+            <!-- <SecretionOnContact SecreteOnContactWith="NORM,TMIGR,TPROL,WALL,BLOOD" Type="BLOOD">0.2</SecretionOnContact> -->
+            <!-- <ConstantConcentration Type="BLOOD">0.1</ConstantConcentration> -->
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="10.0"/>
+               <ConstantValue PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantDerivative PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantDerivative PlanePosition="Min" Value="10.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantValue PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+
+
+      <DiffusionField Name="MMP">
+         <DiffusionData>
+            
+            <FieldName>MMP</FieldName>
+            <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
+            <GlobalDecayConstant>1e-05</GlobalDecayConstant>
+            <!-- Additional options are: -->
+            <!-- <InitialConcentrationExpression>x*y</InitialConcentrationExpression> -->
+            <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
+            <DiffusionCoefficient CellType="NORM">0.001</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="TMIGR">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="TPROL">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="WALL">0.1</DiffusionCoefficient>
+            <DiffusionCoefficient CellType="BLOOD">0.1</DiffusionCoefficient>
+            
+            <DecayCoefficient CellType="NORM">0.9</DecayCoefficient>
+            <DecayCoefficient CellType="TMIGR">0.1</DecayCoefficient>
+            <DecayCoefficient CellType="TPROL">0</DecayCoefficient>
+            <DecayCoefficient CellType="WALL">0.1</DecayCoefficient>
+            <DecayCoefficient CellType="BLOOD">0.0</DecayCoefficient>
+
+         </DiffusionData>
+         <SecretionData>
+            <!-- When secretion is defined inside DissufionSolverFEall secretio nconstants are scaled automaticly to account for extra calls of the solver when handling large diffusion constants -->
+            
+            <!-- Uniform secretion Definition -->
+            <Secretion Type="NORM">0</Secretion>
+            <Secretion Type="TMIGR">0</Secretion>
+            <Secretion Type="TPROL">0.5</Secretion>
+            <Secretion Type="WALL">0</Secretion>
+            <Secretion Type="BLOOD">0</Secretion>
+
+<!--             <Uptake Type="NORM"  MaxUptake="0.4" RelativeUptakeRate="0.2"/>
+            <Uptake Type="WALL"  MaxUptake="0.4" RelativeUptakeRate="0.2"/>
+            <Uptake Type="TPROL"  MaxUptake="0.8" RelativeUptakeRate="0.8"/>
+            <Uptake Type="TMIGR"  MaxUptake="0.8" RelativeUptakeRate="0.8"/> -->
+
+            <!-- <SecretionOnContact SecreteOnContactWith="NORM" Type="TPROL">0.5</SecretionOnContact> -->
+            <!-- <ConstantConcentration Type="BLOOD">0.1</ConstantConcentration> -->
+         </SecretionData>
+         <BoundaryConditions>
+            <Plane Axis="X">
+               <ConstantValue PlanePosition="Min" Value="10.0"/>
+               <ConstantValue PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantDerivative PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+            <Plane Axis="Y">
+               <ConstantDerivative PlanePosition="Min" Value="10.0"/>
+               <ConstantDerivative PlanePosition="Max" Value="5.0"/>
+               <!-- Other options are (examples): -->
+               <!-- <Periodic/> -->
+               <!-- <ConstantValue PlanePosition="Min" Value="10.0"/> -->
+            </Plane>
+         </BoundaryConditions>
+      </DiffusionField>
+
+   </Steppable>
+   
+   <Steppable Type="UniformInitializer">
+      <!-- Initial layout of cells in the form of rectangular slab -->
+      <Region>
+         <BoxMin x="0" y="0" z="0"/>
+         <BoxMax x="130" y="150" z="1"/>
+         <Gap>0</Gap>
+         <Width>7</Width>
+         <Types>NORM</Types>
+      </Region>
+      <Region>
+         <BoxMin x="130" y="0" z="0"/>
+         <BoxMax x="135" y="150" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>WALL</Types>
+      </Region>
+      <Region>
+         <BoxMin x="136" y="0" z="0"/>
+         <BoxMax x="150" y="150" z="1"/>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Types>BLOOD</Types>
+      </Region>
+   </Steppable>
+   
+   <Steppable Type="BlobInitializer"> 
+      <Region>
+         <Gap>0</Gap>
+         <Width>5</Width>
+         <Radius>15</Radius>
+         <Center x="25" y="75" z="0"/>
+         <Types>TPROL</Types>
+      </Region>
+   </Steppable>
+</CompuCell3D>
