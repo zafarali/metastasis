@@ -2,7 +2,7 @@
 from PySteppables import *
 import CompuCell
 import sys
-
+import CompuCellSetup
 import numpy as np
 
 from PySteppablesExamples import MitosisSteppableBase
@@ -12,7 +12,7 @@ from PySteppablesExamples import MitosisSteppableBase
 # }
 
 divide_times = {'last_division':0}
-
+GLOBAL = {'targetVolume':50,'divideThreshold':65}
 from cc3dtools.Tracker import Tracker2
 from cc3dtools.Genome import Genome, save_genomes
 genomes = {}
@@ -31,8 +31,8 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             
             divide_times[cell.id] = 0
             
-            cell.targetVolume=50
-            cell.lambdaVolume=1
+            cell.targetVolume=GLOBAL['targetVolume']
+            cell.lambdaVolume=1.5
 
             genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id )
 
@@ -43,7 +43,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )
             # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ), 'p': Phenotype() }
 
-        start_tracker.save_stash(flag='w')
+        # start_tracker.save_stash(flag='w')
 
     def finish(self):
         
@@ -66,15 +66,22 @@ class GrowthSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def step(self,mcs):
+        print '----->Global targetVolume',GLOBAL['targetVolume']
         for cell in self.cellList:
             # don't grow if your volume is very very large
-            # if cell.targetVolume - cell.volume > 10: continue
+            # print cell.targetVolume - cell.volume
+            # if cell.targetVolume - cell.volume < 1: 
+            #     print 'too large'
+            # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
-            cell.targetVolume+=0.05 
+            cell.targetVolume = 0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume
+            print '------> growth event:',cell.targetVolume, cell.volume
             if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
-                cell.targetVolume += 0.05
+                cell.targetVolume += 0.01
+
+                print '------>cancer growth event:',cell.targetVolume, cell.volume
             # if cell.type == self.CANCER2:
                 # cell.targetVolume += 1
                 # cell.lambdaVolume = 3
@@ -107,7 +114,7 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if (cell.type == self.CANCER1 and cell.volume > 80) or cell.volume>100:
+            if (cell.type == self.CANCER2 and cell.volume > GLOBAL['divideThreshold']-5) or cell.volume>GLOBAL['divideThreshold']:
             # if cell.volume > 100:
                 cells_to_divide.append(cell)
                 
@@ -122,12 +129,13 @@ class MitosisSteppable(MitosisSteppableBase):
     def updateAttributes(self):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
-
+        print '------>mitosis event:',childCell.volume, parentCell.volume
+        # raw_input()
         divide_times[parentCell.id] = divide_times['last_division']
         divide_times[childCell.id] = divide_times['last_division']
-        childCell.targetVolume=50
-        parentCell.targetVolume=50
-
+        childCell.targetVolume=GLOBAL['targetVolume']
+        parentCell.targetVolume=GLOBAL['targetVolume']
+        GLOBAL['targetVolume'] = GLOBAL['targetVolume'] - 0.05 if GLOBAL['targetVolume'] > 45 else GLOBAL['targetVolume']
         # if parentCell.type == self.CANCER1:
         #     childCell.type = self.CANCER1
         #     childCell.targetVolume = 40
@@ -144,7 +152,8 @@ class MitosisSteppable(MitosisSteppableBase):
         self.tracker_instance.stashDivision( divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id )
 
     def finish(self):
-        self.tracker_instance.saveStash()
+        # self.tracker_instance.saveStash()
+        pass
         
 
 class DeathSteppable(SteppableBasePy):
@@ -164,3 +173,71 @@ class DeathSteppable(SteppableBasePy):
 #         #             cell.targetVolume==0
 #         #             cell.lambdaVolume==100
         
+
+
+
+                
+class ExtraMultiPlotSteppable(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=10):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+
+    def start(self):
+        
+        # avg volumes
+        self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
+        self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
+        self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
+        self.pWVol.addPlot(_plotName='MTVol',_style='Dots',_color='green',_size=5)        
+
+
+        # number of cells
+        self.pWNum=CompuCellSetup.addNewPlotWindow(_title='Number of Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Number')                
+        self.pWNum.addPlot(_plotName='Cancer',_color='green', _size=2)
+        self.pWNum.addPlot(_plotName='Normal',_color='blue', _size=2)
+        self.pWNum.addPlot(_plotName='Total',_color='red', _size=2)
+
+        # proportions
+        self.pWProp=CompuCellSetup.addNewPlotWindow(_title='Proportions of Cancer vs Normal Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='%')                
+        self.pWProp.addPlot(_plotName='Cancer',_color='green', _size=2)
+        self.pWProp.addPlot(_plotName='Normal',_color='blue', _size=2)
+        
+    def step(self,mcs):
+        cancer = 0
+        normal = 0
+        meanSurface=0.0
+        meanVolume=0.0
+        meanTargetVolume = 0.0
+        numberOfCells=0
+        for cell  in  self.cellList:
+            meanVolume+=cell.volume
+            meanTargetVolume += cell.targetVolume
+            meanSurface+=cell.surface
+            numberOfCells+=1
+            if cell.type == 1:
+                normal+=1
+            else:
+                cancer+=1
+
+        meanVolume/=float(numberOfCells)
+        meanSurface/=float(numberOfCells)
+        meanTargetVolume /= float(numberOfCells)
+        
+        self.pWVol.addDataPoint("MVol",mcs,meanVolume)
+        self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
+        self.pWVol.addDataPoint("MTVol",mcs,meanTargetVolume)
+
+
+        self.pWNum.addDataPoint("Cancer",mcs,cancer)
+        self.pWNum.addDataPoint("Normal",mcs,normal)
+        self.pWNum.addDataPoint("Total",mcs,numberOfCells)
+
+
+        self.pWProp.addDataPoint("Cancer",mcs,cancer/float(numberOfCells))
+        self.pWProp.addDataPoint("Normal",mcs,normal/float(numberOfCells))
+        
+
+        # print "meanVolume=",meanVolume,"meanSurface=",meanSurface
+                
+        self.pWVol.showAllPlots()
+        self.pWNum.showAllPlots()
+        self.pWProp.showAllPlots()

@@ -6,7 +6,7 @@
       <Dimensions x="120" y="120" z="1"/>
       <Steps>10000</Steps>
       <Temperature>5.0</Temperature>
-      <NeighborOrder>3</NeighborOrder>
+      <NeighborOrder>2</NeighborOrder>
    </Potts>
    
    <Plugin Name="CellType">
@@ -36,8 +36,8 @@
       <Energy Type1="Medium" Type2="Cancer2">10</Energy>
 
       <Energy Type1="Normal" Type2="Normal">10</Energy>
-      <Energy Type1="Normal" Type2="Cancer1">7.5</Energy>
-      <Energy Type1="Normal" Type2="Cancer2">7.5</Energy>
+      <Energy Type1="Normal" Type2="Cancer1">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer2">10</Energy>
 
       <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
       <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>

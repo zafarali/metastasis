@@ -47,13 +47,10 @@ steppableRegistry.registerSteppable(MitosisSteppableInstance)
 from MetastasisV1Steppables import DeathSteppable
 DeathSteppableInstance=DeathSteppable(sim,_frequency=1)
 steppableRegistry.registerSteppable(DeathSteppableInstance)
-        
 
-# from MetastasisV1Steppables import ExtraMultiPlotSteppable
-# extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
-# steppableRegistry.registerSteppable(extraMultiPlotSteppable)
-
-
+from MetastasisV1Steppables import ExtraMultiPlotSteppable
+extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
+steppableRegistry.registerSteppable(extraMultiPlotSteppable)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
