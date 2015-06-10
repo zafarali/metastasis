@@ -2,7 +2,7 @@
 from PySteppables import *
 import CompuCell
 import sys
-
+import numpy as np
 from PySteppablesExamples import MitosisSteppableBase
             
 
@@ -10,6 +10,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def start(self):
+
         for cell in self.cellList:
             cell.targetVolume=25
             cell.lambdaVolume=2.0
@@ -23,16 +24,27 @@ class GrowthSteppable(SteppableBasePy):
         # for cell in self.cellList:
         #     cell.targetVolume+=1        
         # alternatively if you want to make growth a function of chemical concentration uncomment lines below and comment lines above        
-        field=CompuCell.getConcentrationField(self.simulator,"OXYGEN")
+        O2field=CompuCell.getConcentrationField(self.simulator,"OXYGEN")
+        MMPfield=CompuCell.getConcentrationField(self.simulator,"MMP")
         pt=CompuCell.Point3D()
         for cell in self.cellList:
             pt.x=int(cell.xCOM)
             pt.y=int(cell.yCOM)
             pt.z=int(cell.zCOM)
-            concentrationAtCOM=field.get(pt)
-            if concentrationAtCOM < 0: raw_input('!')
-            print '------///------>',cell.targetVolume, concentrationAtCOM
-            cell.targetVolume+=0.01*concentrationAtCOM / (0.05 + concentrationAtCOM)  # you can use here any fcn of concentrationAtCOM     
+            O2Conc=O2field.get(pt)
+            MMPConc=MMPfield.get(pt)
+            if O2Conc < 0: print('--------~~~~~~~~~-----> O2 VERY LOW') 
+            print '------///------>',cell.targetVolume, O2Conc, MMPConc
+            if cell.type == self.NORM and MMPConc > 1:
+                cell.targetVolume -= 0.5
+                cell.lambdaVolume = 5
+                # raw_input('!-->removing a NORM cell')
+            else:
+                if cell.type == self.TPROL and O2Conc < 0:
+                    cell.type = self.TMIGR
+                    continue
+                O2Conc = np.abs(O2Conc)
+                cell.targetVolume+=0.01*O2Conc / (0.05 + O2Conc)  # you can use here any fcn of concentrationAtCOM     
         
         
 
@@ -44,7 +56,7 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if cell.volume>50:
+            if cell.volume>42:
                 
                 cells_to_divide.append(cell)
                 
@@ -59,12 +71,9 @@ class MitosisSteppable(MitosisSteppableBase):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
         
-        childCell.targetVolume=parentCell.targetVolume
+        childCell.targetVolume=25
         childCell.lambdaVolume=parentCell.lambdaVolume
-        if parentCell.type==1:
-            childCell.type=2
-        else:
-            childCell.type=1
+
         
         
 

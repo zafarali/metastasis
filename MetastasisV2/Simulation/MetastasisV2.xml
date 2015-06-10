@@ -121,7 +121,7 @@
             <GlobalDiffusionConstant>0.1</GlobalDiffusionConstant>
             <GlobalDecayConstant>1e-05</GlobalDecayConstant>
             <!-- Additional options are: -->
-            <InitialConcentrationExpression>x*y</InitialConcentrationExpression>
+            <InitialConcentrationExpression>0.2*x*y</InitialConcentrationExpression>
             <!-- <ConcentrationFileName>INITIAL CONCENTRATION FIELD - typically a file with path Simulation/NAME_OF_THE_FILE.txt</ConcentrationFileName> -->
             <DiffusionCoefficient CellType="NORM">0.1</DiffusionCoefficient>
             <DiffusionCoefficient CellType="TMIGR">0.1</DiffusionCoefficient>
@@ -141,9 +141,9 @@
             <Secretion Type="TPROL">0.1</Secretion>
             <Secretion Type="NECR">0.1</Secretion> -->
             <Uptake Type="NORM" MaxUptake="5" RelativeUpdate="0.99" />
-            <Uptake Type="TPROL" MaxUptake="15" RelativeUpdate="0.99" />
+            <Uptake Type="TPROL" MaxUptake="20" RelativeUpdate="0.99" />
 
-            <!-- <SecretionOnContact SecreteOnContactWith="NORM,TMIGR,TPROL,NECR" Type="NECR">0.2</SecretionOnContact> -->
+            <!-- <SecretionOnContact SecreteOnContactWith="NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,TMIGR,TPROL,NECR" Type="NECR">0.2</SecretionOnContact> -->
             <!-- <ConstantConcentration Type="NECR">0.1</ConstantConcentration> -->
          </SecretionData>
          <BoundaryConditions>
@@ -173,7 +173,7 @@
          <BoxMax x="80" y="80" z="1"/>
          <Gap>0</Gap>
          <Width>5</Width>
-         <Types>NORM,TMIGR,TPROL,NECR</Types>
+         <Types>NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,TMIGR,TPROL,NECR</Types>
       </Region>
    </Steppable>
 </CompuCell3D>
