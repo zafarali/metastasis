@@ -37,7 +37,7 @@ steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
 
 from MetastasisV2Steppables import DeathSteppable
-DeathSteppableInstance=DeathSteppable(sim,_frequency=100)
+DeathSteppableInstance=DeathSteppable(sim,_frequency=1)
 steppableRegistry.registerSteppable(DeathSteppableInstance)
         
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
