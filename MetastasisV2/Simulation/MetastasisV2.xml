@@ -33,18 +33,22 @@
       <!-- Specification of adhesion energies -->
       <Energy Type1="Medium" Type2="Medium">10.0</Energy>
       <Energy Type1="Medium" Type2="NORM">10.0</Energy>
-      <Energy Type1="Medium" Type2="TMIGR">10.0</Energy>
+      <Energy Type1="Medium" Type2="TMIGR">9.0</Energy>
       <Energy Type1="Medium" Type2="TPROL">10.0</Energy>
       <Energy Type1="Medium" Type2="NECR">10.0</Energy>
-      <Energy Type1="NORM" Type2="NORM">10.0</Energy>
+
+      <Energy Type1="NORM" Type2="NORM">8.0</Energy>
       <Energy Type1="NORM" Type2="TMIGR">10.0</Energy>
-      <Energy Type1="NORM" Type2="TPROL">10.0</Energy>
+      <Energy Type1="NORM" Type2="TPROL">8.0</Energy>
       <Energy Type1="NORM" Type2="NECR">10.0</Energy>
+
       <Energy Type1="TMIGR" Type2="TMIGR">10.0</Energy>
       <Energy Type1="TMIGR" Type2="TPROL">10.0</Energy>
       <Energy Type1="TMIGR" Type2="NECR">10.0</Energy>
+
       <Energy Type1="TPROL" Type2="TPROL">10.0</Energy>
       <Energy Type1="TPROL" Type2="NECR">10.0</Energy>
+
       <Energy Type1="NECR" Type2="NECR">10.0</Energy>
       <NeighborOrder>1</NeighborOrder>
    </Plugin>
@@ -142,7 +146,7 @@
             <Secretion Type="NECR">0.1</Secretion> -->
             <Uptake Type="NORM" MaxUptake="5" RelativeUpdate="0.99" />
             <Uptake Type="TPROL" MaxUptake="20" RelativeUpdate="0.99" />
-
+            <Uptake Type="TMIGR" MaxUptake="20" RelativeUpdate="0.99" />
             <!-- <SecretionOnContact SecreteOnContactWith="NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,TMIGR,TPROL,NECR" Type="NECR">0.2</SecretionOnContact> -->
             <!-- <ConstantConcentration Type="NECR">0.1</ConstantConcentration> -->
          </SecretionData>
