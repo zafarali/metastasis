@@ -12,6 +12,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
     def start(self):
 
         for cell in self.cellList:
+
             cell.targetVolume=25
             cell.lambdaVolume=2.0
         
@@ -61,6 +62,9 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
+            if cell.type == 0:
+                print 'MEDIUM<-------'
+                continue
             if cell.volume>42 or ( cell.type == self.TPROL and cell.volume > 40 ):
                 pass
                 # raw_input('celltype:'+str(cell.type))
@@ -79,6 +83,7 @@ class MitosisSteppable(MitosisSteppableBase):
         
         childCell.targetVolume=25
         childCell.lambdaVolume=parentCell.lambdaVolume
+        childCell.type = parentCell.type
 
         
         

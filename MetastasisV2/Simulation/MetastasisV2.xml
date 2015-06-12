@@ -133,7 +133,7 @@
             <DiffusionCoefficient CellType="NECR">0.1</DiffusionCoefficient>
             <DecayCoefficient CellType="NORM">0.0001</DecayCoefficient>
             <DecayCoefficient CellType="TMIGR">0.0001</DecayCoefficient>
-            <DecayCoefficient CellType="TPROL">0.0001</DecayCoefficient>
+            <DecayCoefficient CellType="TPROL">0.01</DecayCoefficient>
             <DecayCoefficient CellType="NECR">0.0001</DecayCoefficient>
          </DiffusionData>
          <SecretionData>
@@ -145,8 +145,8 @@
             <Secretion Type="TPROL">0.1</Secretion>
             <Secretion Type="NECR">0.1</Secretion> -->
             <Uptake Type="NORM" MaxUptake="5" RelativeUpdate="0.99" />
-            <Uptake Type="TPROL" MaxUptake="20" RelativeUpdate="0.99" />
-            <Uptake Type="TMIGR" MaxUptake="20" RelativeUpdate="0.99" />
+            <Uptake Type="TPROL" MaxUptake="30" RelativeUpdate="1.5" />
+            <Uptake Type="TMIGR" MaxUptake="30" RelativeUpdate="1.5" />
             <!-- <SecretionOnContact SecreteOnContactWith="NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,NORM,TMIGR,TPROL,NECR" Type="NECR">0.2</SecretionOnContact> -->
             <!-- <ConstantConcentration Type="NECR">0.1</ConstantConcentration> -->
          </SecretionData>
