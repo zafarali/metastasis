@@ -104,17 +104,17 @@
          </SecretionData>
          <BoundaryConditions>
             <Plane Axis="X">
-               <ConstantValue PlanePosition="Min" Value="10.0"/>
-               <ConstantValue PlanePosition="Max" Value="5.0"/>
+               <!-- <ConstantValue PlanePosition="Min" Value="10.0"/> -->
+               <!-- <ConstantValue PlanePosition="Max" Value="5.0"/> -->
                <!-- Other options are (examples): -->
-               <!-- <Periodic/> -->
+               <Periodic/>
                <!-- <ConstantDerivative PlanePosition="Min" Value="10.0"/> -->
             </Plane>
             <Plane Axis="Y">
-               <ConstantDerivative PlanePosition="Min" Value="10.0"/>
-               <ConstantDerivative PlanePosition="Max" Value="5.0"/>
+               <!-- <ConstantDerivative PlanePosition="Min" Value="10.0"/> -->
+               <!-- <ConstantDerivative PlanePosition="Max" Value="5.0"/> -->
                <!-- Other options are (examples): -->
-               <!-- <Periodic/> -->
+               <Periodic/>
                <!-- <ConstantValue PlanePosition="Min" Value="10.0"/> -->
             </Plane>
          </BoundaryConditions>
