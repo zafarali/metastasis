@@ -107,6 +107,8 @@ class GenomeCompare:
 					mutations per genome
 
 		"""
+		raise DeprecationWarning('You can no longer use mutation_chart or gene_chart to draw a GC object. Use GenomeCompare.draw(...)')
+		
 		size = self.genomes[1].size
 		num_genomes = len(self.genomes)
 		rep = np.zeros( ( size, num_genomes ) )
@@ -163,7 +165,7 @@ class GenomeCompare:
 		with open( file_name , 'r' ) as f:
 			reader = csv.reader( f ) 
 			for row in reader:
-				genomes.append( Genome.from_mutated_loci( map( int , row ) ) )
+				genomes.append( Genome.from_mutated_loci( map( float , row[2:] ) ) )
 		return GenomeCompare( genomes = genomes )
 
 	@staticmethod
@@ -327,3 +329,4 @@ def newick_order( s ):
 		# map the split strings into ints.
 	return map( int , ''.join( ''.join( s.split( '(' ) ).split( ')' ) )[0:-1].split( ',' ) )
 
+c

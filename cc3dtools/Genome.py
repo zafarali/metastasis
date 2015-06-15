@@ -245,6 +245,6 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 		with open( file_name, 'w' ) as f:
 			writer = csv.writer( f )
 			for k , genome in enumerate( genomes ):
-				writer.writerow( sorted( genome.get_mutated_loci() ) )
+				writer.writerow( [ genome.name, genome.mutation_rate ] + sorted( genome.get_mutated_loci() ) )
 
 
