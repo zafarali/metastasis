@@ -129,8 +129,8 @@ class Genome(object):
 		return Mutation(location) in self.mutated_loci
 
 	@staticmethod
-	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , genome_order = 4 ):
-		to_return = Genome( genome_order = genome_order , mutation_rate = mutation_rate )
+	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name= '' ):
+		to_return = Genome( name=name , mutation_rate = mutation_rate )
 		to_return.mutated_loci = map( Mutation , sorted( list( mutated_loci ) ) ) 
 		return to_return
 
@@ -164,6 +164,8 @@ class Mutation(object):
 		"""
 		return str( self.locus )
 
+	def toFloat ( self ):
+		return self.locus
 
 	def __cmp__ ( self , other ):
 		# print self.locus, other.locus
