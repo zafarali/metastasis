@@ -198,6 +198,13 @@ class GenomeCompare:
 		plt.show()
 		pass
 
+	def get_by_name ( self , name ):
+		"""
+			returns a genome referenced by its @param'name'
+		"""
+
+		return self.genomes[ name ]
+
 	@staticmethod
 	def from_gen_file ( file_name ):
 		"""
