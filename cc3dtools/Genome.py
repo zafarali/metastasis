@@ -15,16 +15,13 @@ class Genome(object):
 			@params:
 			mutation_rate / float or int / 0
 				the rate at which bases of the genome are mutated (i.e bit flipped from 0 --> 1)
-			size / int / 1000
-				number of genes/bases in genome
 			genome_order / int / 10
 				the order of the genome (10^genome_order)
+			name / str / ''
+				name of the genome
 		"""
 
-		size = int( kwargs.get( 'size' , 1000 ) )
-		assert size > 0 , 'genome_size must be non-zero positive'
-		self.size = size
-		self.genome_order = int ( kwargs.get( 'genome_order', 10 ) )
+		self.genome_order = int ( kwargs.get( 'genome_order', 15 ) )
 
 		self.name = kwargs.get( 'name' , '' )
 
@@ -42,8 +39,8 @@ class Genome(object):
 				name / str
 				the name of the new genome
 		"""
-		replicated_genome = Genome( mutation_rate = self.mutation_rate , size = self.size , genome_order = self.genome_order , name = name )
-		replicated_genome.mutated_loci = replicated_genome.mutated_loci.extend( self.mutated_loci )
+		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
+		replicated_genome.mutated_loci.extend( self.mutated_loci )
 		replicated_genome.annotations = dict( self.annotations )
 
 		return replicated_genome
@@ -90,7 +87,8 @@ class Genome(object):
 			@return: list of ints
 				location of the loci of the mutation (bits that are 1)
 		"""
-
+		if form == 'set':
+			print 'SET is no longer supported as a method of export'
 		# if form == 'set':
 		# 	return self.mutated_loci
 
@@ -131,8 +129,8 @@ class Genome(object):
 		return Mutation(location) in self.mutated_loci
 
 	@staticmethod
-	def from_mutated_loci ( mutated_loci , size = 1000 , mutation_rate = 0 , genome_order = 4 ):
-		to_return = Genome( size = size , genome_order = genome_order , mutation_rate = mutation_rate )
+	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , genome_order = 4 ):
+		to_return = Genome( genome_order = genome_order , mutation_rate = mutation_rate )
 		to_return.mutated_loci = map( Mutation , sorted( list( mutated_loci ) ) ) 
 		return to_return
 
@@ -152,10 +150,14 @@ class Mutation(object):
 		self.locus = float( locus )
 
 	def __repr__ ( self ):
-		return str( self.locus )
+		return '#'+str( self.locus )
 
 	# def __eq__ ( self, other ):
 		# return self.locus == other.locus
+
+	def __str__ ( self ):
+		return str( self.locus )
+
 
 	def __cmp__ ( self , other ):
 		# print self.locus, other.locus
@@ -198,9 +200,10 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 	import csv
 	
 	if method == 'aligned':
+
 		M = set() # all unique mutated loci will be stored here
 		for g in genomes:
-			M = M.union( g.get_mutated_loci( form = 'set' ) )
+			M = M.union( set( g.get_mutated_loci( form = 'set' ) ) )
 
 		M = sorted( list( M ) ) # this is the order in which mutations will be saved
 
