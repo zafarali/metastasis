@@ -11,10 +11,27 @@ import matplotlib.pyplot as plt
 
 class GenomeCompare:
 	def __init__ ( self, genomes = [ None , None ] ):
+		"""
+			Allows comparison of multiple genomes
+			@params
+				genomes / dict or list
+					dict must be in { genome_id : Genome() } format,
+					we reccommend that genome_id must be an int
+					if a list of genomes is submitted, it is converted automatically.
+					to { index: Genome() }
+		"""
 		assert len( genomes ) > 1 , 'Must provide at least two genomes to initiatile GenomeCompare'
-		assert isinstance( genomes[0] , Genome ) and isinstance( genomes[1] , Genome ) , 'genomes must contain Genome objects only'
-		self.genomes = genomes		
+		# assert isinstance( genomes[0] , Genome ) and isinstance( genomes[1] , Genome ) , 'genomes must contain Genome objects only'		
 		
+		if type( genomes ) == list :
+			# user is using an older method for genome input to maintain backward compatibility
+			# we convert it to the new format and store it
+			genomes = dict ( zip( len( genomes ) , genomes ) )
+			print '(!) New method of inputing genomes parameter is now present, for usability, the input has been converted, refer: https://github.com/zafarali/metastasis/issues/10'
+
+		assert type( genomes ) == dict , 'Genomes must be input in dict or list format'
+		self.genomes = genomes
+
 	def diff( self , genome1 , genome2 ):
 		"""
 			returns the number and loci of genes that
@@ -28,8 +45,6 @@ class GenomeCompare:
 
 		g1 = self.genomes[genome1]
 		g2 = self.genomes[genome2]
-
-		size = ( g1.size + g2.size ) / 2
 		
 		g1_mutated = g1.get_mutated_loci()
 		g2_mutated = g2.get_mutated_loci()
@@ -66,8 +81,6 @@ class GenomeCompare:
 		g1 = self.genomes[genome1]
 		g2 = self.genomes[genome2]
 
-
-		size = ( g1.size + g2.size ) / 2
 
 		g1_mutated = g1.get_mutated_loci()
 		g2_mutated = g2.get_mutated_loci()
@@ -153,6 +166,37 @@ class GenomeCompare:
 
 		pass
 
+	def draw ( self , ordering = None ):
+
+		if ordering is None:
+			ordering = []
+			num_genomes = len(self.genomes)
+			for genome_id, _ in self.genomes.items():
+
+				ordering.append( { 
+					'location':[ genome_id ], 
+					'name': genome_id 
+				} ) 
+
+		plt.figure()
+
+		for g in ordering:
+			
+			# get the x coordinate and plot it 
+			loc = g['location'][0]
+			plt.plot( [ loc ,loc ] , [ 1 , 0 ] , 'b' )
+
+			# plot the name of the genome
+			plt.text( loc , -0.002 , g['name'] , rotation = 90 , size = 'xx-small', horizontalalignment='center' )
+			
+			# get mutated loci and plot them
+			mutated_loci = self.genomes[ int( g['name'] ) ].get_mutated_loci()
+
+			for locus in mutated_loci: 
+				plt.plot(loc, locus.toFloat() , 'or')
+
+		plt.show()
+		pass
 
 	@staticmethod
 	def from_gen_file ( file_name ):
@@ -161,11 +205,12 @@ class GenomeCompare:
 		"""
 
 		import csv
-		genomes = []
+		genomes = {}
 		with open( file_name , 'r' ) as f:
 			reader = csv.reader( f ) 
 			for row in reader:
-				genomes.append( Genome.from_mutated_loci( map( float , row[2:] ) ) )
+				genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( float , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
+
 		return GenomeCompare( genomes = genomes )
 
 	@staticmethod
@@ -328,5 +373,3 @@ def newick_order( s ):
 		# disregard the ; at the end of the string and then split according to the commas.
 		# map the split strings into ints.
 	return map( int , ''.join( ''.join( s.split( '(' ) ).split( ')' ) )[0:-1].split( ',' ) )
-
-c
