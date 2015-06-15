@@ -12,7 +12,15 @@ from PySteppablesExamples import MitosisSteppableBase
 # }
 
 divide_times = {'last_division':0}
-GLOBAL = {'targetVolume':50,'divideThreshold':65}
+GLOBAL = {
+    'targetVolume':50,
+    'divideThreshold':65,
+}
+
+import time 
+time_info = '_'.join(time.asctime().split(' '))
+
+
 from cc3dtools.Tracker import Tracker2
 from cc3dtools.Genome import Genome, save_genomes
 genomes = {}
@@ -20,8 +28,9 @@ genomes = {}
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
+        self.start_tracker = Tracker2( file_name = '../start_cells_' + time_info + '.csv')
+
     def start(self):
-        start_tracker = Tracker2(file_name='../start_cells_862015.csv')
 
         num_cells = len(self.cellList)
 
@@ -40,14 +49,14 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                 cell.type = self.CANCER1
                 genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id )
 
-            start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )
-            # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ), 'p': Phenotype() }
+            self.start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )
+            # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ) }
 
-        # start_tracker.save_stash(flag='w')
+        
 
     def finish(self):
         
-        tracker = Tracker2(file_name='../finish_cells_862015.csv')
+        tracker = Tracker2( file_name = '../finish_cells_' + time_info + '.csv' )
 
         for cell in self.cellList:
             z = cell.zCOM
@@ -55,8 +64,9 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             x = cell.xCOM
             tracker.stash( [ cell.id , cell.type , x , y , z ] )
 
-        # tracker.save_stash()
-        # save_genomes( [ genome[1] for genome in genomes.items() ] , file_name = '../genomes_862015.csv', method = 'aligned' )
+        tracker.save_stash() # save final cell data
+        self.start_tracker.save_stash() # save initial cell data
+        save_genomes( [ genome[1] for genome in genomes.items() ] , file_name = '../genomes_' + time_info + '.csv' ) #save genomes
 
         
 
@@ -102,12 +112,13 @@ class GrowthSteppable(SteppableBasePy):
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator, tracker_instance ,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
-        self.tracker_instance = tracker_instance
+        self.mitosis_tracker = Tracker2(file_name='../division_events_' + time_info + '.csv')
+
     def start(self):
         # we initialize the stash function
         for cell in self.cellList:
                                             # R for 'root'
-            self.tracker_instance.stashDivision( 'R' , cell.id, cell.id, cell.id )
+            self.mitosis_tracker.stash( [ 'R' , cell.id, cell.id, cell.id ] )
 
 
     def step(self,mcs):
@@ -149,10 +160,10 @@ class MitosisSteppable(MitosisSteppableBase):
         else:
             childCell.type = parentCell.type
 
-        self.tracker_instance.stashDivision( divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id )
+        self.mitosis_tracker.stash( [ divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id ] )
 
     def finish(self):
-        # self.tracker_instance.saveStash()
+        self.mitosis_tracker.save_stash()
         pass
         
 
