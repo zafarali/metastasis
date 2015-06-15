@@ -1,5 +1,6 @@
 ### WRITTEN BY ZAFARALI AHMED
-### May 2015
+### June 2015
+## V0.2
 import numpy as np
 
 """
@@ -16,7 +17,7 @@ class Genome(object):
 				the rate at which bases of the genome are mutated (i.e bit flipped from 0 --> 1)
 			size / int / 1000
 				number of genes/bases in genome
-			genome_order / int / 4
+			genome_order / int / 10
 				the order of the genome (10^genome_order)
 		"""
 
@@ -31,18 +32,21 @@ class Genome(object):
 		assert self.mutation_rate > -1 , ' mutation rate cannot be negative '
 
 		self.annotations = {}
-		self.mutated_loci = set()
+		self.mutated_loci = []
 	
-	def replicate ( self ):
+	def replicate ( self , name = '' ):
 		"""
 			replicates the current genome and all its features
 			and returns the new one
+			@params
+				name / str
+				the name of the new genome
 		"""
-			replicated_genome = Genome( mutation_rate = self.mutation_rate , size = self.size , genome_order = self.genome_order )
-			replicated_genome.mutated_loci = replicated_genome.mutated_loci.union( self.mutated_loci )
-			replicated_genome.annotations = dict( self.annotations )
+		replicated_genome = Genome( mutation_rate = self.mutation_rate , size = self.size , genome_order = self.genome_order , name = name )
+		replicated_genome.mutated_loci = replicated_genome.mutated_loci.extend( self.mutated_loci )
+		replicated_genome.annotations = dict( self.annotations )
 
-			return replicated_genome
+		return replicated_genome
 
 
 	def mutate ( self ):
@@ -53,13 +57,8 @@ class Genome(object):
 		number_of_mutations = np.random.poisson( self.mutation_rate )
 		# generate random numbers representing loci
 
-		#	logic for the below compound function
-		#	(1) generate uniforms
-		#	(2) map that to strings
-		#	(3) select the first few numbers
-		#	(4) map the strings to floats
-		# 	(5) map the floats to mutations
-		loci = set( map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) ) )
+
+		loci = map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) )
 		# print loci
 		# store the loci in mutated_loci if they aren't already there to represent
 		
@@ -71,10 +70,14 @@ class Genome(object):
 		# 		# a bit flip to 1
 		# 		self.mutated_loci.add( locus )
 
-		for locus in loci:
-			if not ( locus in self.mutated_loci ) :
-				self.mutated_loci.add( locus )
+		# for locus in loci:
+		# 	if not ( locus in self.mutated_loci ) :
+		# 		self.mutated_loci.add( locus )
 		
+
+		## The probability of two loci being the same is extremely small 1e-10
+		self.mutated_loci.extend( loci )
+
 		# self.mutated_loci = self.mutated_loci.union( loci )
 
 		# return mutated loci
@@ -88,10 +91,10 @@ class Genome(object):
 				location of the loci of the mutation (bits that are 1)
 		"""
 
-		if form == 'set':
-			return self.mutated_loci
+		# if form == 'set':
+		# 	return self.mutated_loci
 
-		return list( self.mutated_loci ) 
+		return self.mutated_loci  
 
 	def annotate ( self , locus , name ):
 		self.annotations[name] = locus
@@ -130,7 +133,7 @@ class Genome(object):
 	@staticmethod
 	def from_mutated_loci ( mutated_loci , size = 1000 , mutation_rate = 0 , genome_order = 4 ):
 		to_return = Genome( size = size , genome_order = genome_order , mutation_rate = mutation_rate )
-		to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
+		to_return.mutated_loci = map( Mutation , sorted( list( mutated_loci ) ) ) 
 		return to_return
 
 
