@@ -48,7 +48,7 @@ class Genome(object):
 
 	def mutate ( self ):
 		"""
-			mutates the genome
+			mutates the genome and returns the loci that were mutated
 		"""	
 		# generate how many mutations we want
 		number_of_mutations = np.random.poisson( self.mutation_rate )
@@ -150,12 +150,18 @@ class Mutation(object):
 		self.locus = float( locus )
 
 	def __repr__ ( self ):
+		"""
+			mutation objects are represented as #LOCI_AS_FLOAT
+		"""
 		return '#'+str( self.locus )
 
 	# def __eq__ ( self, other ):
 		# return self.locus == other.locus
 
 	def __str__ ( self ):
+		"""
+			when converted to a string, mutation objects are just represented by their floats
+		"""
 		return str( self.locus )
 
 
