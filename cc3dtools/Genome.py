@@ -261,7 +261,7 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 			writer.writerow( titles )
 			for rowid , row in enumerate( storage ):
 				writer.writerow( [ rowid , genomes[rowid].name , genomes[rowid].mutation_rate ] + list( row ) )
-
+	print 'saved genome data to '+file_name
 
 
 	if method == 'naive':
@@ -269,5 +269,5 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 			writer = csv.writer( f )
 			for k , genome in enumerate( genomes ):
 				writer.writerow( [ genome.name, genome.mutation_rate ] + sorted( genome.get_mutated_loci() ) )
-
+		print 'saved genome data to '+file_name
 

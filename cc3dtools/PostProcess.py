@@ -113,6 +113,10 @@ class PostProcess( object ):
 		num_loops = 0
 
 		start_time = time.time()
+
+		dist_vs_shared = []
+		dist_vs_private = []
+
 		print 'start time:',start_time
 		for index, i in enumerate(self.cells_available):
 
@@ -127,6 +131,8 @@ class PostProcess( object ):
 					private = 0
 					distance = 0
 					results[i][j] = { 'distance' : distance , 'private' : private , 'shared' : shared }
+					dist_vs_private.append( ( distance , private ) )
+					dist_vs_shared.append( ( distance , shared ) )
 
 					# we reach the middle of the matrix, thus we break and skip to the next coloumn.
 					# print 'completed ',i
@@ -139,6 +145,11 @@ class PostProcess( object ):
 				shared = self.gc.comm( i , j )
 				private = self.gc.diff( i , j ) 
 
+				# store distance vs. private and shared tuples for easy plotting later
+				dist_vs_private.append( ( distance , private['total_unique_mutations'] ) )
+				dist_vs_shared.append( ( distance , shared['total_common_mutations'] ) )
+
+
 				# the resulting matrix is going to be symmetric
 				results[i][j] = { 'distance' : distance , 'private' : private , 'shared' : shared }
 				results[j][i] = { 'distance' : distance , 'private' : private , 'shared' : shared }
@@ -147,6 +158,10 @@ class PostProcess( object ):
 		# end for i
 
 		self.data = results
+
+		self.dist_vs_shared = dist_vs_shared
+		self.dist_vs_private = dist_vs_private
+
 		self.__executed__ = True
 
 		end_time = time.time()
