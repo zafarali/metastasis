@@ -144,10 +144,28 @@ class Mutation(object):
 		"""
 			@params:
 				locus / *
-				identification for the mutation, usually a float
+					identification for the mutation, usually a float
+				carrier / * [optional]
+					the initial carrier of this mutation
+					( reccomend that you store `Genome` objects )
+					
 		"""
 		assert locus >= 0 , 'locus must be greater than or equal to 0'
 		self.locus = float( locus )
+
+		initial_carrier = kwargs.get( 'carrier' , None )
+		self.carriers = [ initial_carrier ] if initial_carrier else []
+
+	def add_carrier( self , carrier ):
+		"""
+			will add a carrier to this object
+			@params:
+				carrier / * 
+					carrier of this mutation to add
+					( reccomend that you store `Genome` objects )
+		"""
+		self.carriers.append( carrier )
+		pass
 
 	def __repr__ ( self ):
 		"""
@@ -164,7 +182,7 @@ class Mutation(object):
 		"""
 		return str( self.locus )
 
-	def toFloat ( self ):
+	def to_float ( self ):
 		return self.locus
 
 	def __cmp__ ( self , other ):
@@ -185,6 +203,9 @@ class Mutation(object):
 
 class GenomeCompare:
 	def __init__ ( self, genomes = [ None , None ] ):
+		"""
+			GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare
+		"""
 		raise DeprecationWarning('GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare' )
 
 def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'naive' ):

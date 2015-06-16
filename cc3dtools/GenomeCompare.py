@@ -193,7 +193,7 @@ class GenomeCompare:
 			mutated_loci = self.genomes[ int( g['name'] ) ].get_mutated_loci()
 
 			for locus in mutated_loci: 
-				plt.plot(loc, locus.toFloat() , 'or')
+				plt.plot(loc, locus.to_float() , 'or')
 
 		plt.show()
 		pass
