@@ -26,7 +26,7 @@ class GenomeCompare:
 		if type( genomes ) == list :
 			# user is using an older method for genome input to maintain backward compatibility
 			# we convert it to the new format and store it
-			genomes = dict ( zip( len( genomes ) , genomes ) )
+			genomes = dict ( zip( range( len( genomes ) ) , genomes ) )
 			print '(!) New method of inputing genomes parameter is now present, for usability, the input has been converted, refer: https://github.com/zafarali/metastasis/issues/10'
 
 		assert type( genomes ) == dict , 'Genomes must be input in dict or list format'
@@ -46,31 +46,30 @@ class GenomeCompare:
 		g1 = self.genomes[genome1]
 		g2 = self.genomes[genome2]
 		
-		g1_mutated = g1.get_mutated_loci()
-		g2_mutated = g2.get_mutated_loci()
+		g1_mutated = set( g1.get_mutated_loci() )
+		g2_mutated = set( g2.get_mutated_loci() )
 
-		different_genes = 0
-		different_loci = []
+		g1_only = g1_mutated.difference( g2_mutated )
+		g2_only = g2_mutated.difference( g1_mutated )
+		different_loci = g1_only.union( g2_only )
 
-		g1_only = []
-		g2_only = []
+		different_genes = len( different_loci )
 
+		# # check which loci in 1 are in 2
+		# for locus in g1_mutated:
+		# 	if not (locus in g2_mutated):
+		# 		different_genes += 1
+		# 		different_loci.append(locus)
+		# 		g1_only.append(locus)
 
-		# check which loci in 1 are in 2
-		for locus in g1_mutated:
-			if not (locus in g2_mutated):
-				different_genes += 1
-				different_loci.append(locus)
-				g1_only.append(locus)
-
-		# check which loci in 2 are in 1 but not already counted
-		for locus in g2_mutated:
-			if not(locus in g1_mutated) and not(locus in different_loci):
-				different_genes +=1 
-				different_loci.append(locus)
-				g2_only.append(locus)
+		# # check which loci in 2 are in 1 but not already counted
+		# for locus in g2_mutated:
+		# 	if not(locus in g1_mutated) and not(locus in different_loci):
+		# 		different_genes +=1 
+		# 		different_loci.append(locus)
+		# 		g2_only.append(locus)
 			
-		return { 'total_unique_mutations': different_genes , 'loci_different': different_loci , 'unique_to_1' : g1_only , 'unique_to_2' : g2_only }
+		return { 'total_unique_mutations': different_genes , 'loci_different': list( different_loci ) , 'unique_to_1' : list( g1_only ) , 'unique_to_2' : list( g2_only ) }
 
 	def comm( self , genome1 , genome2 ):
 		"""
@@ -82,25 +81,26 @@ class GenomeCompare:
 		g2 = self.genomes[genome2]
 
 
-		g1_mutated = g1.get_mutated_loci()
-		g2_mutated = g2.get_mutated_loci()
+		g1_mutated = set( g1.get_mutated_loci() )
+		g2_mutated = set( g2.get_mutated_loci() )
 
-		common_mutations = 0
-		common_mutation_loci = []
+		
+		common_mutation_loci = g1_mutated.intersection( g2_mutated )
+		common_mutations = len( common_mutation_loci )
 
-		# check which loci in 1 are in 2
-		for locus in g1_mutated:
-			if locus in g2_mutated:
-				common_mutations += 1
-				common_mutation_loci.append(locus)
+		# # check which loci in 1 are in 2
+		# for locus in g1_mutated:
+		# 	if locus in g2_mutated:
+		# 		common_mutations += 1
+		# 		common_mutation_loci.append(locus)
 
-		# check which loci in 2 are in 1 but not already counted
-		for locus in g2_mutated:
-			if locus in g1_mutated and not (locus in common_mutation_loci):
-				common_mutations += 1 
-				common_mutation_loci.append(locus)
+		# # check which loci in 2 are in 1 but not already counted
+		# for locus in g2_mutated:
+		# 	if locus in g1_mutated and not (locus in common_mutation_loci):
+		# 		common_mutations += 1 
+		# 		common_mutation_loci.append(locus)
 
-		return { 'total_common_mutations': common_mutations , 'loci_common': common_mutation_loci }
+		return { 'total_common_mutations': common_mutations , 'loci_common': list( common_mutation_loci ) }
 
 	def simillarity_matrix( self ):
 		"""
