@@ -74,12 +74,12 @@ class Tracker2( object ):
         assert type( to_stash ) is list , 'to_stash must be a list'
         self.internal_stash.append( to_stash )
 
-    def save_stash( self , flag = 'a' ):
+    def save_stash( self , flag = 'w' ):
         """
             saves the current state of the stash to a file
-            ( note this is an append function by default )
+            ( note this is an write function by default )
             @params:
-                flag / str / 'a'
+                flag / str / 'w'
                     how to store the stash ('a' = append, 'w' = write )
         """
         assert type( flag ) is str and len( flag ) == 1 , 'flag must be a string of len 1'
