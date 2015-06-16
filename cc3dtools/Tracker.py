@@ -90,3 +90,5 @@ class Tracker2( object ):
             for row in self.internal_stash:
                 c.writerow( row )
 
+        print 'stash was saved to '+self.file_name
+
