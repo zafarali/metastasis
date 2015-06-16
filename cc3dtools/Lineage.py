@@ -371,7 +371,7 @@ class MultiLineage(object):
         to_be_returned = []
 
         for lineage in self.lineages:
-            to_be_returned.append( ( lineage['members'][0] , lineage['lineage'].draw( 20 ) ) ) # lineage.draw returns a list of points
+            to_be_returned.extend( lineage['lineage'].draw( 20 ) ) # lineage.draw returns a list of points
 
         return to_be_returned
 

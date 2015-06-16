@@ -129,8 +129,8 @@ class Genome(object):
 		return Mutation(location) in self.mutated_loci
 
 	@staticmethod
-	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , genome_order = 4 ):
-		to_return = Genome( genome_order = genome_order , mutation_rate = mutation_rate )
+	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name= '' ):
+		to_return = Genome( name=name , mutation_rate = mutation_rate )
 		to_return.mutated_loci = map( Mutation , sorted( list( mutated_loci ) ) ) 
 		return to_return
 
@@ -144,10 +144,28 @@ class Mutation(object):
 		"""
 			@params:
 				locus / *
-				identification for the mutation, usually a float
+					identification for the mutation, usually a float
+				carrier / * [optional]
+					the initial carrier of this mutation
+					( reccomend that you store `Genome` objects )
+					
 		"""
 		assert locus >= 0 , 'locus must be greater than or equal to 0'
 		self.locus = float( locus )
+
+		initial_carrier = kwargs.get( 'carrier' , None )
+		self.carriers = [ initial_carrier ] if initial_carrier else []
+
+	def add_carrier( self , carrier ):
+		"""
+			will add a carrier to this object
+			@params:
+				carrier / * 
+					carrier of this mutation to add
+					( reccomend that you store `Genome` objects )
+		"""
+		self.carriers.append( carrier )
+		pass
 
 	def __repr__ ( self ):
 		"""
@@ -164,6 +182,8 @@ class Mutation(object):
 		"""
 		return str( self.locus )
 
+	def to_float ( self ):
+		return self.locus
 
 	def __cmp__ ( self , other ):
 		# print self.locus, other.locus
@@ -183,6 +203,9 @@ class Mutation(object):
 
 class GenomeCompare:
 	def __init__ ( self, genomes = [ None , None ] ):
+		"""
+			GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare
+		"""
 		raise DeprecationWarning('GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare' )
 
 def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'naive' ):
@@ -245,6 +268,6 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 		with open( file_name, 'w' ) as f:
 			writer = csv.writer( f )
 			for k , genome in enumerate( genomes ):
-				writer.writerow( sorted( genome.get_mutated_loci() ) )
+				writer.writerow( [ genome.name, genome.mutation_rate ] + sorted( genome.get_mutated_loci() ) )
 
 
