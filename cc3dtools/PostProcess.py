@@ -131,8 +131,8 @@ class PostProcess( object ):
 					private = 0
 					distance = 0
 					results[i][j] = { 'distance' : distance , 'private' : private , 'shared' : shared }
-					dist_vs_private.append( ( distance , private ) )
-					dist_vs_shared.append( ( distance , shared ) )
+					dist_vs_private.append( ( distance , private , self.cell_locations[i][3] , self.cell_locations[j][3] ) )
+					dist_vs_shared.append( ( distance , shared , self.cell_locations[i][3] , self.cell_locations[j][3] ) )
 
 					# we reach the middle of the matrix, thus we break and skip to the next coloumn.
 					# print 'completed ',i
@@ -146,8 +146,8 @@ class PostProcess( object ):
 				private = self.gc.diff( i , j ) 
 
 				# store distance vs. private and shared tuples for easy plotting later
-				dist_vs_private.append( ( distance , private['total_unique_mutations'] ) )
-				dist_vs_shared.append( ( distance , shared['total_common_mutations'] ) )
+				dist_vs_private.append( ( distance , private['total_unique_mutations'] , a[3], b[3] ) )
+				dist_vs_shared.append( ( distance , shared['total_common_mutations'] , a[3], b[3] ) )
 
 
 				# the resulting matrix is going to be symmetric
@@ -166,7 +166,8 @@ class PostProcess( object ):
 
 		end_time = time.time()
 		
-		print 'Completed\n Total Number of loops:' + str( num_loops )
+		print 'Completed\n Total Number of comparisons:' + str( num_loops )
+		print 'Number of cells ' + str( len( self.cells_available ) )
 		print 'Total Time:' + str( end_time - start_time ) + 's'
 
 	def pwise ( self , c1 , c2 ):
