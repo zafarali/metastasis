@@ -27,10 +27,13 @@ class Individual:
             return str(self.name)
 
     def num_descendants ( self ):
-        return 0
+        return 1
 
     def get_descendants( self ):
         return [ self ]
+        
+    def get_branch_descendants( self ):
+        return
 
     def plot ( self , center , generation , widith , final_points,  ):
         import matplotlib.pyplot as plt

@@ -2,6 +2,7 @@
 #### MODIFICATIONS BY ZAFARALI AHMED
 from Individual import Individual
 import matplotlib.pyplot as plt
+from collections import deque
 
 class Lineage:
 
@@ -271,16 +272,12 @@ class Lineage:
         """
             Returns the number of descendants of the lineage
         """
-        if isinstance( self.sub1 , Individual ) and isinstance( self.sub2 , Individual ) :
-            return 2 #since this is a leaf, there are only 2 individuals at this position
-        elif isinstance( self.sub1 , Individual ) and isinstance( self.sub2 , Lineage ) :
-            return self.sub2.num_descendants() + 1
-        elif isinstance( self.sub1 , Lineage ) and isinstance( self.sub2 , Individual ):
-            return self.sub1.num_descendants() + 1
-        elif self.sub2:
+        if self.sub2 is not None:
             return self.sub1.num_descendants() + self.sub2.num_descendants()
         else:
-            return self.sub1.num_descendants()
+            # still at root level thus only one node
+            return 0
+
 
     # def descendants ( self ):
     #     if isinstance( self.sub1 , Individual ) and isinstance( self.sub2 , Individual ) :
@@ -422,3 +419,51 @@ class MultiLineage(object):
 
         return False
 
+def lineage_bfs( starter_lineage ):
+    """
+        Conducts a breadth first search and returns a dictionary of
+        { depth: [ partition1, partition2, ... ] ... }
+    """
+    q = deque( [ starter_lineage ] )
+
+    depth = 1 # holds the current depth
+
+    # since our trees are likely to be unbalanced this holds
+    # the number of nodes we need to traverse before we go to the next depth
+    checks_till_next_depth = 1 
+
+    # this will hold the number of depths to check in the next depth
+    checks_in_next_depth = 0
+
+    results = {}
+
+    while len(q) != 0:
+        checks_till_next_depth -= 1
+
+        to_be_processed = q.popleft()
+
+        if isinstance( to_be_processed , Individual ):
+            # this is an individual, it has no interesting descendants
+            continue
+
+        results[depth] = results.get( depth, [] )
+
+        branches = to_be_processed.get_branch_descendants()
+
+        results[depth].extend( [ branches['left'] , branches['right'] ] )
+
+        q.append( to_be_processed.sub1 )
+        q.append( to_be_processed.sub2 )
+
+        checks_in_next_depth += 2
+
+        if checks_till_next_depth == 0:
+            depth += 1
+            checks_till_next_depth = checks_in_next_depth
+            checks_in_next_depth = 0
+        
+        #endif
+    
+    #endwhile
+
+    return results
