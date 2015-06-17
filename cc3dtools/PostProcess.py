@@ -2,11 +2,23 @@
 ## June 2015
 
 from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+import numpy as np
 import csv
 import math
 import time
 import pickle
+
+ 
+def discrete_cmap(N, base_cmap='prism'):
+    """ generate a shuffled discrete color map of size N based on @param base_cmap"""
+ 	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
+    base = plt.cm.get_cmap(base_cmap) # get the base
+    color_raw = np.linspace(0, 1, N) # generate some random colors
+    np.random.shuffle(color_raw) # shuffle it
+    color_list = base(color_raw) # turn them into colors
+    cmap_name = base.name + str(N) # give it a random name
+    return base.from_list(cmap_name, color_list, N) #return it!
+ 
 
 
 def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' ):
@@ -64,6 +76,59 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 	plt.show()
 
+
+class SpacePlot ( object ):
+	def __init__ ( self , start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' ):
+		"""
+			This class allows us to make spatial plots
+		"""
+		assert start_file is not None and end_file is not None, 'must specify files'
+
+		# load up the starter cells
+		starter_cells = [] # stores as (cellid, type)
+		with open( start_file , 'r' ) as f:
+			reader = csv.reader( f )
+			for row in reader:
+				starter_cells.append(  int( row[0] )  )
+
+
+		cells = {}
+
+		# Store the final positions of all the cells
+		with open( end_file , 'r' ) as f:
+		reader = csv.reader( f )
+		for row in reader:
+			data = dict( zip( format , row ) )
+			# data converstion
+			data['id'] = int( data['id'] )
+			data['type'] = int( data['type'] )
+
+			data['x'] = float( data['x'] )
+			data['y'] = float( data['y'] )
+			data['z'] = float( data['z'] )
+
+			data['initial'] = 1 if data['id'] in starter_cells else 0
+
+			marker = 'x' if data['initial'] else 'o'
+
+			cells[ data['id'] ] = {
+				'x': data['x'] ,
+				'y': data['y'] ,
+				'z': data['z'] ,
+				'initial' : data['initital'] ,
+				'type': data['type']
+			}
+
+
+		self.cells = cells
+		self.starter_cells = starter_cells
+		self.type_colors = type_colors
+		self.format = format
+		self.projection = projection
+
+		
+
+
 class PostProcess( object ):
 	def __init__ ( self , end_file , gc , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , pickle_import = False  ):
 		"""
@@ -114,8 +179,18 @@ class PostProcess( object ):
 
 		start_time = time.time()
 
+		# tuple information
 		dist_vs_shared = []
 		dist_vs_private = []
+		dist_vs_proportion = []
+
+		# individual lists with relevant information in corresponding indicies
+
+		_distances = []
+		_shared = []
+		_private = []
+		_type2 = []
+		_type1 = []
 
 		print 'start time:',start_time
 		for index, i in enumerate(self.cells_available):
@@ -130,9 +205,24 @@ class PostProcess( object ):
 					shared = len( self.gc.genomes[i].get_mutated_loci() )
 					private = 0
 					distance = 0
+					prop = shared / float( private + shared )
+
+
 					results[i][j] = { 'distance' : distance , 'private' : private , 'shared' : shared }
+					results[j][i] = { 'distance' : distance , 'private' : private , 'shared' : shared }
+
+
 					dist_vs_private.append( ( distance , private , self.cell_locations[i][3] , self.cell_locations[j][3] ) )
 					dist_vs_shared.append( ( distance , shared , self.cell_locations[i][3] , self.cell_locations[j][3] ) )
+					dist_vs_proportion.append( ( distance , prop , self.cell_locations[i][3] , self.cell_locations[j][3] ) )
+
+					# specific lists
+					_distances.append( distance )
+					_shared.append( shared )
+					_private.append( private )
+					_type1.append( self.cell_locations[i][3] )
+					_distances.append( self.cell_locations[j][3] )
+
 
 					# we reach the middle of the matrix, thus we break and skip to the next coloumn.
 					# print 'completed ',i
@@ -142,13 +232,22 @@ class PostProcess( object ):
 				b = self.cell_locations[j]
 
 				distance = distance_between( a , b )
-				shared = self.gc.comm( i , j )
-				private = self.gc.diff( i , j ) 
+				shared = self.gc.comm( i , j )['total_common_mutations']
+				private = self.gc.diff( i , j )['total_unique_mutations']
+
+				prop = shared / float( private + shared )
+
 
 				# store distance vs. private and shared tuples for easy plotting later
-				dist_vs_private.append( ( distance , private['total_unique_mutations'] , a[3], b[3] ) )
-				dist_vs_shared.append( ( distance , shared['total_common_mutations'] , a[3], b[3] ) )
+				dist_vs_private.append( ( distance , private , a[3] , b[3] ) )
+				dist_vs_shared.append( ( distance , shared , a[3] , b[3] ) )
+				dist_vs_proportion.append( ( distance , prop , a[3] , b[3] ) )
 
+				_distances.append( distance )
+				_shared.append( shared )
+				_private.append( private )
+				_type1.append( a[3] )
+				_type2.append( b[3] )
 
 				# the resulting matrix is going to be symmetric
 				results[i][j] = { 'distance' : distance , 'private' : private , 'shared' : shared }
@@ -157,10 +256,19 @@ class PostProcess( object ):
 			# end for j
 		# end for i
 
+
+		self._distances = np.array( _distances )
+		self._shared = np.array( _shared )
+		self._private = np.array( _private )
+		self._type1 = np.array( _type1 )
+		self._type2 = np.array( _type2 )
+		self._proportion = self._shared / np.float_( self._private + self._shared )
+
 		self.data = results
 
 		self.dist_vs_shared = dist_vs_shared
 		self.dist_vs_private = dist_vs_private
+		self.dist_vs_proportion = dist_vs_proportion
 
 		self.__executed__ = True
 
