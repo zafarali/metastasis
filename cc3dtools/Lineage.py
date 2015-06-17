@@ -292,6 +292,22 @@ class Lineage:
     #     else:
     #         return self.sub1.descendants().extend( self.sub2.descendants() )
        
+    def get_descendants( self ):
+        to_be_returned = []
+
+
+        to_be_returned.extend( self.sub1.get_descendants() )
+        to_be_returned.extend( self.sub2.get_descendants() )
+
+        return to_be_returned
+        
+    def get_branch_descendants( self ):
+        to_be_returned = {}
+        to_be_returned['left'] = self.sub1.get_descendants()
+        to_be_returned['right'] = self.sub2.get_descendants()
+
+        return to_be_returned
+
 
     @staticmethod
     def load_file( fileName = None , firstParentId = 1 , format = ( 't' , 'p' , 'c1' , 'c2' ) ):

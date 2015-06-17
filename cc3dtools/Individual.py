@@ -29,6 +29,9 @@ class Individual:
     def num_descendants ( self ):
         return 0
 
+    def get_descendants( self ):
+        return [ self ]
+
     def plot ( self , center , generation , widith , final_points,  ):
         import matplotlib.pyplot as plt
         plt.plot( [ center , center ] , [ generation , generation - 1 ] , 'b' )
