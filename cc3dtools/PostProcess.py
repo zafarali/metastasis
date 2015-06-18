@@ -21,7 +21,7 @@ def discrete_cmap(N, base_cmap='prism'):
  
 
 
-def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' ):
+def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True ):
 	"""
 		displays the positions of the cellids at the time of sampling within a simulation
 	"""
@@ -58,10 +58,14 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 			marker = 'x' if data['initial'] else 'o'
 			if projection == '3d':
 				ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = type_colors[ data['type'] - 1 ] )
-				ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = type_colors[ data['type'] - 1 ] )
+
+				if not hide_numbers:
+					ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = type_colors[ data['type'] - 1 ] )
 			else:
 				plt.plot( data['x'] , data['y'] , marker+type_colors[ data['type'] - 1 ] )
-				plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = type_colors[ data['type'] - 1 ] )
+
+				if not hide_numbers:
+					plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = type_colors[ data['type'] - 1 ] )
 
 	if projection == '3d':
 		ax.set_xlabel( 'x-axis' )
@@ -151,11 +155,27 @@ class SpacePlot ( object ):
 			within *args according to a random color map
 			eg: args = ( [1,2,3,4], [5,6,7,8] )
 			this will print 1,2,3,4 in one color and 5,6,7,8 in another
+			@params:
+				args:	[mandatory]
+					sequence of clusters of Individuals 
+				depth / str / 'UNKNOWN DEPTH': 
+					depth of the plot
+				hide_numbers / bool / True
+					hide the display of numbers in the plot
+
+
+				*these parameters can be overriden for this plot:
+				type_colors: 
+					color mappings for each type of individual 
+				projection:
+					2d or 3d
+
 		"""
 
 		projection = kwargs.get('projection', self.projection)
 		type_colors = kwargs.get('type_colors', self.type_colors)
 		title = ' Locations of Genomes at time of final sampling lineage depth: ' + str( kwargs.get('depth', 'UNKNOWN') )
+		hide_numbers = kwargs.get( 'hide_numbers' , True )
 		fig = plt.figure()
 
 		if projection == '3d':
@@ -177,7 +197,7 @@ class SpacePlot ( object ):
 					'x':0,
 					'y':0,
 					'z':0,
-					'initial':-1,
+					'initial':-1, # -1 represents that the cell died.
 					'id': individual.id,
 				}
 
@@ -200,10 +220,14 @@ class SpacePlot ( object ):
 
 				if projection == '3d':
 					ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
-					ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+
+					if not hide_numbers:
+						ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
 				else:
 					plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
-					plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+					
+					if not hide_numbers:
+						plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
 		
 
 
@@ -222,10 +246,14 @@ class SpacePlot ( object ):
 			marker = 'x' if data['initial'] else 'o'
 			if projection == '3d':
 				ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
-				ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+
+				if not hide_numbers:
+					ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
 			else:
 				plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
-				plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+
+				if not hide_numbers:
+					plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
 
 		if projection == '3d':
 			ax.set_xlabel( 'x-axis' )
