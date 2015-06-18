@@ -1,6 +1,6 @@
 ## Author @zafarali
 ## June 2015
-
+import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import csv
@@ -96,28 +96,29 @@ class SpacePlot ( object ):
 
 		# Store the final positions of all the cells
 		with open( end_file , 'r' ) as f:
-		reader = csv.reader( f )
-		for row in reader:
-			data = dict( zip( format , row ) )
-			# data converstion
-			data['id'] = int( data['id'] )
-			data['type'] = int( data['type'] )
+			reader = csv.reader( f )
+			for row in reader:
+				data = dict( zip( format , row ) )
+				# data converstion
+				data['id'] = int( data['id'] )
+				data['type'] = int( data['type'] )
 
-			data['x'] = float( data['x'] )
-			data['y'] = float( data['y'] )
-			data['z'] = float( data['z'] )
+				data['x'] = float( data['x'] )
+				data['y'] = float( data['y'] )
+				data['z'] = float( data['z'] )
 
-			data['initial'] = 1 if data['id'] in starter_cells else 0
+				data['initial'] = 1 if data['id'] in starter_cells else 0
 
-			marker = 'x' if data['initial'] else 'o'
+				marker = 'x' if data['initial'] else 'o'
 
-			cells[ data['id'] ] = {
-				'x': data['x'] ,
-				'y': data['y'] ,
-				'z': data['z'] ,
-				'initial' : data['initital'] ,
-				'type': data['type']
-			}
+				cells[ data['id'] ] = {
+					'id': data['id'] ,
+					'x': data['x'] ,
+					'y': data['y'] ,
+					'z': data['z'] ,
+					'initial' : data['initial'] ,
+					'type': data['type']
+				}
 
 
 		self.cells = cells
@@ -125,9 +126,122 @@ class SpacePlot ( object ):
 		self.type_colors = type_colors
 		self.format = format
 		self.projection = projection
+		self.start_file = start_file
+		self.end_file = end_file
 
+
+	def plot_all( self ):
+		"""
+			plots all genomes in space according to type_colors and projection 
+		"""
+
+		# use the already built function
+		# @TODO: rewrite this so we aren't re-reading the files etc.
+		spatial_plot( start_file = self.start_file , \
+			end_file = self.end_file , \
+			type_colors = self.type_colors , \
+			format = self.format , \
+			projection = self.projection )
+		pass
+
+
+	def plot_selected( self , *args , **kwargs ):
+		"""
+			plots the cells in clusters whos ids are contained in lists
+			within *args according to a random color map
+			eg: args = ( [1,2,3,4], [5,6,7,8] )
+			this will print 1,2,3,4 in one color and 5,6,7,8 in another
+		"""
+
+		projection = kwargs.get('projection', self.projection)
+		type_colors = kwargs.get('type_colors', self.type_colors)
+		title = ' Locations of Genomes at time of final sampling lineage depth: ' + str( kwargs.get('depth', 'UNKNOWN') )
+		fig = plt.figure()
+
+		if projection == '3d':
+			ax = fig.gca( projection = '3d' )
+
+		colormap = discrete_cmap( 900 )
+		num_args = float ( len( args ) )
+
+		plotted_ids = []
+
+		# this function converts an individual to cell_data
+		# it also accounts for the fact that some cells might have
+		# died and not made it into the final sampling
+		def individual_to_cell_data( individual ):
+			try:
+				return self.cells[ individual.id ]
+			except KeyError:
+				return {
+					'x':0,
+					'y':0,
+					'z':0,
+					'initial':-1,
+					'id': individual.id,
+				}
+
+		# first plot the clusters
+		for cluster_id, cluster in enumerate( args ):
+			# we map the individuals id in the cluster to obtain all the data
+			cells_with_data = map( individual_to_cell_data , cluster )
+			
+			for data in cells_with_data:
+
+				# cell died, thus we just skip plotting it
+				if data['initial'] == -1:
+					continue
+
+				# add the id of the cell to the plotted_ids so we plot everything else in grey
+				plotted_ids.append( data['id'] )
+
+				selected_color = colormap( cluster_id )
+				marker = 'x' if data['initial'] else 'o'
+
+				if projection == '3d':
+					ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
+					ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+				else:
+					plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
+					plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
 		
 
+
+
+		# everything else must be plotted in gray!
+		for _ , data in self.cells.items():
+			
+			# skip if this has already been plotted!
+			if data['id'] in plotted_ids: 
+				continue
+
+			# select the color gray
+			selected_color = (.5,.5,.5,1.0)
+
+
+			marker = 'x' if data['initial'] else 'o'
+			if projection == '3d':
+				ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
+				ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+			else:
+				plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
+				plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+
+		if projection == '3d':
+			ax.set_xlabel( 'x-axis' )
+			ax.set_ylabel( 'y-axis' )
+			ax.set_zlabel( 'z-axis' )
+			ax.set_title(title, 'center')
+		else:
+			plt.xlabel('x-axis')
+			plt.ylabel('y-axis')
+			plt.title(title)
+
+
+
+		plt.show()
+
+		pass
 
 class PostProcess( object ):
 	def __init__ ( self , end_file , gc , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , pickle_import = False  ):

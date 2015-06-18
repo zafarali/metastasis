@@ -437,7 +437,7 @@ def lineage_bfs( starter_lineage ):
 
     results = {}
 
-    while len(q) != 0:
+    while len( q ) != 0:
         checks_till_next_depth -= 1
 
         to_be_processed = q.popleft()
