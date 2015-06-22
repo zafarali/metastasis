@@ -52,6 +52,10 @@ from MetastasisV1Steppables import ExtraMultiPlotSteppable
 extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
 steppableRegistry.registerSteppable(extraMultiPlotSteppable)
 
+from MetastasisV1Steppables import NeighborTrackerPrinterSteppable
+steppableRegistry.registerSteppable( NeighborTrackerPrinterSteppable(_simulator = sim, _frequency = 10 ) )
+
+
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         
         

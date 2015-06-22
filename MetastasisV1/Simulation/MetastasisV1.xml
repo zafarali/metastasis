@@ -25,6 +25,7 @@
       <!-- Module tracking center of mass of each cell -->
    </Plugin>
    
+ <Plugin Name="NeighborTracker"/>
 
 
 

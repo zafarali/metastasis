@@ -18,7 +18,7 @@ divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
-    'maxtargetvolume':75
+    'maxTargetVolume':75
 }
 
 import time 
@@ -93,11 +93,15 @@ class GrowthSteppable(SteppableBasePy):
             # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
-            cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxtargetvolume'])
+            cell.targetVolume = min(0.05 + cell.targetVolume, GLOBAL['maxTargetVolume'])
+            
+            # cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxTargetVolume'])
+
             print '------> growth event:',cell.targetVolume, cell.volume
-            if cell.type == self.CANCER1 or cell.type == self.CANCER2:
+            # if cell.type == self.CANCER1 or cell.type == self.CANCER2:
+            if cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
-                cell.targetVolume += 0.01
+                cell.targetVolume += 0.1
 
                 print '------>cancer growth event:',cell.targetVolume, cell.volume
             # if cell.type == self.CANCER2:
@@ -171,10 +175,27 @@ class MitosisSteppable(MitosisSteppableBase):
 
         childCell.lambdaVolume = 1.5
         parentCell.lambdaVolume = 1.5
-        if parentCell.type == self.CANCER1:
-            childCell.type = self.CANCER2
+        # if parentCell.type == self.CANCER1:
+        #     childCell.type = self.CANCER2
+        # else:
+        #     childCell.type = parentCell.type
+
+
+        # attempt to obtain the proliferating front
+        if parentCell.type != self.NORMAL:
+            for cell in [ childCell , parentCell ]:
+                normal_count = 0
+                for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
+                    if neighbor:
+                        if neighbor.type == self.NORMAL:
+                            normal_count += 1
+                        #endif
+                    #endif
+                cell.type = self.CANCER2 if normal_count > 0 else self.CANCER1
+            #endfor
         else:
             childCell.type = parentCell.type
+        #endelse
 
         if save_flag:
             self.mitosis_tracker.stash( [ divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id ] )
@@ -183,6 +204,33 @@ class MitosisSteppable(MitosisSteppableBase):
         if save_flag:
             self.mitosis_tracker.save_stash()
         pass
+
+## this demo is to show how to obtain types of the neighbour
+class NeighborTrackerPrinterSteppable(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=100):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+
+    def step(self,mcs):
+        pass
+        # for cell in self.cellList:            
+        #     print "*********NEIGHBORS OF CELL WITH ID ",cell.id," *****************"
+        #     count1 = 0
+        #     count2 = 0
+            # for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
+            #     if neighbor:
+            #         if neighbor.type == 2 or neighbor.type == 3:
+            #             count2 += 1
+            #         else:
+            #             count1 += 1
+
+        #         #     print "neighbor.type",neighbor.type
+        #         #     print "neighbor.id",neighbor.id," commonSurfaceArea=",commonSurfaceArea
+        #         # else:
+        #         #     print "Medium commonSurfaceArea=",commonSurfaceArea
+        #     print 'non-cancer neighbours:',count1,', cancer neighbours:',count2
+        # time.sleep(0.1)
+
+
         
 
 class DeathSteppable(SteppableBasePy):
@@ -192,8 +240,8 @@ class DeathSteppable(SteppableBasePy):
         # print divide_times
         # for cell in self.cellList:
         #     if mcs - divide_times[cell.id] > 450:
-        #         cell.targetVolume = 0 
-        #         cell.lambdaVolume = 100
+        #         cell.targetVolume -= 0.007 
+        #         cell.lambdaVolume = 1
 
         pass
 #         # if mcs==1000:
