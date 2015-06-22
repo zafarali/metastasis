@@ -309,6 +309,7 @@ class PostProcess( object ):
 
 	def execute( self ):
 		"""
+			Calculates the number of shared and private mutations and the distance between every cell
 			(!) warning, this is a computationally heavy function
 
 		"""
@@ -429,6 +430,22 @@ class PostProcess( object ):
 		return self.data[c1][c2]
 
 		pass
+
+	def frequency_analyze( self , cellids ):
+		"""
+			Returns a frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
+			@params:
+				cellids / list of int / [mandatory]
+					the list of cell ids that you want to sample from the larger space
+					for best results and to actually get 'cluster' data you will select cellids that are close together 
+					spatially.
+		"""
+		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
+
+
+
+
+
 	def pickle_save( self ):
 		raise FutureWarning('This function is yet to be implemented')
 		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
