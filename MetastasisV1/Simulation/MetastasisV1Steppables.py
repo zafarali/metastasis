@@ -153,7 +153,7 @@ class MitosisSteppable(MitosisSteppableBase):
         divide_times[parentCell.id] = divide_times['last_division']
         divide_times[childCell.id] = divide_times['last_division']
 
-        ## using the equation derived to keep pressure constant
+        ## using the equation derived to keep force in the model constant
         ## T_star = T_target - t/2 <-- t/2 is volume after division 
         T_star = GLOBAL['targetVolume'] - ( parentCell.volume / 2.0 )
 
