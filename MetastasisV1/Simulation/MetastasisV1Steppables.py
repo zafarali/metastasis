@@ -11,13 +11,14 @@ from PySteppablesExamples import MitosisSteppableBase
 #     'deleterious':(0,0.7)
 # }
 
-save_flag = True
+save_flag = False
 simulate_flag = True
 
 divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
+    'maxtargetvolume':75
 }
 
 import time 
@@ -92,7 +93,7 @@ class GrowthSteppable(SteppableBasePy):
             # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
-            cell.targetVolume = 0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume
+            cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxtargetvolume'])
             print '------> growth event:',cell.targetVolume, cell.volume
             if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
@@ -151,9 +152,15 @@ class MitosisSteppable(MitosisSteppableBase):
         # raw_input()
         divide_times[parentCell.id] = divide_times['last_division']
         divide_times[childCell.id] = divide_times['last_division']
-        childCell.targetVolume=GLOBAL['targetVolume']
-        parentCell.targetVolume=GLOBAL['targetVolume']
-        GLOBAL['targetVolume'] = GLOBAL['targetVolume'] - 0.05 if GLOBAL['targetVolume'] > 45 else GLOBAL['targetVolume']
+
+        ## using the equation derived to keep force in the model constant
+        ## T_star = T_target - t/2 <-- t/2 is volume after division 
+        T_star = GLOBAL['targetVolume'] - ( parentCell.volume / 2.0 )
+
+
+        childCell.targetVolume = T_star
+        parentCell.targetVolume = T_star
+        # GLOBAL['targetVolume'] = GLOBAL['targetVolume'] - 0.05 if GLOBAL['targetVolume'] > 45 else GLOBAL['targetVolume']
         # if parentCell.type == self.CANCER1:
         #     childCell.type = self.CANCER1
         #     childCell.targetVolume = 40
@@ -208,7 +215,7 @@ class ExtraMultiPlotSteppable(SteppableBasePy):
         # avg volumes
         self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
         self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
-        self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
+        # self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
         self.pWVol.addPlot(_plotName='MTVol',_style='Dots',_color='green',_size=5)        
 
 
@@ -245,7 +252,7 @@ class ExtraMultiPlotSteppable(SteppableBasePy):
         meanTargetVolume /= float(numberOfCells)
         
         self.pWVol.addDataPoint("MVol",mcs,meanVolume)
-        self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
+        # self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
         self.pWVol.addDataPoint("MTVol",mcs,meanTargetVolume)
 
 
