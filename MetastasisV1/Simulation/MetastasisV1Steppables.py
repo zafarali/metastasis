@@ -18,7 +18,11 @@ divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
-    'maxTargetVolume':75
+    'cancer2_divideThreshold':60,
+    'maxTargetVolume':75,
+    'cancer2_additional_dV':0.1,
+    'cancer1_additional_dV':0,
+    'dV':0.05
 }
 
 import time 
@@ -93,7 +97,7 @@ class GrowthSteppable(SteppableBasePy):
             # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
-            cell.targetVolume = min(0.05 + cell.targetVolume, GLOBAL['maxTargetVolume'])
+            cell.targetVolume = min( GLOBAL['dV'] + cell.targetVolume , GLOBAL['maxTargetVolume'] )
             
             # cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxTargetVolume'])
 
@@ -101,9 +105,13 @@ class GrowthSteppable(SteppableBasePy):
             # if cell.type == self.CANCER1 or cell.type == self.CANCER2:
             if cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
-                cell.targetVolume += 0.1
+                cell.targetVolume += GLOBAL['cancer2_additional_dV']
 
                 print '------>cancer growth event:',cell.targetVolume, cell.volume
+
+            if cell.type == self.CANCER1:
+                # cancerous cells grow slightly faster
+                cell.targetVolume += GLOBAL['cancer1_additional_dV']
             # if cell.type == self.CANCER2:
                 # cell.targetVolume += 1
                 # cell.lambdaVolume = 3
@@ -137,7 +145,7 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if (cell.type == self.CANCER2 and cell.volume > GLOBAL['divideThreshold']-5) or cell.volume>GLOBAL['divideThreshold']:
+            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or cell.volume > GLOBAL['divideThreshold']:
             # if cell.volume > 100:
                 cells_to_divide.append(cell)
                 
