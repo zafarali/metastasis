@@ -11,13 +11,14 @@ from PySteppablesExamples import MitosisSteppableBase
 #     'deleterious':(0,0.7)
 # }
 
-save_flag = True
+save_flag = False
 simulate_flag = True
 
 divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
+    'maxtargetvolume':75
 }
 
 import time 
@@ -92,7 +93,7 @@ class GrowthSteppable(SteppableBasePy):
             # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
-            cell.targetVolume = 0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume
+            cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxtargetvolume'])
             print '------> growth event:',cell.targetVolume, cell.volume
             if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
