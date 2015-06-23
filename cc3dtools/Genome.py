@@ -29,7 +29,7 @@ class Genome(object):
 		assert self.mutation_rate > -1 , ' mutation rate cannot be negative '
 
 		self.annotations = {}
-		self.mutated_loci = []
+		self.mutated_loci = set()
 	
 	def replicate ( self , name = '' ):
 		"""
@@ -40,7 +40,9 @@ class Genome(object):
 				the name of the new genome
 		"""
 		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
-		replicated_genome.mutated_loci.extend( self.mutated_loci )
+		# replicated_genome.mutated_loci.extend( self.mutated_loci )
+		replicated_genome.mutated_loci = replicated_genome.mutated_loci.union( self.mutated_loci )
+
 		replicated_genome.annotations = dict( self.annotations )
 
 		return replicated_genome
@@ -56,7 +58,7 @@ class Genome(object):
 
 
 		# loci = map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) )
-		loci = map( Mutation ,  np.random.randint( 10 ** self.genome_order , size = number_of_mutations ) )
+		loci = set( map( Mutation ,  np.random.randint( 10 ** self.genome_order , size = number_of_mutations ) ) )
 		# print loci
 		# store the loci in mutated_loci if they aren't already there to represent
 		
@@ -74,9 +76,9 @@ class Genome(object):
 		
 
 		## The probability of two loci being the same is extremely small 1e-10
-		self.mutated_loci.extend( loci )
+		# self.mutated_loci.extend( loci )
 
-		# self.mutated_loci = self.mutated_loci.union( loci )
+		self.mutated_loci = self.mutated_loci.union( loci )
 
 		# return mutated loci
 		return loci
@@ -88,12 +90,12 @@ class Genome(object):
 			@return: list of ints
 				location of the loci of the mutation (bits that are 1)
 		"""
-		if form == 'set':
-			print 'SET is no longer supported as a method of export'
 		# if form == 'set':
-		# 	return self.mutated_loci
+		# 	print 'SET is no longer supported as a method of export'
+		if form == 'set':
+			return self.mutated_loci
 
-		return self.mutated_loci  
+		return list( self.mutated_loci )
 
 	def annotate ( self , locus , name ):
 		self.annotations[name] = locus
@@ -132,7 +134,7 @@ class Genome(object):
 	@staticmethod
 	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name= '' ):
 		to_return = Genome( name=name , mutation_rate = mutation_rate )
-		to_return.mutated_loci = map( Mutation , sorted( list( mutated_loci ) ) ) 
+		to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
 		return to_return
 
 
