@@ -55,7 +55,8 @@ class Genome(object):
 		# generate random numbers representing loci
 
 
-		loci = map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) )
+		# loci = map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) )
+		loci = map( Mutation ,  np.random.randint( 10 ** self.genome_order , size = number_of_mutations ) )
 		# print loci
 		# store the loci in mutated_loci if they aren't already there to represent
 		
@@ -151,7 +152,7 @@ class Mutation(object):
 					
 		"""
 		assert locus >= 0 , 'locus must be greater than or equal to 0'
-		self.locus = float( locus )
+		self.locus = int( locus )
 
 		initial_carrier = kwargs.get( 'carrier' , None )
 		self.carriers = [ initial_carrier ] if initial_carrier else []
@@ -169,7 +170,7 @@ class Mutation(object):
 
 	def __repr__ ( self ):
 		"""
-			mutation objects are represented as #LOCI_AS_FLOAT
+			mutation objects are represented as #LOCI
 		"""
 		return '#'+str( self.locus )
 
@@ -178,7 +179,7 @@ class Mutation(object):
 
 	def __str__ ( self ):
 		"""
-			when converted to a string, mutation objects are just represented by their floats
+			when converted to a string, mutation objects are just represented by their loci
 		"""
 		return str( self.locus )
 
