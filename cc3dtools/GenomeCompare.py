@@ -206,9 +206,14 @@ class GenomeCompare:
 		return self.genomes[ name ]
 
 	@staticmethod
-	def from_gen_file ( file_name ):
+	def from_gen_file ( file_name , old = False ):
 		"""
 			imports a (unaligned) gen_file and returns a GenomeCompare object
+			@params
+				file_name: the name of the file containing the genomes
+				old / boolean / False
+					if this file was created before June 23rd 2015, it is likely to be in the float format.
+					use True in that case only.
 		"""
 
 		import csv
@@ -216,7 +221,10 @@ class GenomeCompare:
 		with open( file_name , 'r' ) as f:
 			reader = csv.reader( f ) 
 			for row in reader:
-				genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( int , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
+				if old:
+					genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( float , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
+				else:
+					genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( int , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
 
 		return GenomeCompare( genomes = genomes )
 
