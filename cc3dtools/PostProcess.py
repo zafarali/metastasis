@@ -2,19 +2,13 @@
 ## June 2015
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from itertools import chain, combinations, ifilter
+from collections import Counter
 import numpy as np
 import csv
 import math
 import time
 import pickle
 
-def powerset(iterable, chain = chain, combinations = combinations):
-	# explicit arguments for optimization
-    # powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
-    # from https://docs.python.org/2/library/itertools.html#itertools.combinations
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 
 def discrete_cmap(N, base_cmap='prism'):
@@ -450,60 +444,18 @@ class PostProcess( object ):
 					for best results and to actually get 'cluster' data you will select cellids that are close together 
 					spatially.
 		"""
-		# assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
+		
+		counter = Counter()
 
-		start_time = time.time()
-		results = {}
+		for cellid in cellids:
+			# get the loci 
+			mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
 
-		# produce all possible combinations of the cellids and filter out those that are
-		# too small i.e < 2
+			# counts the number of times a given mutation appears in the cluster
+			counter.update( mutated_loci )
 
-		combo_time = time.time()
-		combos = list( ifilter( lambda x: len(x) > 1 , powerset( cellids ) ) )
-		combo_time = time.time() - combo_time
-		print 'Completed Combinations Calculation'
-		# pre-process the other genome in memory so we do not have to retrieve them and then call get_mutated_loci each time.
-
-		othergenome_time = time.time()
-		other_genomes = { cellid: self.gc.get_by_name(cellid).get_mutated_loci(form='set') for cellid in combos[ -1 ] }
-		othergenome_time = time.time() - othergenome_time
-		print 'Completed Genome Retrieval'
-
-		# print other_genomes
-
-		forlooptime = time.time()
-		loop_times = []
-		for combo in combos:
-			start_loop = time.time()
-
-			g1 = self.gc.get_by_name( combo[0] ).get_mutated_loci( form = 'set' )
-			# other_genomes = map( lambda g: g.get_mutated_loci( form = 'set')  , map( self.gc.get_by_name , combo[1:] ) )
-
-			# the number of cells we are comparing
-			num_cells = len( combo )
-
-			# number of shared mutations amongst these cells
-			num_shared_mutations = len( g1.intersection( *[ other_genomes[i] for i in combo[1: ] ] ) )
-			# print 'cell ',combo[0],'with ', combo[1:]
-			# print 'shared mutations=',num_shared_mutations
-			results[ num_shared_mutations ] = max( num_cells , results.get( num_shared_mutations , 0 ) )
-
-			loop_times.append( time.time() - start_loop )
-		#endfor
-
-		forlooptime = time.time() - forlooptime 
-		print 'Cluster compared: ' + str( cellids )
-		print 'Time to compute combos: ' + str( combo_time )
-		print 'Time to retrieve genomes: ' + str( othergenome_time )
-		print 'Time to do all intersections: ' + str( forlooptime )
-		print 'Total loops: ' + str( len(loop_times) )
-		print 'Average time per loop: ' + str( sum(loop_times) / float( len( loop_times ) ) ) 
-		print 'Total time taken: ' + str( time.time() - start_time )
-
-		self.frequecy_results = results
-		return results
-
-
+		# counts the number of a count appears in the cluster
+		return Counter( [ v for _, v in counter.most_common() ] )
 
 
 
