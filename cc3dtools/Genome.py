@@ -126,7 +126,7 @@ class Genome(object):
 		if isinstance( location , Mutation ):
 			return location in self.mutated_loci
 
-		# a location is given in terms of a float, create a mutation object and check if it exists
+		# a location is given in terms of a int, create a mutation object and check if it exists
 		return Mutation(location) in self.mutated_loci
 
 	@staticmethod
@@ -145,7 +145,7 @@ class Mutation(object):
 		"""
 			@params:
 				locus / *
-					identification for the mutation, usually a float
+					identification for the mutation, usually a int
 				carrier / * [optional]
 					the initial carrier of this mutation
 					( reccomend that you store `Genome` objects )
@@ -189,7 +189,12 @@ class Mutation(object):
 		return str( self.locus )
 
 	def to_float ( self ):
+		num_digits = len( str( self.locus ) )
+		return self.locus / float( num_digits )
+
+	def to_int ( self ):
 		return self.locus
+
 
 	def __cmp__ ( self , other ):
 		# print self.locus, other.locus

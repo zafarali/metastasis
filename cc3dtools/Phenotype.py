@@ -1,7 +1,7 @@
 ## JUNE 2015
 
 from Genome import Genome, Mutation
-from collections import Counter
+# from collections import Counter
 
 class PhenotypeEvaluator( object ) :
 
@@ -61,7 +61,7 @@ class Phenotype( object ):
 				where r_high > r_low, determine the region within which the loci 
 				will be matched against to return 'phenotype-name'
 		"""
-		self.counts = Counter()
+		self.counts = {}
 		for k , v in phenotypes.items():
 			assert type( k ) is str , 'phenotype keys must be strings'
 			
@@ -75,15 +75,15 @@ class Phenotype( object ):
 	def evaluate ( self, mutation ) :
 		"""
 			evaluates the phenotype of a given Mutation object or
-			mutation loci (float)
+			mutation loci (int)
 
-			mutation / Mutation or float [mandator]
+			mutation / Mutation or int [mandatory]
 			mutation to evaluate
 		"""
 		if isinstance( mutation , Mutation ):
-			mutation = mutation.locus
+			mutation = mutation.to_int()
 
-		assert type( mutation ) is float , 'mutation must work out to a float or have an internal representaiton of float'
+		assert type( mutation ) is int , 'mutation must work out to a int or have an internal representaiton of int'
 
 
 		for phenotype, region in self.phenotypes.items():
