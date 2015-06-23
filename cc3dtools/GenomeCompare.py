@@ -206,9 +206,14 @@ class GenomeCompare:
 		return self.genomes[ name ]
 
 	@staticmethod
-	def from_gen_file ( file_name ):
+	def from_gen_file ( file_name , old = False ):
 		"""
 			imports a (unaligned) gen_file and returns a GenomeCompare object
+			@params
+				file_name: the name of the file containing the genomes
+				old / boolean / False
+					if this file was created before June 23rd 2015, it is likely to be in the float format.
+					use True in that case only.
 		"""
 
 		import csv
@@ -216,7 +221,10 @@ class GenomeCompare:
 		with open( file_name , 'r' ) as f:
 			reader = csv.reader( f ) 
 			for row in reader:
-				genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( float , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
+				if old:
+					genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( float , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
+				else:
+					genomes[ int( row[0] ) ] = Genome.from_mutated_loci( map( int , row[2:] ) , mutation_rate = int( row[1] ) , name = int( row[0] ) ) 
 
 		return GenomeCompare( genomes = genomes )
 
@@ -237,7 +245,7 @@ class GenomeCompare:
 					mutations_in_file = row[3:]
 					# create a mapper of mutation objects
 					for key, mutation in enumerate( mutations_in_file ):
-						mapper.append( ( key , Mutation( float( mutation ) ) ) )
+						mapper.append( ( key , Mutation( int( mutation ) ) ) )
 					mapper = dict(mapper)
 					rownum += 1
 
@@ -245,14 +253,14 @@ class GenomeCompare:
 					genome_name = row[1]
 					mutation_rate = row[2]
 					genome_mutations_rep = row[3:]
-					genome_mutations_rep = map( int , map( float , genome_mutations_rep ) )
+					genome_mutations_rep = map( int , map( int , genome_mutations_rep ) )
 					genome_mutations = []
 					for key , mutation_state in enumerate( genome_mutations_rep ):
 						# print mutation_state
 						if mutation_state == 1:
 							genome_mutations.append( mapper[ key ] )
 
-					genome_to_create = Genome( mutation_rate = float( mutation_rate ) , name = str( genome_name ) )
+					genome_to_create = Genome( mutation_rate = int( mutation_rate ) , name = str( genome_name ) )
 					genome_to_create.mutated_loci = genome_mutations
 					genomes.append( genome_to_create )
 
@@ -264,14 +272,16 @@ class GenomeCompare:
 
 
 class GenomeCompare2(object):
-	def __init__ ( self , file_name ):
+	def __init__ ( self , file_name , supress = False ):
 		"""
 			Used to handle files that are aligned genomes. Returns a GenomeCompare2 object
 			@params:
 				file_name / string
 					the path to the file needed to be loaded
 		"""
-
+		if not supress:
+			raise DeprecationWarning('cc3dtools.GenomeCompare2 is no longer being maintained.')
+			
 		import csv
 		with open ( file_name , 'r' ) as f:
 			reader = csv.reader( f )
