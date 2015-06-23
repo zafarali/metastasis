@@ -1,7 +1,7 @@
 ## JUNE 2015
 
 from Genome import Genome, Mutation
-# from collections import Counter
+from collections import Counter
 
 class PhenotypeEvaluator( object ) :
 
@@ -21,6 +21,7 @@ class PhenotypeEvaluator( object ) :
 		for k , v in phenotypes.items():
 			assert type( k ) is str , 'phenotype keys must be strings'
 			assert v[1] > v[0] , 'upper bound of ' + k + ' must be greater than the lower bound'
+			assert type( v[1] ) is int , type( v[0] ) is int, ' (!) recent change means bounds need to be in ints now: https://github.com/zafarali/metastasis/issues/17'
 
 		self.phenotypes = phenotypes
 		
