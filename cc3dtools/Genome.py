@@ -190,7 +190,7 @@ class Mutation(object):
 
 	def to_float ( self ):
 		num_digits = len( str( self.locus ) )
-		return self.locus / float( num_digits )
+		return self.locus / 10**float( num_digits )
 
 	def to_int ( self ):
 		return self.locus
