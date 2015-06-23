@@ -152,6 +152,11 @@ class Mutation(object):
 					
 		"""
 		assert locus >= 0 , 'locus must be greater than or equal to 0'
+
+		# for backwards compatibility
+		if type( locus ) is float:
+			locus = locus * ( 10 ** 15 )
+
 		self.locus = int( locus )
 
 		initial_carrier = kwargs.get( 'carrier' , None )
