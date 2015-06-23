@@ -465,14 +465,17 @@ class PostProcess( object ):
 		# pre-process the other genome in memory so we do not have to retrieve them and then call get_mutated_loci each time.
 
 		othergenome_time = time.time()
-		other_genomes = { cellid: ( lambda cellid: self.gc.get_by_name(cellid).get_mutated_loci(form='set') )(cellid) for cellid in combos[ -1 ] }
+		other_genomes = { cellid: self.gc.get_by_name(cellid).get_mutated_loci(form='set') for cellid in combos[ -1 ] }
 		othergenome_time = time.time() - othergenome_time
 		print 'Completed Genome Retrieval'
 
 		# print other_genomes
 
 		forlooptime = time.time()
+		loop_times = []
 		for combo in combos:
+			start_loop = time.time()
+
 			g1 = self.gc.get_by_name( combo[0] ).get_mutated_loci( form = 'set' )
 			# other_genomes = map( lambda g: g.get_mutated_loci( form = 'set')  , map( self.gc.get_by_name , combo[1:] ) )
 
@@ -485,11 +488,16 @@ class PostProcess( object ):
 			# print 'shared mutations=',num_shared_mutations
 			results[ num_shared_mutations ] = max( num_cells , results.get( num_shared_mutations , 0 ) )
 
-		forlooptime = time.time() - forlooptime 
+			loop_times.append( time.time() - start_loop )
+		#endfor
 
+		forlooptime = time.time() - forlooptime 
+		print 'Cluster compared: ' + str( cellids )
 		print 'Time to compute combos: ' + str( combo_time )
 		print 'Time to retrieve genomes: ' + str( othergenome_time )
-		print 'Time to do all intersections' + str( forlooptime )
+		print 'Time to do all intersections: ' + str( forlooptime )
+		print 'Total loops: ' + str( len(loop_times) )
+		print 'Average time per loop: ' + str( sum(loop_times) / float( len( loop_times ) ) ) 
 		print 'Total time taken: ' + str( time.time() - start_time )
 
 		self.frequecy_results = results
