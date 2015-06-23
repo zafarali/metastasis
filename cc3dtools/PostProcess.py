@@ -2,13 +2,21 @@
 ## June 2015
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from itertools import chain, combinations, ifilter
 import numpy as np
 import csv
 import math
 import time
 import pickle
 
- 
+def powerset(iterable, chain = chain, combinations = combinations):
+	# explicit arguments for optimization
+    # powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+    # from https://docs.python.org/2/library/itertools.html#itertools.combinations
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
+
 def discrete_cmap(N, base_cmap='prism'):
     """ generate a shuffled discrete color map of size N based on @param base_cmap"""
  	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
@@ -134,7 +142,7 @@ class SpacePlot ( object ):
 		self.end_file = end_file
 
 
-	def plot_all( self ):
+	def plot_all( self , hide_numbers = True ):
 		"""
 			plots all genomes in space according to type_colors and projection 
 		"""
@@ -145,7 +153,8 @@ class SpacePlot ( object ):
 			end_file = self.end_file , \
 			type_colors = self.type_colors , \
 			format = self.format , \
-			projection = self.projection )
+			projection = self.projection , \
+			hide_numbers = hide_numbers )
 		pass
 
 
@@ -433,14 +442,58 @@ class PostProcess( object ):
 
 	def frequency_analyze( self , cellids ):
 		"""
-			Returns a frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
+			Returns a tuple with the frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
+			(!) warning, this is a computationally heavy function
 			@params:
 				cellids / list of int / [mandatory]
 					the list of cell ids that you want to sample from the larger space
 					for best results and to actually get 'cluster' data you will select cellids that are close together 
 					spatially.
 		"""
-		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
+		# assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
+
+		start_time = time.time()
+		results = {}
+
+		# produce all possible combinations of the cellids and filter out those that are
+		# too small i.e < 2
+
+		combo_time = time.time()
+		combos = list( ifilter( lambda x: len(x) > 1 , powerset( cellids ) ) )
+		combo_time = time.time() - combo_time
+		print 'Completed Combinations Calculation'
+		# pre-process the other genome in memory so we do not have to retrieve them and then call get_mutated_loci each time.
+
+		othergenome_time = time.time()
+		other_genomes = { cellid: ( lambda cellid: self.gc.get_by_name(cellid).get_mutated_loci(form='set') )(cellid) for cellid in combos[ -1 ] }
+		othergenome_time = time.time() - othergenome_time
+		print 'Completed Genome Retrieval'
+
+		# print other_genomes
+
+		forlooptime = time.time()
+		for combo in combos:
+			g1 = self.gc.get_by_name( combo[0] ).get_mutated_loci( form = 'set' )
+			# other_genomes = map( lambda g: g.get_mutated_loci( form = 'set')  , map( self.gc.get_by_name , combo[1:] ) )
+
+			# the number of cells we are comparing
+			num_cells = len( combo )
+
+			# number of shared mutations amongst these cells
+			num_shared_mutations = len( g1.intersection( *[ other_genomes[i] for i in combo[1: ] ] ) )
+			# print 'cell ',combo[0],'with ', combo[1:]
+			# print 'shared mutations=',num_shared_mutations
+			results[ num_shared_mutations ] = max( num_cells , results.get( num_shared_mutations , 0 ) )
+
+		forlooptime = time.time() - forlooptime 
+
+		print 'Time to compute combos: ' + str( combo_time )
+		print 'Time to retrieve genomes: ' + str( othergenome_time )
+		print 'Time to do all intersections' + str( forlooptime )
+		print 'Total time taken: ' + str( time.time() - start_time )
+
+		self.frequecy_results = results
+		return results
 
 
 
