@@ -46,8 +46,8 @@ class GenomeCompare:
 		g1 = self.genomes[genome1]
 		g2 = self.genomes[genome2]
 		
-		g1_mutated = set( g1.get_mutated_loci() )
-		g2_mutated = set( g2.get_mutated_loci() )
+		g1_mutated = g1.get_mutated_loci(form='set')
+		g2_mutated = g2.get_mutated_loci(form='set') 
 
 		g1_only = g1_mutated.difference( g2_mutated )
 		g2_only = g2_mutated.difference( g1_mutated )
@@ -81,8 +81,8 @@ class GenomeCompare:
 		g2 = self.genomes[genome2]
 
 
-		g1_mutated = set( g1.get_mutated_loci() )
-		g2_mutated = set( g2.get_mutated_loci() )
+		g1_mutated = g1.get_mutated_loci(form='set')
+		g2_mutated = g2.get_mutated_loci(form='set')
 
 		
 		common_mutation_loci = g1_mutated.intersection( g2_mutated )
