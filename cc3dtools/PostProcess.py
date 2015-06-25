@@ -23,7 +23,7 @@ def discrete_cmap(N, base_cmap='prism'):
  
 
 
-def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True ):
+def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None):
 	"""
 		displays the positions of the cellids at the time of sampling within a simulation
 	"""
@@ -79,6 +79,10 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 		plt.ylabel('y-axis')
 		plt.title('Locations of Genomes at time of final sampling')
 
+	if plot_stack:
+		while len( plot_stack ):
+			func, args = plot_stack.pop()
+			func(*args)
 
 	plt.show()
 
@@ -136,7 +140,7 @@ class SpacePlot ( object ):
 		self.end_file = end_file
 
 
-	def plot_all( self , hide_numbers = True ):
+	def plot_all( self , hide_numbers = True , plot_stack = None ):
 		"""
 			plots all genomes in space according to type_colors and projection 
 		"""
@@ -148,7 +152,8 @@ class SpacePlot ( object ):
 			type_colors = self.type_colors , \
 			format = self.format , \
 			projection = self.projection , \
-			hide_numbers = hide_numbers )
+			hide_numbers = hide_numbers , \
+			plot_stack = plot_stack )
 		pass
 
 
@@ -499,7 +504,7 @@ class PostProcess( object ):
 		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
 
-	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False):
+	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False, return_plot_stack = False):
 		"""
 			searches in incremental step_size's from x,y,z and evaluates the frequency analysis
 			of cluster_sizes, we travel in a theta direction
@@ -525,9 +530,9 @@ class PostProcess( object ):
 		cos_theta = np.cos( theta )
 
 		results = []
-
+		plot_stack = []
 		# create the circle template
-		if show_line_plot:
+		if show_line_plot or return_plot_stack:
 			pnts = np.linspace( 0 , 2 * np.pi , 100 )
 			circle_x = cluster_size * np.sin( pnts )
 			circle_y = cluster_size * np.cos( pnts )
@@ -549,19 +554,30 @@ class PostProcess( object ):
 
 			if show_line_plot:
 				plt.plot( x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta)
+
+			if return_plot_stack:
+				plot_stack.append( ( plt.plot , [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] ) )
 		#endfor
 
 		if show_line_plot:
 			plt.plot( [x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] )
 
-		return results
+		if return_plot_stack:
+			plot_stack.append( ( plt.plot , [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ] ) )
+
+		if return_plot_stack:
+			return results, plot_stack
+		else:
+			return results
 	
 	@staticmethod
-	def plot_frequency_graph( frequency_results ):
+	def plot_frequency_graph( frequency_results, title = '' ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:
 				frequency_results / results from PostProcess.frequency_analyze()
+				title / str / ''
+					title to append to the plot
 		"""
 		if len(frequency_results):
 			plt.figure()
@@ -569,7 +585,11 @@ class PostProcess( object ):
 			plt.plot(x,y, 'o')
 			plt.xlabel('# of mutations shared')
 			plt.ylabel('# of cells sharing that # of mutations')
-			plt.title('( # of cells in cluster that share that many mutations ) VS ( # of shared mutations )')
+
+			if title != '':
+				title = '\n' + title
+
+			plt.title('( # of cells in cluster that share that many mutations ) VS ( # of shared mutations ) '+title)
 			plt.show()
 
 	def pickle_save( self ):
