@@ -457,6 +457,18 @@ class PostProcess( object ):
 		# counts the number of a count appears in the cluster
 		return Counter( [ v for _, v in counter.most_common() ] )
 
+	def tumor_COM( self ):
+		"""
+			calculates the COM of the tumor
+		"""
+
+		# get all cancer cells, extract the location data from it into a numpy array
+		r_vectors = map( lambda x: np.array([ x[1][0], x[1][1], x[1][2] ]) , filter( lambda x: x[1][3] == 2 or x[1][3] == 3, self.cell_locations.items() ) )
+
+		# since it is now in a numpy array, we can do elementwise-summation:
+		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
+
+		return { 'x' : R_CM[0] , 'y' : R_CM[1] , 'z' : R_CM[2] }
 
 
 	def pickle_save( self ):
