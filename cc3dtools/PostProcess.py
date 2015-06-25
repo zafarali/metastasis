@@ -470,6 +470,23 @@ class PostProcess( object ):
 
 		return { 'x' : R_CM[0] , 'y' : R_CM[1] , 'z' : R_CM[2] }
 
+	def nearest( self , x , y , z , radius = 5 ):
+		"""
+			returns the cellids and the x,y,z coordinates of the cells within radius
+			of x, y, z
+			@params:
+				x,y,z / int, int, int
+					coordinates around which we look for nearest cells
+				radius / int / 5
+					radius around which we must search
+			@return:
+				list of dicts of the results of the form:
+					{ 'id': id, 'x': x, 'y':y, 'z':z }
+		"""
+
+		# first map the cell_locations into a new dict
+		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2] } , self.cell_locations.items() )
+		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
 
 	def pickle_save( self ):
 		raise FutureWarning('This function is yet to be implemented')
