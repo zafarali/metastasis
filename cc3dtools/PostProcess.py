@@ -579,17 +579,17 @@ class PostProcess( object ):
 				title / str / ''
 					title to append to the plot
 		"""
-		if len(frequency_results):
+		if len( frequency_results ):
 			plt.figure()
-			y, x = zip(*frequency_results.items())
-			plt.plot(x,y, 'o')
-			plt.xlabel('# of mutations shared')
-			plt.ylabel('# of cells sharing that # of mutations')
+			x, y = zip( *frequency_results.items() )
+			plt.plot(x, y, 'o')
+			plt.ylabel('# of mutations shared')
+			plt.xlabel('# of cells')
 
 			if title != '':
 				title = '\n' + title
 
-			plt.title('( # of cells in cluster that share that many mutations ) VS ( # of shared mutations ) '+title)
+			plt.title('( # of shared mutations ) VS ( # of cells ) '+title)
 			plt.show()
 
 	def pickle_save( self ):
