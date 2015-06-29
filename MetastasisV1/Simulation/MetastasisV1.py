@@ -24,9 +24,6 @@ steppableRegistry=CompuCellSetup.getSteppableRegistry()
 # holder = {}
 
 
-from cc3dtools.Tracker import Tracker
-
-tracker = Tracker(fileName='../division_output8615.csv')
 
 
 from MetastasisV1Steppables import ConstraintInitializerSteppable
@@ -40,7 +37,7 @@ steppableRegistry.registerSteppable(GrowthSteppableInstance)
         
 
 from MetastasisV1Steppables import MitosisSteppable
-MitosisSteppableInstance=MitosisSteppable(sim, tracker_instance=tracker, _frequency=10)
+MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
 
@@ -48,13 +45,18 @@ from MetastasisV1Steppables import DeathSteppable
 DeathSteppableInstance=DeathSteppable(sim,_frequency=1)
 steppableRegistry.registerSteppable(DeathSteppableInstance)
 
-from MetastasisV1Steppables import ExtraMultiPlotSteppable
-extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
-steppableRegistry.registerSteppable(extraMultiPlotSteppable)
+# 
 
 from MetastasisV1Steppables import NeighborTrackerPrinterSteppable
 steppableRegistry.registerSteppable( NeighborTrackerPrinterSteppable(_simulator = sim, _frequency = 10 ) )
 
+
+"""
+	COMMENT OUT DUE TO CLI MODE
+"""
+# from MetastasisV1Steppables import ExtraMultiPlotSteppable
+# extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
+# steppableRegistry.registerSteppable(extraMultiPlotSteppable)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         

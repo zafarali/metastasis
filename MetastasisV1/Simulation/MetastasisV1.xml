@@ -3,10 +3,11 @@
    <Potts>
       
       <!-- Basic properties of CPM (GGH) algorithm -->
-      <Dimensions x="120" y="120" z="1"/>
-      <Steps>20000</Steps>
+      <Dimensions x="100" y="100" z="1"/>
+      <Steps>10000</Steps>
       <Temperature>5.0</Temperature>
       <NeighborOrder>2</NeighborOrder>
+      <RandomSeed>1232232</RandomSeed>
    </Potts>
    
    <Plugin Name="CellType">
@@ -46,17 +47,28 @@
       <NeighborOrder>2</NeighborOrder>
    </Plugin>
    
-   <Steppable Type="UniformInitializer">
+   <!-- <Steppable Type="UniformInitializer"> -->
       
       <!-- Initial layout of cells in the form of rectangular slab -->
-      <Region>
-         <BoxMin x="40" y="40" z="0"/>
-         <BoxMax x="60" y="60" z="1"/>
+      <!-- <Region>
+         <BoxMin x="90" y="90" z="0"/>
+         <BoxMax x="110" y="110" z="1"/>
          <Gap>0</Gap>
-         <Width>5</Width>
+         <Width>5</Width> -->
          <!-- Remove al cancer cells, we will only have one cancer cell that we have induced -->
-         <!-- using the python code. -->
+         <!-- using the python code.
          <Types>Normal</Types>
       </Region>
-   </Steppable>
+   </Steppable> -->
+
+   <Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="50" y="50" z="0"/>
+      <Radius>25</Radius>
+      <Gap>0</Gap>
+      <Width>5</Width>
+      <Types>Normal</Types>
+   </Region>
+</Steppable>
+
 </CompuCell3D>
