@@ -3,8 +3,8 @@
    <Potts>
       
       <!-- Basic properties of CPM (GGH) algorithm -->
-      <Dimensions x="1500" y="1500" z="1"/>
-      <Steps>2000</Steps>
+      <Dimensions x="500" y="500" z="1"/>
+      <Steps>10000</Steps>
       <Temperature>5.0</Temperature>
       <NeighborOrder>2</NeighborOrder>
       <RandomSeed>1232232</RandomSeed>
