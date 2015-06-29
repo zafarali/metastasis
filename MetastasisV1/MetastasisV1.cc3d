@@ -2,4 +2,5 @@
    <XMLScript Type="XMLScript">Simulation/MetastasisV1.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/MetastasisV1.py</PythonScript>
    <Resource Type="Python">Simulation/MetastasisV1Steppables.py</Resource>
+   <PIFFile>Simulation/twocell.piff</PIFFile>        
 </Simulation>

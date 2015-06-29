@@ -24,7 +24,15 @@ GLOBAL = {
     'cancer1_additional_dV':0,
     'dV':0.05
 }
-
+# GLOBAL = {
+#     'targetVolume':50,
+#     'divideThreshold':65,
+#     'cancer2_divideThreshold':65,
+#     'maxTargetVolume':75,
+#     'cancer2_additional_dV':0,
+#     'cancer1_additional_dV':0,
+#     'dV':0.05
+# }
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
@@ -65,6 +73,17 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                 self.start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )
             # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ) }
 
+
+        ## check if we successfully initiated a cancer cell.
+        count = 0
+        for cell in self.cellList:
+            if cell.type == self.CANCER1:
+                count += 1
+
+        if count != 1:
+            print 'FAILED TO INITIALZE A CANCER CELL.'
+            sys.exit(0)
+
         
 
     def finish(self):
@@ -89,12 +108,12 @@ class GrowthSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def step(self,mcs):
-        print '----->Global targetVolume',GLOBAL['targetVolume']
+        #                   print '----->Global targetVolume',GLOBAL['targetVolume']
         for cell in self.cellList:
             # don't grow if your volume is very very large
             # print cell.targetVolume - cell.volume
             # if cell.targetVolume - cell.volume < 1: 
-            #     print 'too large'
+                # print 'too large'
             # else:
             # if cell.type == self.CANCER1 and np.random.uniform() < 0.0001:
             #     cell.type = self.CANCER2
@@ -102,13 +121,13 @@ class GrowthSteppable(SteppableBasePy):
             
             # cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxTargetVolume'])
 
-            print '------> growth event:',cell.targetVolume, cell.volume
+            #                       print '------> growth event:',cell.targetVolume, cell.volume
             # if cell.type == self.CANCER1 or cell.type == self.CANCER2:
             if cell.type == self.CANCER2:
                 # cancerous cells grow slightly faster
                 cell.targetVolume += GLOBAL['cancer2_additional_dV']
 
-                print '------>cancer growth event:',cell.targetVolume, cell.volume
+                #               print '------>cancer growth event:',cell.targetVolume, cell.volume
 
             if cell.type == self.CANCER1:
                 # cancerous cells grow slightly faster
@@ -163,7 +182,7 @@ class MitosisSteppable(MitosisSteppableBase):
     def updateAttributes(self):
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
-        print '------>mitosis event:',childCell.volume, parentCell.volume
+        #                           print '------>mitosis event:',childCell.volume, parentCell.volume
         # raw_input()
         divide_times[parentCell.id] = divide_times['last_division']
         divide_times[childCell.id] = divide_times['last_division']
@@ -224,7 +243,7 @@ class NeighborTrackerPrinterSteppable(SteppableBasePy):
     def step(self,mcs):
         pass
         # for cell in self.cellList:            
-        #     print "*********NEIGHBORS OF CELL WITH ID ",cell.id," *****************"
+            # print "*********NEIGHBORS OF CELL WITH ID ",cell.id," *****************"
         #     count1 = 0
         #     count2 = 0
             # for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
@@ -234,11 +253,11 @@ class NeighborTrackerPrinterSteppable(SteppableBasePy):
             #         else:
             #             count1 += 1
 
-        #         #     print "neighbor.type",neighbor.type
-        #         #     print "neighbor.id",neighbor.id," commonSurfaceArea=",commonSurfaceArea
-        #         # else:
-        #         #     print "Medium commonSurfaceArea=",commonSurfaceArea
-        #     print 'non-cancer neighbours:',count1,', cancer neighbours:',count2
+        #             print "neighbor.type",neighbor.type
+        #             print "neighbor.id",neighbor.id," commonSurfaceArea=",commonSurfaceArea
+        # #         # else:
+        #             print "Medium commonSurfaceArea=",commonSurfaceArea
+            # print 'non-cancer neighbours:',count1,', cancer neighbours:',count2
         # time.sleep(0.1)
 
 
@@ -323,7 +342,7 @@ class DeathSteppable(SteppableBasePy):
 #         self.pWProp.addDataPoint("Normal",mcs,normal/float(numberOfCells))
         
 
-#         # print "meanVolume=",meanVolume,"meanSurface=",meanSurface
+        # print "meanVolume=",meanVolume,"meanSurface=",meanSurface
                 
 #         self.pWVol.showAllPlots()
 #         self.pWNum.showAllPlots()
