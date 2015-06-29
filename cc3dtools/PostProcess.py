@@ -2,13 +2,15 @@
 ## June 2015
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from collections import Counter
 import numpy as np
 import csv
 import math
 import time
 import pickle
 
- 
+
+
 def discrete_cmap(N, base_cmap='prism'):
     """ generate a shuffled discrete color map of size N based on @param base_cmap"""
  	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
@@ -21,7 +23,7 @@ def discrete_cmap(N, base_cmap='prism'):
  
 
 
-def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True ):
+def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None):
 	"""
 		displays the positions of the cellids at the time of sampling within a simulation
 	"""
@@ -77,6 +79,10 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 		plt.ylabel('y-axis')
 		plt.title('Locations of Genomes at time of final sampling')
 
+	if plot_stack:
+		while len( plot_stack ):
+			func, args = plot_stack.pop()
+			func(*args)
 
 	plt.show()
 
@@ -134,7 +140,7 @@ class SpacePlot ( object ):
 		self.end_file = end_file
 
 
-	def plot_all( self ):
+	def plot_all( self , hide_numbers = True , plot_stack = None ):
 		"""
 			plots all genomes in space according to type_colors and projection 
 		"""
@@ -145,7 +151,9 @@ class SpacePlot ( object ):
 			end_file = self.end_file , \
 			type_colors = self.type_colors , \
 			format = self.format , \
-			projection = self.projection )
+			projection = self.projection , \
+			hide_numbers = hide_numbers , \
+			plot_stack = plot_stack )
 		pass
 
 
@@ -433,18 +441,156 @@ class PostProcess( object ):
 
 	def frequency_analyze( self , cellids ):
 		"""
-			Returns a frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
+			Returns a tuple with the frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
+			(!) warning, this is a computationally heavy function
 			@params:
 				cellids / list of int / [mandatory]
 					the list of cell ids that you want to sample from the larger space
 					for best results and to actually get 'cluster' data you will select cellids that are close together 
 					spatially.
 		"""
-		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
+		
+		counter = Counter()
+
+		for cellid in cellids:
+			# get the loci 
+			mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
+
+			# counts the number of times a given mutation appears in the cluster
+			counter.update( mutated_loci )
+
+		# counts the number of a count appears in the cluster
+		return Counter( [ v for _, v in counter.most_common() ] )
+
+	def tumor_COM( self ):
+		"""
+			calculates the COM of the tumor
+			@returns:
+				tuple containing the COM
+				( x , y , z )
+		"""
+
+		# get all cancer cells, extract the location data from it into a numpy array
+		r_vectors = map( lambda x: np.array([ x[1][0], x[1][1], x[1][2] ]) , filter( lambda x: x[1][3] == 2 or x[1][3] == 3, self.cell_locations.items() ) )
+
+		# since it is now in a numpy array, we can do elementwise-summation:
+		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
+
+		return ( R_CM[0] , R_CM[1] , R_CM[2] )
+
+	def nearest( self , x , y , z , radius = 5 , type_restrictions = None ):
+		"""
+			returns the cellids and the x,y,z coordinates of the cells within radius
+			of x, y, z
+			@params:
+				x,y,z / float,float,float
+					coordinates around which we look for nearest cells
+				radius / int / 5
+					radius around which we must search
+				type_restrictions / list / None
+					the types to which we restrict our sampling
+			@return:
+				list of dicts of the results of the form:
+					[ { 'id': id, 'x': x, 'y':y, 'z':z, 'type':type } , ... ]
+		"""
+
+		filtered_list = self.cell_locations.items()
+
+		if type_restrictions:
+			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
+			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+
+		# first map the cell_locations into a new dict
+		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
+
+	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False, return_plot_stack = False):
+		"""
+			searches in incremental step_size's from x,y,z and evaluates the frequency analysis
+			of cluster_sizes, we travel in a theta direction
+			@params:
+				x,y,z / float,float,float 
+					location from which we want to start our search
+				theta / int
+					angle (in radians) at which we want to search
+				step_size / int
+					the step sizes we want to increment our search by
+				steps / int 
+					the total number of steps to take
+				cluster_size / int
+					the radius of the cluster we wish to sample
+				type_restrictions / list / None
+					restrict the sampling to cells of certain types
+				show_line_plot / bool / False
+					draw the sampling on a graph
+
+		"""
+
+		sin_theta = np.sin( theta )
+		cos_theta = np.cos( theta )
+
+		results = []
+		plot_stack = []
+		# create the circle template
+		if show_line_plot or return_plot_stack:
+			pnts = np.linspace( 0 , 2 * np.pi , 100 )
+			circle_x = cluster_size * np.sin( pnts )
+			circle_y = cluster_size * np.cos( pnts )
 
 
+		for step in range( steps ):
 
+			# calculate the position of the sampling
+			distance_travelled = step * step_size
+			position_x = x + distance_travelled * cos_theta
+			position_y = y + distance_travelled * sin_theta
 
+			# do the sampling
+			sample = self.nearest( position_x , position_y , z , radius = cluster_size , type_restrictions = type_restrictions )
+			sample_cellids = [ cell['id'] for cell in sample ]
+
+			#analyze that sample
+			results.append( ( distance_travelled , self.frequency_analyze( sample_cellids ) ) )
+
+			if show_line_plot:
+				plt.plot( x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta)
+
+			if return_plot_stack:
+				plot_stack.append( ( plt.plot , [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] ) )
+		#endfor
+
+		if show_line_plot:
+			plt.plot( [x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] )
+
+		if return_plot_stack:
+			plot_stack.append( ( plt.plot , [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ] ) )
+
+		if return_plot_stack:
+			return results, plot_stack
+		else:
+			return results
+	
+	@staticmethod
+	def plot_frequency_graph( frequency_results, title = '' ):
+		"""
+			Plots the results of PostProcess.frequency_analyze()
+			@params:
+				frequency_results / results from PostProcess.frequency_analyze()
+				title / str / ''
+					title to append to the plot
+		"""
+		if len( frequency_results ):
+			plt.figure()
+			x, y = zip( *frequency_results.items() )
+			plt.plot(x, y, 'o')
+			plt.ylabel('# of mutations shared')
+			plt.xlabel('# of cells')
+
+			if title != '':
+				title = '\n' + title
+
+			plt.title('( # of shared mutations ) VS ( # of cells ) '+title)
+			plt.show()
 
 	def pickle_save( self ):
 		raise FutureWarning('This function is yet to be implemented')
