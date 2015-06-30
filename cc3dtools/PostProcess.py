@@ -520,6 +520,72 @@ class PostProcess( object ):
 		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
 
+	def cluster_return( self , x , y , z , theta, step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
+		"""
+			searches in incremental step_size's from x,y,z and returns the nearest neighbours 
+			of cluster_size's, we travel in a theta direction
+			@params:
+				x,y,z / float,float,float 
+					location from which we want to start our search
+				theta / int
+					angle (in radians) at which we want to search
+				step_size / int
+					the step sizes we want to increment our search by
+				steps / int 
+					the total number of steps to take
+				cluster_size / int
+					the radius of the cluster we wish to sample
+				type_restrictions / list / None
+					restrict the sampling to cells of certain types
+				show_line_plot / bool / False
+					draw the sampling on a graph
+
+		"""
+
+		sin_theta = np.sin( theta )
+		cos_theta = np.cos( theta )
+
+		results = []
+		plot_stack = []
+		# create the circle template
+		if show_line_plot or return_plot_stack:
+			pnts = np.linspace( 0 , 2 * np.pi , 100 )
+			circle_x = cluster_size * np.sin( pnts )
+			circle_y = cluster_size * np.cos( pnts )
+
+
+		for step in range( steps ):
+
+			# calculate the position of the sampling
+			distance_travelled = step * step_size
+			position_x = x + distance_travelled * cos_theta
+			position_y = y + distance_travelled * sin_theta
+
+			# do the sampling
+			sample = self.nearest( position_x , position_y , z , radius = cluster_size , type_restrictions = type_restrictions )
+			sample_cellids = [ cell['id'] for cell in sample ]
+
+			#analyze that sample
+			results.append( ( distance_travelled , sample_cellids ) )
+
+			if show_line_plot:
+				plt.plot( x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta)
+
+			if return_plot_stack:
+				plot_stack.append( [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] )
+		#endfor
+
+		if show_line_plot:
+			plt.plot( [x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] )
+
+		if return_plot_stack:
+			plot_stack.append( [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ]  )
+
+		if return_plot_stack:
+			return results, plot_stack
+		else:
+			return results
+
 	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False, return_plot_stack = False):
 		"""
 			searches in incremental step_size's from x,y,z and evaluates the frequency analysis
@@ -572,7 +638,7 @@ class PostProcess( object ):
 				plt.plot( x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta)
 
 			if return_plot_stack:
-				plot_stack.append( ( plt.plot , [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] ) )
+				plot_stack.append( [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] )
 		#endfor
 
 		if show_line_plot:
