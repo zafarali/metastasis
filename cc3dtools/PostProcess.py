@@ -450,7 +450,7 @@ class PostProcess( object ):
 
 		pass
 
-	def frequency_analyze( self , cellids ):
+	def frequency_analyze( self , cellids , return_loci = False ):
 		"""
 			Returns a tuple with the frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
 			@params:
@@ -470,6 +470,9 @@ class PostProcess( object ):
 
 			# counts the number of times a given mutation appears in the cluster
 			counter.update( mutated_loci )
+
+		if return_loci:
+			return counter
 
 		# counts the number of a count appears in the cluster, return the total number of cells in that cluster
 		return Counter( [ v for _, v in counter.most_common() ] ) , len( cellids )
@@ -599,7 +602,7 @@ class PostProcess( object ):
 
 		freqs = []
 		for cluster in clusters:
-			freqs.append( self.frequency_analyze( cluster )[0] ) #only store the first element which is the Counter object
+			freqs.append( self.frequency_analyze( cluster , return_loci = True )  )
 
 
 		joint = [ ( freqs[0].get( k , 0 ) , freqs[1].get( k , 0 ) ) for k in set( freqs[0].keys() + freqs[1].keys() ) ] 
@@ -609,7 +612,7 @@ class PostProcess( object ):
 		## first entry contains the most common element
 		## second entry of the first entry contains the count of that element
 		## those are the limits of our frequency diagram
-		I = np.zeros( [ freqs[0].most_common(1)[0][1] , freqs[1].most_common(1)[0][1] ] )
+		I = np.zeros( [ len( clusters[0] ), len( clusters[1] ) ] , dtype=np.int_ )
 
 		for k, v in joint_frequency.items():
 			# reduce indicies by one to correct for the edges
@@ -668,16 +671,16 @@ class PostProcess( object ):
 		# check if there are any results to show, otherwise just skip this
 		if len( frequency_results ):
 			# plt.imshow(  , interpolation = 'nearest' )
-			N = int( frequency_results.max() )
-			plt.imshow( frequency_results , interpolation='nearest' )
-			# cbar = plt.colorbar(orientation='vertical', ticks=range(N+1))
-			# cbar.ax.set_ylabel('Cell $\sigma$')
+			
+			plt.imshow( frequency_results , interpolation = 'nearest' )
+			cbar = plt.colorbar( orientation = 'vertical' )
+			cbar.ax.set_ylabel('# of mutations')
 
 			if title != '':
 				title = '\n' + title
 
-			plt.xlabel('cluster 1 (N=' + str( N_1 ) + ')')
-			plt.ylabel('cluster 2 (N=' + str( N_2 ) +')')
+			plt.xlabel('cells in cluster 1 (N=' + str( N_1 ) + ')')
+			plt.ylabel('cells in cluster 2 (N=' + str( N_2 ) +')')
 			plt.title('2D Frequency Distribution of Inter-Cluster Mutations '+title)
 			plt.show()
 
