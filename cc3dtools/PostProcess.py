@@ -11,7 +11,7 @@ import pickle
 
 
 
-def discrete_cmap(N, base_cmap='prism'):
+def random_color_map(N, base_cmap='prism'):
     """ generate a shuffled discrete color map of size N based on @param base_cmap"""
  	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
     base = plt.cm.get_cmap(base_cmap) # get the base
@@ -20,7 +20,18 @@ def discrete_cmap(N, base_cmap='prism'):
     color_list = base(color_raw) # turn them into colors
     cmap_name = base.name + str(N) # give it a random name
     return base.from_list(cmap_name, color_list, N) #return it!
- 
+
+def discrete_cmap(N, base_cmap='prism'):
+	""" generate a discrete color map of size N based on @param base_cmap"""
+	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
+	if N == 1:
+		return plt.cm.get_cmap('jet')
+	base = plt.cm.get_cmap(base_cmap)
+	color_list = base(np.linspace(0,1,N+1))
+	# color_list[0] = (.5,.5,.5,1.0)
+	# print color_list
+	cmap_name = base.name+str(N)
+	return base.from_list(cmap_name, color_list, N+1)
 
 
 def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None):
@@ -81,8 +92,8 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 	if plot_stack:
 		while len( plot_stack ):
-			func, args = plot_stack.pop()
-			func(*args)
+			args = plot_stack.pop()
+			plt.plot(*args)
 
 	plt.show()
 
@@ -189,7 +200,7 @@ class SpacePlot ( object ):
 		if projection == '3d':
 			ax = fig.gca( projection = '3d' )
 
-		colormap = discrete_cmap( 900 )
+		colormap = random_color_map( 900 )
 		num_args = float ( len( args ) )
 
 		plotted_ids = []
@@ -442,12 +453,13 @@ class PostProcess( object ):
 	def frequency_analyze( self , cellids ):
 		"""
 			Returns a tuple with the frequency spectra of the ( # of shared mutations ) VS ( # of cells in cluster that share it )
-			(!) warning, this is a computationally heavy function
 			@params:
 				cellids / list of int / [mandatory]
 					the list of cell ids that you want to sample from the larger space
 					for best results and to actually get 'cluster' data you will select cellids that are close together 
 					spatially.
+			@returns:
+				Frequency / Counter and the number of cells / int
 		"""
 		
 		counter = Counter()
@@ -459,8 +471,8 @@ class PostProcess( object ):
 			# counts the number of times a given mutation appears in the cluster
 			counter.update( mutated_loci )
 
-		# counts the number of a count appears in the cluster
-		return Counter( [ v for _, v in counter.most_common() ] )
+		# counts the number of a count appears in the cluster, return the total number of cells in that cluster
+		return Counter( [ v for _, v in counter.most_common() ] ) , len( cellids )
 
 	def tumor_COM( self ):
 		"""
@@ -563,34 +575,114 @@ class PostProcess( object ):
 			plt.plot( [x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] )
 
 		if return_plot_stack:
-			plot_stack.append( ( plt.plot , [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ] ) )
+			plot_stack.append( [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ]  )
 
 		if return_plot_stack:
 			return results, plot_stack
 		else:
 			return results
 	
+	def frequency_analyze_ND ( self , clusters, **kwargs):
+		"""
+			gets the 2D frequency distribution between clusters (for now it works between two clusters only)
+			@params:
+				clusters / list of lists / [mandatory]
+					a list of lists which contain the cellids to be analyzed. Examples:
+						[ [ 1, 2, 3, 4, 5, 6 ] , [ 7, 8, 9, 10, 11, 12 ] ]
+			@returns:
+				2D np.array that is indexed by x,y = the frequency of mutations in respective clusters
+				and entries representing the frequency of that count
+		"""
+
+		N = len( clusters )
+		assert N == 2, 'frequency_analyze_ND does not support len(clusters) > 2 yet'
+
+		freqs = []
+		for cluster in clusters:
+			freqs.append( self.frequency_analyze( cluster )[0] ) #only store the first element which is the Counter object
+
+
+		joint = [ ( freqs[0].get( k , 0 ) , freqs[1].get( k , 0 ) ) for k in set( freqs[0].keys() + freqs[1].keys() ) ] 
+		self.joint = joint
+		joint_frequency = Counter(joint)
+		self.joint_frequency = joint_frequency # @TODO: remove this
+		## first entry contains the most common element
+		## second entry of the first entry contains the count of that element
+		## those are the limits of our frequency diagram
+		I = np.zeros( [ freqs[0].most_common(1)[0][1] , freqs[1].most_common(1)[0][1] ] )
+
+		for k, v in joint_frequency.items():
+			# reduce indicies by one to correct for the edges
+
+			I[k[0] - 1][k[1] - 1] = v # frequency at that frequency
+
+		return I, len( clusters[0] ) , len( clusters[1] )
+
 	@staticmethod
-	def plot_frequency_graph( frequency_results, title = '' ):
+	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:
 				frequency_results / results from PostProcess.frequency_analyze()
 				title / str / ''
 					title to append to the plot
+				plot_stack / list 
+					must contain arguments  to be executed for plotting by plt.plot
 		"""
+
+		frequency_results , number_of_cells = frequency_results
+
+		# check if there are any results to show, otherwise just skip this.
+
 		if len( frequency_results ):
 			plt.figure()
 			x, y = zip( *frequency_results.items() )
 			plt.plot(x, y, 'o')
 			plt.ylabel('# of mutations shared')
-			plt.xlabel('# of cells')
+			plt.xlabel('# of cells (total='+str(number_of_cells)+')')
 
 			if title != '':
 				title = '\n' + title
 
 			plt.title('( # of shared mutations ) VS ( # of cells ) '+title)
 			plt.show()
+
+		if plot_stack:
+			while len( plot_stack ):
+				args = plot_stack.pop()
+				plt.plot(*args)
+
+
+	@staticmethod
+	def plot_2D_frequency( frequency_results , title = '' ):
+		"""
+			Plots the results of PostProcess.frequency_analyze_ND()
+			@params:
+				frequency_results / results from PostProcess.frequency_analyze_ND()
+				title / str / ''
+					title to append to the plot
+		"""		
+
+		frequency_results , N_1, N_2 = frequency_results
+
+		# check if there are any results to show, otherwise just skip this
+		if len( frequency_results ):
+			# plt.imshow(  , interpolation = 'nearest' )
+			N = int( frequency_results.max() )
+			plt.imshow( frequency_results , interpolation='nearest' )
+			# cbar = plt.colorbar(orientation='vertical', ticks=range(N+1))
+			# cbar.ax.set_ylabel('Cell $\sigma$')
+
+			if title != '':
+				title = '\n' + title
+
+			plt.xlabel('cluster 1 (N=' + str( N_1 ) + ')')
+			plt.ylabel('cluster 2 (N=' + str( N_2 ) +')')
+			plt.title('2D Frequency Distribution of Inter-Cluster Mutations '+title)
+			plt.show()
+
+
+
 
 	def pickle_save( self ):
 		raise FutureWarning('This function is yet to be implemented')
