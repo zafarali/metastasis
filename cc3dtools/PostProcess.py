@@ -1,6 +1,7 @@
 ## Author @zafarali
 ## June 2015
 import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 from collections import Counter
 import numpy as np
@@ -612,12 +613,12 @@ class PostProcess( object ):
 		## first entry contains the most common element
 		## second entry of the first entry contains the count of that element
 		## those are the limits of our frequency diagram
-		I = np.zeros( [ len( clusters[0] ), len( clusters[1] ) ] , dtype=np.int_ )
+		I = np.zeros( [ len( clusters[0] ) + 1 , len( clusters[1] ) + 1 ] , dtype=np.int_ )
 
 		for k, v in joint_frequency.items():
 			# reduce indicies by one to correct for the edges
 
-			I[k[0] - 1][k[1] - 1] = v # frequency at that frequency
+			I[k[0]][k[1]] = v # frequency at that frequency
 
 		return I, len( clusters[0] ) , len( clusters[1] )
 
@@ -657,7 +658,7 @@ class PostProcess( object ):
 
 
 	@staticmethod
-	def plot_2D_frequency( frequency_results , title = '' ):
+	def plot_2D_frequency( frequency_results , title = '' , xlim = None , ylim = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze_ND()
 			@params:
@@ -672,7 +673,14 @@ class PostProcess( object ):
 		if len( frequency_results ):
 			# plt.imshow(  , interpolation = 'nearest' )
 			
-			plt.imshow( frequency_results , interpolation = 'nearest' )
+			plt.imshow( frequency_results , interpolation = 'nearest' , norm=LogNorm() )
+			
+			if xlim:
+				plt.xlim( xlim )
+
+			if ylim:
+				plt.ylim( ylim )
+
 			cbar = plt.colorbar( orientation = 'vertical' )
 			cbar.ax.set_ylabel('# of mutations')
 
