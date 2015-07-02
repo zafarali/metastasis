@@ -35,7 +35,7 @@ def discrete_cmap(N, base_cmap='prism'):
 	return base.from_list(cmap_name, color_list, N+1)
 
 
-def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None):
+def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None , save_fig = None):
 	"""
 		displays the positions of the cellids at the time of sampling within a simulation
 	"""
@@ -96,7 +96,10 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 			args = plot_stack.pop()
 			plt.plot(*args)
 
-	plt.show()
+	if save_fig:
+		plt.savefig( save_fig , format='png')
+	else:
+		plt.show()
 
 
 class SpacePlot ( object ):
@@ -152,7 +155,7 @@ class SpacePlot ( object ):
 		self.end_file = end_file
 
 
-	def plot_all( self , hide_numbers = True , plot_stack = None ):
+	def plot_all( self , hide_numbers = True , plot_stack = None , save_fig = None ):
 		"""
 			plots all genomes in space according to type_colors and projection 
 		"""
@@ -165,7 +168,8 @@ class SpacePlot ( object ):
 			format = self.format , \
 			projection = self.projection , \
 			hide_numbers = hide_numbers , \
-			plot_stack = plot_stack )
+			plot_stack = plot_stack , \
+			save_fig = save_fig )
 		pass
 
 
@@ -193,6 +197,7 @@ class SpacePlot ( object ):
 		"""
 
 		projection = kwargs.get('projection', self.projection)
+		save_fig = kwargs.get( 'save_fig', None )
 		type_colors = kwargs.get('type_colors', self.type_colors)
 		title = ' Locations of Genomes at time of final sampling lineage depth: ' + str( kwargs.get('depth', 'UNKNOWN') )
 		hide_numbers = kwargs.get( 'hide_numbers' , True )
@@ -287,7 +292,10 @@ class SpacePlot ( object ):
 
 
 
-		plt.show()
+		if save_fig:
+			plt.savefig( save_fig , format='png')
+		else:
+			plt.show()
 
 		pass
 
@@ -659,7 +667,7 @@ class PostProcess( object ):
 		return I, len( clusters[0] ) , len( clusters[1] )
 
 	@staticmethod
-	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None ):
+	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:
@@ -691,12 +699,16 @@ class PostProcess( object ):
 					args = plot_stack.pop()
 					plt.plot(*args)
 
-			plt.show()
+			if save_fig:
+				plt.savefig( save_fig , format='png')
+			else:
+				plt.show()
+
 
 
 
 	@staticmethod
-	def plot_2D_frequency( frequency_results , title = '' , xlim = None , ylim = None ):
+	def plot_2D_frequency( frequency_results , title = '' , xlim = None , ylim = None , save_fig = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze_ND()
 			@params:
@@ -728,7 +740,11 @@ class PostProcess( object ):
 			plt.xlabel('cells in cluster 1 (N=' + str( N_1 ) + ')')
 			plt.ylabel('cells in cluster 2 (N=' + str( N_2 ) +')')
 			plt.title('2D Frequency Distribution of Inter-Cluster Mutations '+title)
-			plt.show()
+			
+			if save_fig:
+				plt.savefig( save_fig , format='png')
+			else:
+				plt.show()
 
 
 
