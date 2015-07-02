@@ -94,7 +94,7 @@ class Lineage:
     def next_time( self ):
         return self.sub1.time
 
-    def draw ( self, width ):
+    def draw ( self, width , save_fig = False ):
         final_points = []
         plt.figure()
         self.plot( 0 , self.num_descendants() , width , final_points )
@@ -103,7 +103,12 @@ class Lineage:
         plt.yticks([])
         plt.ylabel( 'Division' )
         plt.title('Tree')
-        plt.show()
+
+        if save_fig:
+            plt.savefig( save_fig , format='png')
+        else:
+            plt.show()        
+
         return final_points
 
     def plot( self , center , generation , width , final_points ):
@@ -373,7 +378,7 @@ class MultiLineage(object):
 
         self.lineages = lineages
 
-    def draw( self , width = 20 ):
+    def draw( self , width = 20 , save_fig = None ):
         """
             draws all lineages in the MultiLineage
             @params:
@@ -384,7 +389,7 @@ class MultiLineage(object):
         to_be_returned = []
 
         for lineage in self.lineages:
-            to_be_returned.extend( lineage['lineage'].draw( 20 ) ) # lineage.draw returns a list of points
+            to_be_returned.extend( lineage['lineage'].draw( 20 , save_fig = save_fig ) ) # lineage.draw returns a list of points
 
         return to_be_returned
 

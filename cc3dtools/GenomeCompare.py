@@ -166,7 +166,7 @@ class GenomeCompare:
 
 		pass
 
-	def draw ( self , ordering = None ):
+	def draw ( self , ordering = None , save_fig = None ):
 
 		if ordering is None:
 			ordering = []
@@ -195,7 +195,11 @@ class GenomeCompare:
 			for locus in mutated_loci: 
 				plt.plot(loc, locus.to_float() , 'or')
 
-		plt.show()
+		if save_fig:
+			plt.savefig( save_fig , format='png')
+		else:
+			plt.show()
+		
 		pass
 
 	def get_by_name ( self , name ):
