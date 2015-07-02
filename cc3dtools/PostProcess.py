@@ -215,6 +215,8 @@ class SpacePlot ( object ):
 		# it also accounts for the fact that some cells might have
 		# died and not made it into the final sampling
 		def individual_to_cell_data( individual ):
+			if type(individual) is int:
+				return self.cells[ individual ]
 			try:
 				return self.cells[ individual.id ]
 			except KeyError:
@@ -225,10 +227,19 @@ class SpacePlot ( object ):
 					'initial':-1, # -1 represents that the cell died.
 					'id': individual.id,
 				}
+			except AttributeError:
+				return {
+					'x':0,
+					'y':0,
+					'z':0,
+					'initial':-1,
+					'id':individual
+				}
 
 		# first plot the clusters
 		for cluster_id, cluster in enumerate( args ):
 			# we map the individuals id in the cluster to obtain all the data
+
 			cells_with_data = map( individual_to_cell_data , cluster )
 			
 			for data in cells_with_data:
