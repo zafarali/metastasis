@@ -685,12 +685,14 @@ class PostProcess( object ):
 				title = '\n' + title
 
 			plt.title('( # of shared mutations ) VS ( # of cells ) '+title)
+
+			if plot_stack:
+				while len( plot_stack ):
+					args = plot_stack.pop()
+					plt.plot(*args)
+
 			plt.show()
 
-		if plot_stack:
-			while len( plot_stack ):
-				args = plot_stack.pop()
-				plt.plot(*args)
 
 
 	@staticmethod
