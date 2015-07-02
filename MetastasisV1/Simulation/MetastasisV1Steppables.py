@@ -19,6 +19,7 @@ GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
     'cancer2_divideThreshold':60,
+    'cancer1_divideThreshold':60,
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0,
@@ -167,7 +168,9 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or cell.volume > GLOBAL['divideThreshold']:
+            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
+            ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
+            cell.volume > GLOBAL['divideThreshold'] :
             # if cell.volume > 100:
                 cells_to_divide.append(cell)
                 
@@ -210,22 +213,23 @@ class MitosisSteppable(MitosisSteppableBase):
         # else:
         #     childCell.type = parentCell.type
 
+        childCell.type = parentCell.type
 
-        # attempt to obtain the proliferating front
-        if parentCell.type != self.NORMAL:
-            for cell in [ childCell , parentCell ]:
-                normal_count = 0
-                for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
-                    if neighbor:
-                        if neighbor.type == self.NORMAL:
-                            normal_count += 1
-                        #endif
-                    #endif
-                cell.type = self.CANCER2 if normal_count > 0 else self.CANCER1
-            #endfor
-        else:
-            childCell.type = parentCell.type
-        #endelse
+        # # attempt to obtain the proliferating front
+        # if parentCell.type != self.NORMAL:
+        #     for cell in [ childCell , parentCell ]:
+        #         normal_count = 0
+        #         for neighbor , commonSurfaceArea in self.getCellNeighborDataList(cell):                
+        #             if neighbor:
+        #                 if neighbor.type == self.NORMAL:
+        #                     normal_count += 1
+        #                 #endif
+        #             #endif
+        #         cell.type = self.CANCER2 if normal_count > 0 else self.CANCER1
+        #     #endfor
+        # else:
+        #     childCell.type = parentCell.type
+        # #endelse
 
         if save_flag:
             self.mitosis_tracker.stash( [ divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id ] )
