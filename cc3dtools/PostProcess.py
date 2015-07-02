@@ -616,44 +616,6 @@ class PostProcess( object ):
 		# clusters contain ( dist, cellids ) tuples. we need to select cellids for mapping.
 		results = map( lambda cluster: ( cluster[0] , self.frequency_analyze( cluster[1] ) ) , clusters )
 
-		# sin_theta = np.sin( theta )
-		# cos_theta = np.cos( theta )
-
-		# results = []
-		# plot_stack = []
-		# # create the circle template
-		# if show_line_plot or return_plot_stack:
-		# 	pnts = np.linspace( 0 , 2 * np.pi , 100 )
-		# 	circle_x = cluster_size * np.sin( pnts )
-		# 	circle_y = cluster_size * np.cos( pnts )
-
-
-		# for step in range( steps ):
-
-		# 	# calculate the position of the sampling
-		# 	distance_travelled = step * step_size
-		# 	position_x = x + distance_travelled * cos_theta
-		# 	position_y = y + distance_travelled * sin_theta
-
-		# 	# do the sampling
-		# 	sample = self.nearest( position_x , position_y , z , radius = cluster_size , type_restrictions = type_restrictions )
-		# 	sample_cellids = [ cell['id'] for cell in sample ]
-
-		# 	#analyze that sample
-		# 	results.append( ( distance_travelled , self.frequency_analyze( sample_cellids ) ) )
-
-		# 	if show_line_plot:
-		# 		plt.plot( x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta)
-
-		# 	if return_plot_stack:
-		# 		plot_stack.append( [ x + circle_x + distance_travelled * cos_theta , y + circle_y + distance_travelled * sin_theta ] )
-		# #endfor
-
-		# if show_line_plot:
-		# 	plt.plot( [x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] )
-
-		# if return_plot_stack:
-		# 	plot_stack.append( [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ]  )
 
 		if return_plot_stack:
 			return results, plot_stack
