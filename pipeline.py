@@ -17,6 +17,14 @@ import os
 import csv
 import shutil
 
+event_sequence = 0
+
+def print2( string ):
+	global event_sequence
+	string = str(string)
+	print ' Out [' + str(event_sequence) + ']: ' + string
+	event_sequence += 1
+
 
 time_info = '_'.join(time.asctime().split(' '))
 try:
@@ -48,8 +56,8 @@ except IndexError:
 if not os.path.exists( FILES['out'] ):
     os.makedirs( FILES['out'] )
 
-print 'Importing specifications'
-
+print2('File paths saved, directory created.')
+print2('Importing Speficiations')
 
 # will hold all specifications
 SPECS = {}
@@ -70,16 +78,69 @@ def SPEC_lookup( function_name , argument_name , default = None ):
 
 shutil.copy2( FILES['specifications'] , FILES['out'] + '/specs.txt' )
 
-print 'SPECS LOADED:'
-print SPECS
-
-print 'File paths saved, directory created.'
-print 'saving to:' + FILES['out']
+print2('SPECS LOADED')
+print2('saving to:' + FILES['out'])
 
 
 
-# spatial_plot( start_file = FILES['start'], \
-# 	end_file = FILES['finish'], \
-# 	hide_numbers = True, \
-# 	save_fig = FILES['directory']+'/test_save.png'
-# 	)
+
+
+# if SPEC_lookup('global', 'spatial_plot'):
+# 	spatial_plot( start_file = FILES['start'], \
+# 		end_file = FILES['finish'], \
+# 		hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
+# 		save_fig = FILES['out']+'/spatial_plot.png'
+# 		)
+# 	print2('saved spatial_plot')
+
+from cc3dtools.PostProcess import SpacePlot, PostProcess
+from cc3dtools.GenomeCompare import GenomeCompare
+from cc3dtools.Lineage import MultiLineage, lineage_bfs
+
+sp = SpacePlot( start_file = FILES['start'], \
+	end_file = FILES['finish'], \
+	projection = SPEC_lookup( 'spatial_plot' , 'projection', '2d' ) \
+	)
+
+
+"""
+S P A C E P L O T
+"""
+if SPEC_lookup('global', 'spatial_plot'):
+	sp.plot_all( hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
+		save_fig = FILES['out']+'/spatial_plot.png' \
+		)
+	print2('saved spatial_plot')
+
+
+"""
+L I N E A G E S
+"""
+ml = MultiLineage( file_name = FILES['division'] )
+
+if SPEC_lookup( 'global' , 'multilineage' ):
+	if SPEC_lookup('multilineage', 'color_by_branch') or SPEC_lookup('multilineage', 'save_all'):
+		for i , lineage in enumerate(ml.lineages):
+			current_dir = FILES['out'] + '/detail_lineage' + str( i + 1 )
+			os.makedirs( current_dir )
+			levels = lineage_bfs( lineage['lineage'] )
+
+			if SPEC_lookup('multilineage', 'color_by_branch'):
+				for depth, level in levels.items():
+					sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
+					print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
+
+			if SPEC_lookup('multilineage', 'save_all'):
+				lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
+				print2('saved overall lineage for '+str(i+1))
+
+	if SPEC_lookup('multilineage', 'color_by_initial'):
+		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
+		# print member_lists[0]
+		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
+		print2('saved space_plot_by_initial')
+
+
+
+
+
