@@ -16,6 +16,7 @@ import time
 import os
 import csv
 import shutil
+import json
 
 event_sequence = 0
 
@@ -61,6 +62,14 @@ except IndexError:
 
 if not os.path.exists( FILES['out'] ):
     os.makedirs( FILES['out'] )
+
+# load sampling strategies
+if os.path.exists( FILES['directory'] + 'sampling.json' ):
+	with open( FILES['directory'] + 'sampling.json' ) as f:
+		sampling_strategies = json.load( f )['sampling_strategies']
+		print2('sampling strategies loaded')
+	else:
+		print2('No sampling strategies provided.')
 
 print2('File paths saved, directory created.')
 print2('Importing Speficiations')
