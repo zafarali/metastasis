@@ -685,9 +685,11 @@ class PostProcess( object ):
 		if len( frequency_results ):
 			plt.figure()
 			x, y = zip( *frequency_results.items() )
+			x = np.array(x)
+			x = x/float(number_of_cells)
 			plt.plot(x, y, 'o')
 			plt.ylabel('# of mutations shared')
-			plt.xlabel('# of cells (total='+str(number_of_cells)+')')
+			plt.xlabel('proportion of cells in cluster (total='+str(number_of_cells)+')')
 
 			if title != '':
 				title = '\n' + title
@@ -723,13 +725,16 @@ class PostProcess( object ):
 		if len( frequency_results ):
 			# plt.imshow(  , interpolation = 'nearest' )
 			
-			plt.imshow( frequency_results , interpolation = 'nearest' , norm=LogNorm() )
+			plt.imshow( frequency_results , interpolation = 'nearest' , norm=LogNorm() , extent=[0, 1, 1, 0] )
 			
 			if xlim:
 				plt.xlim( xlim )
-
+			
 			if ylim:
 				plt.ylim( ylim )
+			else:
+				plt.ylim( tuple( reversed( plt.ylim() ) ) )
+
 
 			cbar = plt.colorbar( orientation = 'vertical' )
 			cbar.ax.set_ylabel('# of mutations')
@@ -737,8 +742,8 @@ class PostProcess( object ):
 			if title != '':
 				title = '\n' + title
 
-			plt.xlabel('cells in cluster 1 (N=' + str( N_1 ) + ')')
-			plt.ylabel('cells in cluster 2 (N=' + str( N_2 ) +')')
+			plt.xlabel('proportion of cells in cluster 1 (N=' + str( N_1 ) + ')')
+			plt.ylabel('proportion of cells in cluster 2 (N=' + str( N_2 ) +')')
 			plt.title('2D Frequency Distribution of Inter-Cluster Mutations '+title)
 			
 			if save_fig:
