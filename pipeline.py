@@ -19,6 +19,7 @@ import shutil
 
 event_sequence = 0
 
+# convinience method to print things to the console with line numbers
 def print2( string ):
 	global event_sequence
 	string = str(string)
@@ -27,10 +28,16 @@ def print2( string ):
 
 
 time_info = '_'.join(time.asctime().split(' '))
+
+# an analysis directory must be specified.
 try:
 	analysis_directory = './' + sys.argv[1]
+	if not os.path.exists( analysis_directory ):
+		raise IOError()
 except IndexError:
-	sys.exit('--->No analysis_directory was specified: \nanalysis_directory must be the first argument')
+	sys.exit('(!) No analysis_directory was specified: \nanalysis_directory must be the first argument')
+except IOError:
+	sys.exit('(!) Analysis directory does not exist!')
 
 # read all necessary files
 try:
@@ -44,7 +51,6 @@ try:
 		'out': analysis_directory+'/pipe_out_'+time_info
 	}
 	del analysis_directory
-
 except IndexError:
 	sys.exit('---> (!) Incomplete files for data analysis. Analysis directory must have the following files:\n\
 	start_cells_*\n\
@@ -66,7 +72,7 @@ with open( FILES['specifications'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		SPECS[ row[0] ] = SPECS.get( row[0] , {} )
-		SPECS[ row[0] ][ row[1] ] = bool( row[2] )
+		SPECS[ row[0] ][ row[1] ] = row[2:]
 
 # convinience method for looking up SPEC object
 def SPEC_lookup( function_name , argument_name , default = None ):
@@ -82,16 +88,6 @@ print2('SPECS LOADED')
 print2('saving to:' + FILES['out'])
 
 
-
-
-
-# if SPEC_lookup('global', 'spatial_plot'):
-# 	spatial_plot( start_file = FILES['start'], \
-# 		end_file = FILES['finish'], \
-# 		hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
-# 		save_fig = FILES['out']+'/spatial_plot.png'
-# 		)
-# 	print2('saved spatial_plot')
 
 from cc3dtools.PostProcess import SpacePlot, PostProcess
 from cc3dtools.GenomeCompare import GenomeCompare
