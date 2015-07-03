@@ -60,18 +60,8 @@ except IndexError:
 	genomes_*\n\
 	specs.txt')
 
-if not os.path.exists( FILES['out'] ):
-    os.makedirs( FILES['out'] )
 
 # load sampling strategies
-if os.path.exists( FILES['directory'] + 'sampling.json' ):
-	with open( FILES['directory'] + 'sampling.json' ) as f:
-		sampling_strategies = json.load( f )['sampling_strategies']
-		print2('sampling strategies loaded')
-	else:
-		print2('No sampling strategies provided.')
-
-print2('File paths saved, directory created.')
 print2('Importing Speficiations')
 
 # will hold all specifications
@@ -91,9 +81,31 @@ def SPEC_lookup( function_name , argument_name , default = None ):
 	else:
 		return fn_specs.get( argument_name , default )
 
-shutil.copy2( FILES['specifications'] , FILES['out'] + '/specs.txt' )
 
 print2('SPECS LOADED')
+
+if SPEC_lookup( 'global', 'sample' ):
+	if os.path.exists( FILES['directory'] + 'sampling.json' ):
+		FILES['sampling'] = FILES['directory'] + 'sampling.json'
+
+		with open( FILES['directory'] + 'sampling.json' ) as f:
+			sampling_strategies = json.load( f )['sampling_strategies']
+			print2('sampling strategies loaded')
+	else:
+		sys.exit('--->(!) No sampling strategy was provided in the form of sampling.json')
+
+
+# create the output directory and save specs and sampling there
+if not os.path.exists( FILES['out'] ):
+    os.makedirs( FILES['out'] )
+
+shutil.copy2( FILES['specifications'] , FILES['out'] + '/specs.txt' )
+
+if SPEC_lookup('global', 'sample'):
+	shutil.copy2( FILES['sampling'] , FILES['out'] + '/sampling.json' )
+
+print2('File paths saved, directory created.')
+
 print2('saving to:' + FILES['out'])
 
 
@@ -145,6 +157,7 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
 		print2('saved space_plot_by_initial')
 
+# if SPEC_lookup( 'global' , 'sample' )
 
 
 
