@@ -178,7 +178,12 @@ if SPEC_lookup( 'global' , 'sample' ):
 			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
 		elif sampling[u'method'] == u'ellipse':
 			sample, plot_stack = pp.sample_ellipsoid( return_plot_stack = True, **sampling[u'method_parameters'] )
-
+		elif sampling[u'method'] == u'polygon':
+			sample, plot_stack = pp.sample_polygon( return_plot_stack = True, **sampling[u'method_parameters'] )
+		elif sampling[u'method'] == u'square':
+			sample, plot_stack = pp.sample_square( return_plot_stack = True, **sampling[u'method_parameters'] )
+		elif sampling[u'method'] == u'rectangle':
+			sample, plot_stack = pp.sample_rectangle( return_plot_stack = True, **sampling[u'method_parameters'] )
 
 		analyzed = pp.sample_analyze(sample)
 
