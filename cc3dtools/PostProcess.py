@@ -691,25 +691,26 @@ class PostProcess( object ):
 		sin_theta = np.sin( theta )
 		cos_theta = np.cos( theta )
 
+		polygon_template = np.array(polygon_vertices)
+
 		for step in range( steps ):
 			distance_travelled = step * step_size
 
 			position_x = x + distance_travelled * cos_theta
 			position_y = y + distance_travelled * sin_theta 
 			
-			current_polygon_points = map( lambda vertex: [ vertex[0] + position_x , vertex[1] + position_y ], polygon_vertices )
-			print current_polygon_points
+			current_polygon_points =  polygon_template + [ position_x , position_y ]
 
 			if return_plot_stack:
 				# save the plot_stack:
 				for i in range( len( current_polygon_points ) - 1 ):
 				    vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
-				    x, y = zip(*vertex_set)
-				    plot_stack.append([x, y, 'g'])
+				    plt_x, plt_y = zip(*vertex_set)
+				    plot_stack.append([plt_x, plt_y, 'g'])
 
 				vertex_set = [ current_polygon_points[0] ] + [ current_polygon_points[-1] ]
-				x, y = zip(*vertex_set)
-				plot_stack.append([x, y, 'g'])
+				plt_x, plt_y = zip(*vertex_set)
+				plot_stack.append([plt_x, plt_y, 'g'])
 
 			p = Path( current_polygon_points )
 
