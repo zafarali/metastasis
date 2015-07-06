@@ -157,7 +157,65 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
 		print2('saved space_plot_by_initial')
 
-# if SPEC_lookup( 'global' , 'sample' )
+"""
+	Sampling
+"""
+
+gc = GenomeCompare.from_gen_file(FILES['genomes'])
+print2('Loaded GenomeCompare module')
+pp = PostProcess(end_file=FILES['finish'], gc=gc)
+print2('Loaded PostProcess module')
+
+if SPEC_lookup( 'global' , 'sample' ):
+	for i, sampling in enumerate(sampling_strategies):
+		current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
+		os.makedirs( current_dir )
+		print2('Saving sample ' + str(i + 1) + ', method: '+ str( sampling[u'method'] ))
+
+		# sampling circles
+		if sampling[u'method'] == u'circle':
+			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
+
+			analyzed = pp.sample_analyze(sample)
+
+			if sampling[u'save']:
+				if u'tumor_plot' in sampling[u'save']:
+					sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
+						save_fig = current_dir+'/tumor_plot.png' )
+					print2('Saved global tumor_plot')
+
+				if u'1D_plots' in sampling[u'save']:
+					for analysis in analyzed:
+						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
+						print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
+ 					#endfor   					
+				#endif
+			#endif
+		#endif
+
+		if sampling[u'method'] == u'ellipse':
+			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
+			
+			analyzed = pp.sample_analyze(sample)
+
+
+			if sampling[u'save']:
+				if u'tumor_plot' in sampling[u'save']:
+					sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
+						save_fig = current_dir+'/tumor_plot.png' )
+					print2('Saved global tumor_plot')
+				#endif
+
+				if u'1D_plots' in sampling[u'save']:
+					for analysis in analyzed:
+						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
+						print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
+					#endfor
+				#endif
+		#endif
+	#endfor
+#endif
+
 
 
 
