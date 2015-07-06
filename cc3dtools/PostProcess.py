@@ -529,6 +529,17 @@ class PostProcess( object ):
 		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
 
+	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None ):
+		filtered_list = self.cell_locations.items()
+
+		if type_restrictions:
+			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
+			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+
+		# first map the cell_locations into a new dict
+		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		return filter( lambda r: ( ( r['x'] - x )**2 ) / radii[0] + ( ( r['y'] - y )**2 )/radii[1] + ( ( r['z'] - z )**2 )/radii[2] <= 1, r_vectors )
+
 	def cluster_return( self , x , y , z , theta, step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
 		"""	NOTE: Use PostProcess.sample_circular() in the future.
 			searches in incremental step_size's from x,y,z and returns the nearest neighbours 
@@ -553,7 +564,7 @@ class PostProcess( object ):
 		print 'PLEASE USE PostProcess.sample_circular() in future code.'
 		return self.sample_circular( x , y , z , theta, step_size , steps , cluster_size , type_restrictions = type_restrictions , show_line_plot = show_line_plot , return_plot_stack = return_plot_stack )
 
-	def sample_circular( self , x , y , z , theta, step_size , steps , cluster_radius , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
+	def sample_circular( self , x , y , z , theta, step_size , steps , cluster_radius , **kwargs ):
 		"""
 			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular 
 			regions of cluster_radius, we travel in a theta direction.
@@ -572,6 +583,31 @@ class PostProcess( object ):
 					restrict the sampling to cells of certain types
 				show_line_plot / bool / False
 					draw the sampling on a graph
+				return_plot_stacl / bool
+					returns a plot stack for drawing
+
+		"""
+		return self.sample_ellipsoid( x, y, z, theta, step_size, steps, ( cluster_radius, cluster_radius, 1 ), **kwargs )
+
+	def sample_ellipsoid( self , x , y , z , theta , step_size , steps , radii , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
+		"""
+			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular 
+			regions of cluster_radius, we travel in a theta direction.
+			@params:
+				x,y,z / float,float,float 
+					location from which we want to start our search
+				theta / int
+					angle (in radians) at which we want to search
+				step_size / int
+					the step sizes we want to increment our search by
+				steps / int 
+					the total number of steps to take
+				radii / tuple / ( int , int )
+					a tuple of (semiminor_axis , semimajor_axis) for scaling the ellipse
+				type_restrictions / list / None
+					restrict the sampling to cells of certain types
+				show_line_plot / bool / False
+					draw the sampling on a graph
 
 		"""
 
@@ -583,8 +619,8 @@ class PostProcess( object ):
 		# create the circle template
 		if show_line_plot or return_plot_stack:
 			pnts = np.linspace( 0 , 2 * np.pi , 100 )
-			circle_x = cluster_size * np.sin( pnts )
-			circle_y = cluster_size * np.cos( pnts )
+			circle_x = radii[0] * np.sin( pnts )
+			circle_y = radii[1] * np.cos( pnts )
 
 
 		for step in range( steps ):
@@ -595,7 +631,7 @@ class PostProcess( object ):
 			position_y = y + distance_travelled * sin_theta
 
 			# do the sampling
-			sample = self.nearest( position_x , position_y , z , radius = cluster_size , type_restrictions = type_restrictions )
+			sample = self.cells_in_ellipse_at( position_x , position_y , z , radii = radii , type_restrictions = type_restrictions )
 			sample_cellids = [ cell['id'] for cell in sample ]
 
 			#analyze that sample
@@ -619,49 +655,48 @@ class PostProcess( object ):
 		else:
 			return results
 
-	def sample_ellipsoid( self ):
 		pass
 
-	def sample_polygon( self , x , y , z , theta , step_size , steps , polygon_points , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
-		"""
-			samples polygons starting from (x,y,z) along the theta direction for steps of size step_size.
-			the polygons are defined by a set of points
-		"""
+	# def sample_polygon( self , x , y , z , theta , step_size , steps , polygon_points , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
+	# 	"""
+	# 		samples polygons starting from (x,y,z) along the theta direction for steps of size step_size.
+	# 		the polygons are defined by a set of points
+	# 	"""
 
-		polygon_template = np.array( polygon_points )
+	# 	polygon_template = np.array( polygon_points )
 
-		filtered_list = self.cell_locations.items()
+	# 	filtered_list = self.cell_locations.items()
 		
-		# remove the points which do not have the required type.
-		if type_restrictions:
-			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
-			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+	# 	# remove the points which do not have the required type.
+	# 	if type_restrictions:
+	# 		assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
+	# 		filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
 
 
-		# r_vectors, all the x,y,z coordinates of the cells
-		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+	# 	# r_vectors, all the x,y,z coordinates of the cells
+	# 	r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
-		sin_theta = np.sin( theta )
-		cos_theta = np.cos( theta )
+	# 	sin_theta = np.sin( theta )
+	# 	cos_theta = np.cos( theta )
 
-		results = []
-		plot_stack = []
+	# 	results = []
+	# 	plot_stack = []
 
-		for step in range( steps ):
-			distance_travelled = step * step_size
-			position_x = x + distance_travelled * cos_theta
-			position_y = y + distance_travelled * sin_theta
+	# 	for step in range( steps ):
+	# 		distance_travelled = step * step_size
+	# 		position_x = x + distance_travelled * cos_theta
+	# 		position_y = y + distance_travelled * sin_theta
 
-			# transpose the polygon to the appropriate position
-			polygon = polygon_template + [ position_x , position_y ]
+	# 		# transpose the polygon to the appropriate position
+	# 		polygon = polygon_template + [ position_x , position_y ]
 
-			p = Path( polygon )
-			sample = filter( lambda r: p.contains_point( [ r['x'], r['y'] ] ) , r_vectors )
-			results.append( ( distance_travelled, [ cell['id'] for cell in sample ] )
-			#endwith
-		#endfor
+	# 		p = Path( polygon )
+	# 		sample = filter( lambda r: p.contains_point( [ r['x'], r['y'] ] ) , r_vectors )
+	# 		results.append( ( distance_travelled, [ cell['id'] for cell in sample ] )
+	# 		#endwith
+	# 	#endfor
 
-		return results
+	# 	return results
 
 
 	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False, return_plot_stack = False):
