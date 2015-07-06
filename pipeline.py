@@ -177,7 +177,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 		if sampling[u'method'] == u'circle':
 			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
 		elif sampling[u'method'] == u'ellipse':
-			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
+			sample, plot_stack = pp.sample_ellipsoid( return_plot_stack = True, **sampling[u'method_parameters'] )
 
 
 		analyzed = pp.sample_analyze(sample)
