@@ -799,6 +799,7 @@ class PostProcess( object ):
 		# check if there are any results to show, otherwise just skip this
 		if len( frequency_results ):
 			# plt.imshow(  , interpolation = 'nearest' )
+			plt.figure()
 			
 			plt.imshow( frequency_results , interpolation = 'nearest' , norm=LogNorm() )
 			
