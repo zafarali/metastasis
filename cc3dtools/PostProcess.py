@@ -639,6 +639,18 @@ class PostProcess( object ):
 
 		pass
 
+	def sample_rectangle ( self , x , y , z , theta , step_size , steps , edge_lengths, **kwargs ):
+		assert len(edge_lengths) > 1, 'need to have more than two edges'
+
+		rect_vertices = [ [ 0 , 0 ] , [ 0 , edge_lengths[0] ], [ edge_lengths[1] , edge_lengths[0] ] , [ edge_lengths[1] , 0 ] ]
+
+		return self.sample_polygon( x, y, z, theta, step_size, steps, rect_vertices , **kwargs )
+	
+	def sample_square ( self , x , y , z , theta , step_size , steps , width , **kwargs ):
+
+		square_vertices = [ [ 0 , 0 ] , [ 0 , width ], [ width , width ] , [ width , 0 ] ]
+
+		return self.sample_polygon( x, y, z, theta, step_size, steps, square_vertices , **kwargs )
 
 	def sample_polygon ( self , x , y , z , theta , step_size , steps , polygon_vertices , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
 		"""
