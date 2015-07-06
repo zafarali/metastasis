@@ -17,6 +17,7 @@ import os
 import csv
 import shutil
 import json
+import pickle
 
 event_sequence = 0
 
@@ -175,44 +176,62 @@ if SPEC_lookup( 'global' , 'sample' ):
 		# sampling circles
 		if sampling[u'method'] == u'circle':
 			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
-
-			analyzed = pp.sample_analyze(sample)
-
-			if sampling[u'save']:
-				if u'tumor_plot' in sampling[u'save']:
-					sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
-						save_fig = current_dir+'/tumor_plot.png' )
-					print2('Saved global tumor_plot')
-
-				if u'1D_plots' in sampling[u'save']:
-					for analysis in analyzed:
-						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
-						print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
- 					#endfor   					
-				#endif
-			#endif
-		#endif
-
-		if sampling[u'method'] == u'ellipse':
+		elif sampling[u'method'] == u'ellipse':
 			sample, plot_stack = pp.sample_circular( return_plot_stack = True, **sampling[u'method_parameters'] )
-			
-			analyzed = pp.sample_analyze(sample)
 
 
-			if sampling[u'save']:
-				if u'tumor_plot' in sampling[u'save']:
-					sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
-						save_fig = current_dir+'/tumor_plot.png' )
-					print2('Saved global tumor_plot')
-				#endif
+		analyzed = pp.sample_analyze(sample)
 
-				if u'1D_plots' in sampling[u'save']:
-					for analysis in analyzed:
-						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
-						print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
-					#endfor
-				#endif
-		#endif
+
+		if sampling[u'save']:
+			if u'tumor_plot' in sampling[u'save']:
+				sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
+					save_fig = current_dir+'/tumor_plot.png' )
+				print2('Saved global tumor_plot')
+			#endif
+
+			if u'1D_plots' in sampling[u'save']:
+				for analysis in analyzed:
+					PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
+					print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
+				#endfor
+			#endif
+
+			if u'2D_plots' in sampling[u'save']:
+				if sampling[u'2D_methodology']:
+					if u'shells' in sampling[u'2D_methodology']:
+
+						for i in range(len(sample)/2):
+							
+							data = pp.frequency_analyze_ND( [ sample[i][1] , sample[-i-1][1] ] )
+							PostProcess.plot_2D_frequency(data , title='Shell ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) , \
+								save_fig=current_dir+'/2D_at_shell_'+str(i)+'.png' )
+						#endfor
+					#endif shell
+
+					if u'adjacent' in sampling[u'2D_methodology']:
+
+						for i in range(len(sample)-1):
+							data = pp.frequency_analyze_ND( [ sample[i][1] , sample[i+1][1] ] )
+							PostProcess.plot_2D_frequency(data , title='Adjacent ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[i+1][0]) , \
+								save_fig=current_dir+'/2D_at_adjacent_'+str(i)+'.png' )
+						#endfor
+					#endif adjacent
+
+				else:
+					print2('(!) SOFT FAIL: must supply 2D_methodology if you want to save 2D plots')
+		#endif save
+		
+		# save pickles
+		if u'counter_pickles' in sampling[u'save']:
+			with open(current_dir+'/counters.pickle', 'w') as f:
+				pickle.dump( sample , f )
+				print2('Saved counter pickle')
+		if u'analysis_pickles' in sampling[u'save']:
+			with open(current_dir+'/analysis.pickle', 'w') as f:
+				pickle.dump( analyzed , f )
+				print2('Saved analysis pickle')
+		#endif pickles
 	#endfor
 #endif
 
