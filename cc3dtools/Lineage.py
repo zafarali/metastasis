@@ -388,8 +388,12 @@ class MultiLineage(object):
         """
         to_be_returned = []
 
-        for lineage in self.lineages:
-            to_be_returned.extend( lineage['lineage'].draw( 20 , save_fig = save_fig ) ) # lineage.draw returns a list of points
+        for i, lineage in enumerate(self.lineages):
+            temp = save_fig.split('.png')
+            temp.append(str(i+1))
+            temp.append('.png')
+            save_fig_temp = ''.join(temp)
+            to_be_returned.extend( lineage['lineage'].draw( 20 , save_fig = save_fig_temp ) ) # lineage.draw returns a list of points
 
         return to_be_returned
 
