@@ -21,6 +21,13 @@ import pickle
 
 event_sequence = 0
 
+if len(sys.argv) == 1:
+	sys.exit('No arguments supplied')
+	
+if sys.argv[1] == '--help' or sys.argv[1] == '-h':
+	sys.exit('Complete documentation is available here: https://github.com/zafarali/metastasis/wiki/Using-pipeline.py')
+
+
 # convinience method to print things to the console with line numbers
 def print2( string ):
 	global event_sequence
