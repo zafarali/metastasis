@@ -538,7 +538,7 @@ class PostProcess( object ):
 
 		# first map the cell_locations into a new dict
 		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: ( ( r['x'] - x )**2 ) / radii[0] + ( ( r['y'] - y )**2 )/radii[1] + ( ( r['z'] - z )**2 )/radii[2] <= 1, r_vectors )
+		return filter( lambda r: ( ( r['x'] - x ) / radii[0] )**2 + ( (  r['y'] - y  )/radii[1] )**2 + ( ( r['z'] - z )/radii[2])**2 <= 1, r_vectors )
 
 	def cluster_return( self , x , y , z , theta, step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
 		"""	NOTE: Use PostProcess.sample_circular() in the future.
@@ -744,7 +744,7 @@ class PostProcess( object ):
 			@returns
 				list of ( distance , frequency_analyze([ cell ids list] ) )
 		"""
-		return map( lambda cluster: ( cluster[0] , self.frequency_analyze( cluster[1] ) ) , clusters )
+		return map( lambda cluster: ( cluster[0] , self.frequency_analyze( cluster[1] ) ) , sample )
 
 	def frequency_analyze_ND ( self , clusters, **kwargs):
 		"""
