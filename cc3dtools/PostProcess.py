@@ -540,29 +540,11 @@ class PostProcess( object ):
 		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 		return filter( lambda r: ( ( r['x'] - x ) / radii[0] )**2 + ( (  r['y'] - y  )/radii[1] )**2 + ( ( r['z'] - z )/radii[2])**2 <= 1, r_vectors )
 
-	def cluster_return( self , x , y , z , theta, step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
-		"""	NOTE: Use PostProcess.sample_circular() in the future.
-			searches in incremental step_size's from x,y,z and returns the nearest neighbours 
-			of cluster_size's, we travel in a theta direction
-			@params:
-				x,y,z / float,float,float 
-					location from which we want to start our search
-				theta / int
-					angle (in radians) at which we want to search
-				step_size / int
-					the step sizes we want to increment our search by
-				steps / int 
-					the total number of steps to take
-				cluster_size / int
-					the radius of the cluster we wish to sample
-				type_restrictions / list / None
-					restrict the sampling to cells of certain types
-				show_line_plot / bool / False
-					draw the sampling on a graph
-
+	def cluster_return( self , *args, **kwargs ):
+		"""	
+			DEPRECATED use PostProcess.sample_circular()
 		"""
-		print 'PLEASE USE PostProcess.sample_circular() in future code.'
-		return self.sample_circular( x , y , z , theta, step_size , steps , cluster_size , type_restrictions = type_restrictions , show_line_plot = show_line_plot , return_plot_stack = return_plot_stack )
+		raise DeprecationWarning('PLEASE USE PostProcess.sample_circular() in future code.')
 
 	def sample_circular( self , x , y , z , theta, step_size , steps , cluster_radius , **kwargs ):
 		"""
@@ -699,41 +681,12 @@ class PostProcess( object ):
 	# 	return results
 
 
-	def cluster_search( self , x , y , z , theta , step_size , steps , cluster_size , type_restrictions = None , show_line_plot = False, return_plot_stack = False):
+	def cluster_search( self , *args, **kwargs):
 		"""
-			searches in incremental step_size's from x,y,z and evaluates the frequency analysis
-			of cluster_sizes, we travel in a theta direction
-			@params:
-				x,y,z / float,float,float 
-					location from which we want to start our search
-				theta / int
-					angle (in radians) at which we want to search
-				step_size / int
-					the step sizes we want to increment our search by
-				steps / int 
-					the total number of steps to take
-				cluster_size / int
-					the radius of the cluster we wish to sample
-				type_restrictions / list / None
-					restrict the sampling to cells of certain types
-				show_line_plot / bool / False
-					draw the sampling on a graph
-
+			DEPRECATED PostProcess.sample_analyze()
 		"""
-		raise FutureWarning('This method is to be deprecated, use PostProcess.sample_analyze() instead')
-		clusters = self.cluster_return( x , y , z , theta , step_size , steps , cluster_size , type_restrictions=type_restrictions , show_line_plot = show_line_plot , return_plot_stack = return_plot_stack)
+		raise FutureWarning('This method is deprecated, use PostProcess.sample_analyze() instead')
 
-		if return_plot_stack:
-			clusters , plot_stack = clusters
-
-		# clusters contain ( dist, cellids ) tuples. we need to select cellids for mapping.
-		results = map( lambda cluster: ( cluster[0] , self.frequency_analyze( cluster[1] ) ) , clusters )
-
-
-		if return_plot_stack:
-			return results, plot_stack
-		else:
-			return results
 	
 	def sample_analyze( self , sample ):
 		"""
@@ -863,7 +816,7 @@ class PostProcess( object ):
 
 
 	def pickle_save( self ):
-		raise FutureWarning('This function is yet to be implemented')
+		raise DeprecationWarning('This function is yet to be implemented')
 		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
 
 		pickle.dump( self.data , file( 'pp.executed.pickle' , 'w' ) )
