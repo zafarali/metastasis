@@ -576,7 +576,7 @@ class PostProcess( object ):
 					restrict the sampling to cells of certain types
 				show_line_plot / bool / False
 					draw the sampling on a graph
-				return_plot_stacl / bool
+				return_plot_stack / bool
 					returns a plot stack for drawing
 
 		"""
@@ -650,46 +650,94 @@ class PostProcess( object ):
 
 		pass
 
-	# def sample_polygon( self , x , y , z , theta , step_size , steps , polygon_points , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
-	# 	"""
-	# 		samples polygons starting from (x,y,z) along the theta direction for steps of size step_size.
-	# 		the polygons are defined by a set of points
-	# 	"""
+	def sample_rectangle ( self , x , y , z , theta , step_size , steps , edge_lengths, **kwargs ):
+		assert len(edge_lengths) > 1, 'need to have more than two edges'
 
-	# 	polygon_template = np.array( polygon_points )
+		rect_vertices = [ [ 0 , 0 ] , [ 0 , edge_lengths[0] ], [ edge_lengths[1] , edge_lengths[0] ] , [ edge_lengths[1] , 0 ] ]
 
-	# 	filtered_list = self.cell_locations.items()
+		return self.sample_polygon( x, y, z, theta, step_size, steps, rect_vertices , **kwargs )
+	
+	def sample_square ( self , x , y , z , theta , step_size , steps , width , **kwargs ):
+
+		square_vertices = [ [ 0 , 0 ] , [ 0 , width ], [ width , width ] , [ width , 0 ] ]
+
+		return self.sample_polygon( x, y, z, theta, step_size, steps, square_vertices , **kwargs )
+
+	def sample_polygon ( self , x , y , z , theta , step_size , steps , polygon_vertices , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
+		"""
+			samples polgons defined by the polygon_vertices, starting from (x,y,z) along the theta direction
+			for steps of step_size
+			@params:
+				x,y,z / ints or floats
+					location of the start of the sampling procedure
+				theta / ints or floats
+					direction along which sampling should occur
+				step_size / int
+					the steps after which sampling should be conducted
+				steps / int
+					the number of samples to take
+				polygon_vertices / tuple of ints or floats
+					the coordinates of the vertices of the polygon (should be relative to the origin)
+				type_restrictions / tuple of ints / None
+					the types to which sampling should be restricted
+				show_line_plot / bool / False
+					plot the sketch of the path
+				return_plot_stack / bool / False
+					the plot stack will be returned for future plotting in cc3dtools.SpacePlot
+		"""
+
+		filtered_list = self.cell_locations.items()
 		
-	# 	# remove the points which do not have the required type.
-	# 	if type_restrictions:
-	# 		assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
-	# 		filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+		# remove the points which do not have the required type.
+		if type_restrictions:
+			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
+			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+
+		# obtain cell information
+		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+
+		results, plot_stack = [], []
+
+		# preparation for our calculations
+		sin_theta = np.sin( theta )
+		cos_theta = np.cos( theta )
+
+		polygon_template = np.array(polygon_vertices)
+
+		for step in range( steps ):
+			distance_travelled = step * step_size
+
+			position_x = x + distance_travelled * cos_theta
+			position_y = y + distance_travelled * sin_theta 
+			
+			current_polygon_points =  polygon_template + [ position_x , position_y ]
+
+			if return_plot_stack:
+				# save the plot_stack:
+				for i in range( len( current_polygon_points ) - 1 ):
+				    vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
+				    plt_x, plt_y = zip(*vertex_set)
+				    plot_stack.append([plt_x, plt_y, 'g'])
+
+				vertex_set = [ current_polygon_points[0] ] + [ current_polygon_points[-1] ]
+				plt_x, plt_y = zip(*vertex_set)
+				plot_stack.append([plt_x, plt_y, 'g'])
+
+			p = Path( current_polygon_points )
+
+			# sample only those which are
+			sample = filter( lambda r: p.contains_point( [ r['x'], r['y'] ] ) , r_vectors )
+			results.append( ( distance_travelled , [ cell['id'] for cell in sample ] ) )
 
 
-	# 	# r_vectors, all the x,y,z coordinates of the cells
-	# 	r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		# final points for plotting
+		if return_plot_stack:
+			plot_stack.append( [ [ x, x + step_size * steps * cos_theta], [ y, y + step_size * steps * sin_theta] ]  )
 
-	# 	sin_theta = np.sin( theta )
-	# 	cos_theta = np.cos( theta )
-
-	# 	results = []
-	# 	plot_stack = []
-
-	# 	for step in range( steps ):
-	# 		distance_travelled = step * step_size
-	# 		position_x = x + distance_travelled * cos_theta
-	# 		position_y = y + distance_travelled * sin_theta
-
-	# 		# transpose the polygon to the appropriate position
-	# 		polygon = polygon_template + [ position_x , position_y ]
-
-	# 		p = Path( polygon )
-	# 		sample = filter( lambda r: p.contains_point( [ r['x'], r['y'] ] ) , r_vectors )
-	# 		results.append( ( distance_travelled, [ cell['id'] for cell in sample ] )
-	# 		#endwith
-	# 	#endfor
-
-	# 	return results
+		if return_plot_stack:
+			return results, plot_stack
+		else:
+			return results
 
 
 	def cluster_search( self , *args, **kwargs):
