@@ -144,6 +144,12 @@ L I N E A G E S
 ml = MultiLineage( file_name = FILES['division'] )
 
 if SPEC_lookup( 'global' , 'multilineage' ):
+	if SPEC_lookup('multilineage', 'color_by_initial'):
+		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
+		# print member_lists[0]
+		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
+		print2('saved space_plot_by_initial')
+
 	if SPEC_lookup('multilineage', 'color_by_branch') or SPEC_lookup('multilineage', 'save_all'):
 		for i , lineage in enumerate(ml.lineages):
 			current_dir = FILES['out'] + '/detail_lineage' + str( i + 1 )
@@ -158,12 +164,6 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 			if SPEC_lookup('multilineage', 'save_all'):
 				lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
 				print2('saved overall lineage for '+str(i+1))
-
-	if SPEC_lookup('multilineage', 'color_by_initial'):
-		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
-		# print member_lists[0]
-		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
-		print2('saved space_plot_by_initial')
 
 """
 	Sampling
