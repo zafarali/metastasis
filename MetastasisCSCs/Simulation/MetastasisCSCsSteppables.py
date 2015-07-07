@@ -20,22 +20,18 @@ divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
-    'cancer2_divideThreshold':65,
-    'cancer1_divideThreshold':65,
+    'cancer2_divideThreshold':64,
+    'cancer1_divideThreshold':64,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.1,
-    'cancer1_additional_dV':0,
-    'dV':0.05
+    'cancer2_additional_dV':0.06,
+    'cancer1_additional_dV':0.06,
+    'init_num_divisions':40,
+    'dV':0.05,
+    'p_csc_end':0.05,
+    'p_csc':0.4
 }
-# GLOBAL = {
-#     'targetVolume':50,
-#     'divideThreshold':65,
-#     'cancer2_divideThreshold':65,
-#     'maxTargetVolume':75,
-#     'cancer2_additional_dV':0,
-#     'cancer1_additional_dV':0,
-#     'dV':0.05
-# }
+
+
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
@@ -45,6 +41,7 @@ from cc3dtools.Genome import Genome, save_genomes
 from cc3dtools.Phenotype import Phenotype
 genomes = {}
 phenotypes = {}
+divisions_left = {}
 
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
@@ -67,14 +64,16 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
             if simulate_flag:
                 genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id )
-                phenotypes[cell.id] = Phenotype( phenotype_template )
+                # phenotypes[cell.id] = Phenotype( phenotype_template )
+                divisions_left[cell.id] = GLOBAL['init_num_divisions']
 
 
             if cell.id == r:
-                cell.type = self.CANCER1
+                cell.type = self.CANCER2
 
                 if simulate_flag:
                     genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id )
+                    divisions_left[cell.id] = -1
 
 
             if save_flag:
@@ -85,7 +84,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
         ## check if we successfully initiated a cancer cell.
         count = 0
         for cell in self.cellList:
-            if cell.type == self.CANCER1:
+            if cell.type == self.CANCER2:
                 count += 1
 
         if count != 1:
@@ -130,11 +129,13 @@ class GrowthSteppable(SteppableBasePy):
             #     cell.type = self.CANCER2
             if cell.type == self.NORMAL:
                 cell.targetVolume = min( GLOBAL['dV'] + cell.targetVolume , GLOBAL['maxTargetVolume'] )
-            else:
-                m = phenotypes[cell.id].get_counts()['advantageous']
-                # the sigmoidal function...
-                denominator = 1 + np.exp( -( 0.01*m - y_intercept ) )
-                cell.targetVolume = min( 1 / denominator + cell.targetVolume , GLOBAL['maxTargetVolume'] )
+            
+            if cell.type == self.CANCER1:
+                cell.targetVolume += GLOBAL['cancer1_additional_dV']
+
+            if cell.type == self.CANCER2:
+                cell.targetVolume += GLOBAL['cancer2_additional_dV']
+
 
  
         
@@ -160,11 +161,14 @@ class MitosisSteppable(MitosisSteppableBase):
             if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
             ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
             cell.volume > GLOBAL['divideThreshold'] :
-            # if cell.volume > 100:
-                cells_to_divide.append(cell)
+                if divisions_left[cell.id] != 0:
+                    cells_to_divide.append(cell)
+
+
                 
         for cell in cells_to_divide:
             # to change mitosis mode leave one of the below lines uncommented
+            divisions_left[cell.id] -= 1
             self.divideCellRandomOrientation(cell)
             divide_times['last_division'] = mcs
             # self.divideCellOrientationVectorBased(cell,1,0,0)                 # this is a valid option
@@ -195,11 +199,43 @@ class MitosisSteppable(MitosisSteppableBase):
         if simulate_flag:
             new_mutations = genomes[parentCell.id].mutate()
 
-            for mutation in new_mutations:
-                phenotypes[parentCell.id].evaluate( mutation )
+            # for mutation in new_mutations:
+            #     phenotypes[parentCell.id].evaluate( mutation )
 
             genomes[childCell.id] = genomes[parentCell.id].replicate( name = childCell.id )
-            phenotypes[childCell.id] = phenotypes[parentCell.id].replicate()
+            # phenotypes[childCell.id] = phenotypes[parentCell.id].replicate()
+
+        if parentCell.type == self.NORMAL:
+            divisions_left[childCell.id] = divisions_left[parentCell.id]
+            childCell.type = parentCell.type
+        else:
+            # logic for CSCs
+            if parentCell.type == self.CANCER2:
+                r = np.random.rand()
+                if r < GLOBAL['p_csc_end']:
+                    # CSC spontaneously looses its capability..
+                    parentCell.type = self.CANCER1
+                    divisions_left[childCell.id] = 10 # 10 more divisions only.
+                    divisions_left[parentCell.id] = 10
+                    childCell.type = parentCell.type
+                else:
+                    childCell.type = self.CANCER1
+                    divisions_left[childCell.id] = 10
+
+                if r < GLOBAL['p_csc']:
+                    # the child cell will be a CSC!
+                    childCell.type = self.CANCER2
+                    divisions_left[childCell.id] = -1
+
+            else:
+                divisions_left[childCell.id] = 10
+                childCell.type = self.CANCER1
+            
+
+        
+
+
+
 
         childCell.lambdaVolume = 1.5
         parentCell.lambdaVolume = 1.5
@@ -208,7 +244,6 @@ class MitosisSteppable(MitosisSteppableBase):
         # else:
         #     childCell.type = parentCell.type
 
-        childCell.type = parentCell.type
 
         # # attempt to obtain the proliferating front
         # if parentCell.type != self.NORMAL:
