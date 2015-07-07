@@ -147,8 +147,12 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 	if SPEC_lookup('multilineage', 'color_by_initial'):
 		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
 		# print member_lists[0]
-		sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
-		print2('saved space_plot_by_initial')
+		try:
+			sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
+			print2('saved space_plot_by_initial')
+		except Exception as e:
+			print2('(!) unable to save space_plot_by_initial \n'+str(e))
+
 
 	if SPEC_lookup('multilineage', 'color_by_branch') or SPEC_lookup('multilineage', 'save_all'):
 		for i , lineage in enumerate(ml.lineages):
@@ -158,12 +162,18 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 
 			if SPEC_lookup('multilineage', 'color_by_branch'):
 				for depth, level in levels.items():
-					sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
-					print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
+					try:
+						sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
+						print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
+					except Exception as e:
+						print2('(!) unable to save color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) + '\n'+str(e) )
 
 			if SPEC_lookup('multilineage', 'save_all'):
-				lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
-				print2('saved overall lineage for '+str(i+1))
+				try:
+					lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
+					print2('saved overall lineage for '+str(i+1))
+				except Exception as e:
+					print2('(!) unable to save overall lineage for '+str(i+1) +'\n'+str(e))
 
 """
 	Sampling
@@ -197,15 +207,22 @@ if SPEC_lookup( 'global' , 'sample' ):
 
 		if sampling[u'save']:
 			if u'tumor_plot' in sampling[u'save']:
-				sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
-					save_fig = current_dir+'/tumor_plot.png' )
-				print2('Saved global tumor_plot')
+				try:
+					sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
+						save_fig = current_dir+'/tumor_plot.png' )
+					print2('Saved global tumor_plot')
+				except Exception as e:
+					print2('(!) Saving global tumor_plot failed: \n' + str(e) )
+				
 			#endif
 
 			if u'1D_plots' in sampling[u'save']:
 				for analysis in analyzed:
-					PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
-					print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
+					try:
+						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_at_'+ str( analysis[0] ) + '.png' ) 
+						print2('Saved 1D frequency plot at '+ str( analysis[0] ) )
+					except Exception as e:
+						print2('(!) Unable to save 1D frequency plot at '+str( analysis[0] ) +'\n'+str(e) )
 				#endfor
 			#endif
 
@@ -214,19 +231,27 @@ if SPEC_lookup( 'global' , 'sample' ):
 					if u'shells' in sampling[u'2D_methodology']:
 
 						for i in range(len(sample)/2):
-							
-							data = pp.frequency_analyze_ND( [ sample[i][1] , sample[-i-1][1] ] )
-							PostProcess.plot_2D_frequency(data , title='Shell ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) , \
-								save_fig=current_dir+'/2D_at_shell_'+str(i)+'.png' )
+							try:
+								data = pp.frequency_analyze_ND( [ sample[i][1] , sample[-i-1][1] ] )
+								PostProcess.plot_2D_frequency(data , title='Shell ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) , \
+									save_fig=current_dir+'/2D_at_shell_'+str(i)+'.png' )
+								print2('Saved 2D Shell at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) )
+							except Exception as e:
+								print2('(!) Unable to save 2D Shell at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) + '\n'+ str(e) )
+
 						#endfor
 					#endif shell
 
 					if u'adjacent' in sampling[u'2D_methodology']:
 
 						for i in range(len(sample)-1):
-							data = pp.frequency_analyze_ND( [ sample[i][1] , sample[i+1][1] ] )
-							PostProcess.plot_2D_frequency(data , title='Adjacent ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[i+1][0]) , \
-								save_fig=current_dir+'/2D_at_adjacent_'+str(i)+'.png' )
+							try:
+								data = pp.frequency_analyze_ND( [ sample[i][1] , sample[i+1][1] ] )
+								PostProcess.plot_2D_frequency(data , title='Adjacent ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[i+1][0]) , \
+									save_fig=current_dir+'/2D_at_adjacent_'+str(i)+'.png' )
+								print2('Saved 2D adjacent slices at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) )
+							except Exception as e:
+								print2('(!) Unable to save 2D adjacent slices at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) + '\n'+ str(e) )
 						#endfor
 					#endif adjacent
 
