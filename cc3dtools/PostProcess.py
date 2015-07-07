@@ -207,7 +207,7 @@ class SpacePlot ( object ):
 		if projection == '3d':
 			ax = fig.gca( projection = '3d' )
 
-		colormap = random_color_map( 900 )
+		colormap = random_color_map( len(args) )
 		num_args = float ( len( args ) )
 
 		plotted_ids = []
