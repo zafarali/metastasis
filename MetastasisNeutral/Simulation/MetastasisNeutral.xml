@@ -1,0 +1,44 @@
+<CompuCell3D Revision="20141124" Version="3.7.3">
+   
+   <Potts>
+      
+      <!-- Basic properties of CPM (GGH) algorithm -->
+      <Dimensions x="500" y="500" z="1"/>
+      <Steps>10000</Steps>
+      <Temperature>5.0</Temperature>
+      <NeighborOrder>2</NeighborOrder>
+      <RandomSeed>1232232</RandomSeed>
+   </Potts>
+   
+   <Plugin Name="CellType">
+      
+      <!-- Listing all cell types in the simulation -->
+      <CellType TypeId="0" TypeName="Medium"/>
+      <CellType TypeId="1" TypeName="Normal"/>
+
+   </Plugin>
+   
+   <Plugin Name="Volume"/>
+   
+   <Plugin Name="CenterOfMass">
+      
+      <!-- Module tracking center of mass of each cell -->
+   </Plugin>
+   
+ <Plugin Name="NeighborTracker"/>
+
+
+
+   <Plugin Name="Contact">
+      <!-- Specification of adhesion energies -->
+      <Energy Type1="Medium" Type2="Medium">10</Energy>
+      <Energy Type1="Medium" Type2="Normal">10</Energy>
+
+      <NeighborOrder>2</NeighborOrder>
+   </Plugin>
+ 
+  <Steppable Type="PIFInitializer">
+    <PIFName>Simulation/twocell.piff</PIFName>
+  </Steppable>
+
+</CompuCell3D>

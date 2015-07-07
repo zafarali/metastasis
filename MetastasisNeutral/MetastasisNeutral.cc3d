@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/MetastasisNeutral.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MetastasisNeutral.py</PythonScript>
+   <Resource Type="Python">Simulation/MetastasisNeutralSteppables.py</Resource>
+   <PIFFile>Simulation/init.piff</PIFFile>        
+</Simulation>
