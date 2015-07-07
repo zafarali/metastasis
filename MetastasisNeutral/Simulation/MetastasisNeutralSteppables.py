@@ -107,10 +107,7 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
-            ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
-            cell.volume > GLOBAL['divideThreshold'] :
-            # if cell.volume > 100:
+            if cell.volume > GLOBAL['divideThreshold'] :
                 cells_to_divide.append(cell)
                 
         for cell in cells_to_divide:
