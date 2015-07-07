@@ -76,17 +76,24 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
         
 
+
 class GrowthSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
     def step(self,mcs):
         #                   print '----->Global targetVolume',GLOBAL['targetVolume']
         for cell in self.cellList:
-            # don't grow if your volume is greater than the maximumTargetVolume
 
             cell.targetVolume = min( GLOBAL['dV'] + cell.targetVolume , GLOBAL['maxTargetVolume'] )
-            
 
+            if cell.type == self.CANCER2:
+                # cancerous cells grow slightly faster
+                cell.targetVolume += GLOBAL['cancer2_additional_dV']
+
+
+            if cell.type == self.CANCER1:
+                # cancerous cells grow slightly faster
+                cell.targetVolume += GLOBAL['cancer1_additional_dV']
 
 
 class MitosisSteppable(MitosisSteppableBase):
@@ -107,7 +114,9 @@ class MitosisSteppable(MitosisSteppableBase):
         # print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            if cell.volume > GLOBAL['divideThreshold'] :
+            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
+            ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
+            cell.volume > GLOBAL['divideThreshold'] :
                 cells_to_divide.append(cell)
                 
         for cell in cells_to_divide:

@@ -4,7 +4,7 @@
       
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="500" y="500" z="1"/>
-      <Steps>8000</Steps>
+      <Steps>10000</Steps>
       <Temperature>5.0</Temperature>
       <NeighborOrder>2</NeighborOrder>
       <RandomSeed>1232232</RandomSeed>
@@ -15,7 +15,8 @@
       <!-- Listing all cell types in the simulation -->
       <CellType TypeId="0" TypeName="Medium"/>
       <CellType TypeId="1" TypeName="Normal"/>
-
+      <CellType TypeId="2" TypeName="Cancer1"/>
+      <CellType TypeId="3" TypeName="Cancer2"/>
    </Plugin>
    
    <Plugin Name="Volume"/>
@@ -33,20 +34,32 @@
       <!-- Specification of adhesion energies -->
       <Energy Type1="Medium" Type2="Medium">10</Energy>
       <Energy Type1="Medium" Type2="Normal">10</Energy>
+      <Energy Type1="Medium" Type2="Cancer1">10</Energy>
+      <Energy Type1="Medium" Type2="Cancer2">10</Energy>
 
+      <Energy Type1="Normal" Type2="Normal">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer1">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer2">10</Energy>
+
+      <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
+      <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>
+      <Energy Type1="Cancer2" Type2="Cancer2">10.0</Energy>
       <NeighborOrder>2</NeighborOrder>
    </Plugin>
+
  
    <Steppable Type="BlobInitializer">   
    <Region>
       <Center x="250" y="250" z="0"/>
       <Radius>6</Radius>
       <Gap>0</Gap>
-      <Width>4</Width>
+      <Width>5</Width>
       <Types>Normal</Types>
    </Region>
 </Steppable>
 
-
+<!--   <Steppable Type="PIFInitializer">
+    <PIFName>Simulation/twocell.piff</PIFName>
+  </Steppable> -->
 
 </CompuCell3D>
