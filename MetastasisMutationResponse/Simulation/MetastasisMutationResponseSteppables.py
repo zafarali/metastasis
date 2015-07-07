@@ -20,8 +20,8 @@ divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
     'divideThreshold':65,
-    'cancer2_divideThreshold':60,
-    'cancer1_divideThreshold':60,
+    'cancer2_divideThreshold':65,
+    'cancer1_divideThreshold':65,
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0,
