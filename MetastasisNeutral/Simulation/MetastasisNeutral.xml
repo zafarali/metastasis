@@ -38,7 +38,7 @@
    </Plugin>
  
   <Steppable Type="PIFInitializer">
-    <PIFName>Simulation/twocell.piff</PIFName>
+    <PIFName>Simulation/init.piff</PIFName>
   </Steppable>
 
 </CompuCell3D>
