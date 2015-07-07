@@ -21,7 +21,7 @@ class PhenotypeEvaluator( object ) :
 		for k , v in phenotypes.items():
 			assert type( k ) is str , 'phenotype keys must be strings'
 			assert v[1] > v[0] , 'upper bound of ' + k + ' must be greater than the lower bound'
-			assert type( v[1] ) is int , type( v[0] ) is int, ' (!) recent change means bounds need to be in ints now: https://github.com/zafarali/metastasis/issues/17'
+			assert type( v[1] ) is int and type( v[0] ) is int, ' (!) recent change means bounds need to be in ints now: https://github.com/zafarali/metastasis/issues/17'
 
 		self.phenotypes = phenotypes
 		
@@ -95,4 +95,13 @@ class Phenotype( object ):
 
 	def get_counts ( self ):
 		return self.counts
+
+	def replicate ( self ):
+		"""
+			returns a copy of the current phenotype counter
+		"""
+		to_be_returned = Phenotype ( self.phenotypes )
+		to_be_returned.counts = dict( self.get_counts().items() )
+
+		return to_be_returned
 
