@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/MetastasisMutationResponse.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MetastasisMutationResponse.py</PythonScript>
+   <Resource Type="Python">Simulation/MetastasisMutationResponseSteppables.py</Resource>
+   <PIFFile>Simulation/twocell.piff</PIFFile>        
+</Simulation>
