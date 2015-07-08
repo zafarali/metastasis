@@ -19,6 +19,6 @@ num_times = int( sys.argv[1] )
 for simulation in simulation_names: 
 	for i in range(num_times):
 		#for bootnum in range(100):
-		commandlist.append('~/CC3D_3.7.3/runScript.command -i ~/summer15/metastasis/'+simulation+'/'+simulation+'.cc3d > '+simulation+'_'+str(i)+'_log.txt')
+		commandlist.append('~/CC3D_3.7.3/runScript.command -i ~/summer15/metastasis/'+simulation+'/'+simulation+'.cc3d')
 		
 dispatcher.dispatcher(commandlist,slots=min(len(commandlist),cpu))

@@ -20,7 +20,7 @@ SIMULATIONS_NAME="${@:2}"
 
 echo "running python dispatch_simulations"
 cd ~/summer15/metastasis
-python dispatch_simulations.py $SIMULATION_TIMES $SIMULATIONS_NAME
+python dispatch_simulations.py $SIMULATION_TIMES $SIMULATIONS_NAME > ~/simulation_out/sim_log.txt
 echo "completed dispatch_simulations"
 cd ~
 
@@ -34,10 +34,10 @@ echo "now in metastasis directory"
 SIMULATIONS_OUT=$(ls ./simulation_out)
 
 for var in $SIMULATIONS_OUT; do
-	python pipeline.py init ./simulation_out/$var
+	python pipeline.py init ./simulation_out/$var 
 done
 echo 'initializations done'
 
-python dispatch_analysis.py $SIMULATIONS_OUT
+python dispatch_analysis.py $SIMULATIONS_OUT > ./simulation_out/analysis_log.txt
 echo 'dispatching now.'
 	
