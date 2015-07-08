@@ -27,6 +27,17 @@ if len(sys.argv) == 1:
 if sys.argv[1] == '--help' or sys.argv[1] == '-h':
 	sys.exit('Complete documentation is available here: https://github.com/zafarali/metastasis/wiki/Using-pipeline.py')
 
+if sys.argv[1] == 'init':
+	if len(sys.argv) == 3:
+		target = './'+sys.argv[2]
+		if not os.path.exists( target ):
+			raise IOError('(!) PATH ' + target + ' DOESN\'T EXIST')
+		else:
+			shutil.copy2( './pipeline_templates/sampling.json' , target + '/sampling.json' )
+			shutil.copy2( './pipeline_templates/specs.txt' , target + '/specs.txt')
+			sys.exit('Initialzed')
+	else:
+		sys.exit('No <FOLDER> specitifed. run python pipeline.py -h for how to use this')
 
 # convinience method to print things to the console with line numbers
 def print2( string ):
@@ -46,7 +57,7 @@ try:
 except IndexError:
 	sys.exit('(!) No analysis_directory was specified: \nanalysis_directory must be the first argument')
 except IOError:
-	sys.exit('(!) Analysis directory does not exist!')
+	sys.exit('IOError: (!) Analysis directory does not exist!')
 
 # read all necessary files
 try:
