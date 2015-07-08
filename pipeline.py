@@ -9,7 +9,8 @@
 # division_*
 # genomes_*
 # specs.txt
-
+import numpy as np
+import matplotlib.pyplot as plt
 import sys
 import glob
 import time
@@ -284,6 +285,182 @@ if SPEC_lookup( 'global' , 'sample' ):
 #endif
 
 
+"""
+	CELL PLOTS
+"""
+
+if SPEC_lookup( 'global', 'cell_plots' ):
+	try:
+		FILES['cell_counts'] = glob.glob( FILES['directory'] + 'cell_count_*' )[0]
+		with open( FILES['cell_counts'] ,'r' ) as f:
+			reader = csv.reader(f)
+			cell_counts = []
+			for row in reader:
+				cell_counts.append(row)
+		print2('cell_counts loaded')
+		success = True
+	except:
+		print2('(!) SOFT FAIL: No CELL_COUNT FILE SPECIFIED')
+		success = False
+
+	if success:
+		try:
+			a = np.array( cell_counts, dtype = np.int )
+
+			allcells = a[np.where(a[:,1] == -1 )]
+			normal = a[np.where(a[:,1] == 0 )]
+			cancer1 = a[np.where(a[:,1] == 1 )]
+			cancer2 = a[np.where(a[:,1] == 2 )]
+
+			"""
+				PROPORTION PLOTS
+			"""
+			t = normal[:,0]
+
+			y0 = normal[:,2] / allcells[:,2].astype(float)
+			y1 = cancer1[:,2] / allcells[:,2].astype(float)
+			y2 = cancer2[:,2] / allcells[:,2].astype(float)
+
+			plt.figure
+
+			plt.plot(t, y0, label='normal cells')
+			if not all(y1):
+				plt.plot(t, y1, label='cancer1 cells')
+
+			if not all(y2):
+				plt.plot(t, y2, label='cancer2 cells')
+
+			plt.xlabel('Time (MCS)')
+			plt.ylabel('Proportion of cells')
+			plt.title('Proportion of cells in tumor vs time')
+			plt.legend()
+			plt.savefig( FILES['out']+'/cell_proportions.png' , format='png')
+			print2('saved proportion_plots')
+
+			"""
+				CELL NUMBER PLOTS
+			"""
+			t = normal[:,0]
+
+			y0 = normal[:,2] 
+			y1 = cancer1[:,2]
+			y2 = cancer2[:,2]
+
+			
 
 
+			plt.plot(t, y0, label='normal cells')
+			if not all(y1):
+				plt.plot(t, y1, label='cancer1 cells')
 
+			if not all(y2):
+				plt.plot(t, y2, label='cancer2 cells')
+
+			plt.xlabel('Time (MCS)')
+			plt.ylabel('Count of cells')
+			plt.title('Count of cells in tumor vs time')
+			plt.legend()
+			plt.savefig( FILES['out']+'/cell_count.png' , format='png')
+			
+			print2('saved cell_number plots')
+
+			"""
+				TOTAL CELLS
+			"""
+			
+			t = normal[:,0]
+			y = allcells[:,2]
+
+			
+			plt.plot(t, y)
+
+			plt.xlabel('Time (MCS)')
+			plt.ylabel('Number of cells')
+			plt.title('Number of cells in tumor vs time')
+			
+			plt.savefig( FILES['out']+'/all_cells_counts.png' , format='png')
+
+			print2('saved all_cells graph')
+
+		except Exception as e:
+			print2('(!) SOFT FAIL: \n'+str(e))
+		#endtry
+	#endif
+#endif
+
+"""
+	VOLUME PLOTS
+"""
+
+if SPEC_lookup( 'global', 'volume_plots' ):
+	try:
+		FILES['volume_data'] = glob.glob( FILES['directory'] + 'volume_*' )[0]
+		with open( FILES['volume_data'] ,'r' ) as f:
+			reader = csv.reader(f)
+			volume_data = []
+			for row in reader:
+				volume_data.append(row)
+		print2('volume loaded')
+		success = True
+	except:
+		print2('(!) SOFT FAIL: No VOLUME FILE SPECIFIED')
+		success = False
+
+	if success:
+		try:
+			a = np.array( volume_data, dtype = np.float )
+
+			allcells = a[np.where(a[:,1] == -1 )]
+			normal = a[np.where(a[:,1] == 0 )]
+			cancer1 = a[np.where(a[:,1] == 1 )]
+			cancer2 = a[np.where(a[:,1] == 2 )]
+
+
+			"""
+				VOLUME PLOTS
+			"""
+			t = normal[:,0]
+
+			y0 = normal[:,2] 
+			y1 = cancer1[:,2]
+			y2 = cancer2[:,2]
+
+			
+			plt.plot(t, y0, label='normal cells')
+			if not all(y1):
+				plt.plot(t, y1, label='cancer1 cells')
+
+			if not all(y2):
+				plt.plot(t, y2, label='cancer2 cells')
+
+			plt.xlabel('Time (MCS)')
+			plt.ylabel('Mean Volume of Cells')
+			plt.title('Volume of cells in tumor vs time')
+			plt.legend()
+			plt.savefig( FILES['out']+'/volume_plot.png' , format='png')
+			
+			print2('saved volume plots')
+
+			"""
+				ALL volume_plots
+			"""
+			
+			t = normal[:,0]
+			y = allcells[:,2]
+
+			
+			plt.plot(t, y)
+
+			plt.xlabel('Time (MCS)')
+			plt.ylabel('Mean Volume of Cells')
+			plt.title('Volume of cells in tumor vs time')
+
+			plt.savefig( FILES['out']+'/all_cells_volume.png' , format='png')
+
+			print2('saved all_cells volume graph')
+
+		except Exception as e:
+			print2('(!) SOFT FAIL: \n'+str(e))
+		#endtry
+	#endif
+#endif
