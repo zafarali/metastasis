@@ -27,7 +27,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../simualtion_out/minor_adv_'+time_info
+save_dir = '../simulation_out/minor_adv_'+time_info
 os.makedirs( save_dir )
 
 
