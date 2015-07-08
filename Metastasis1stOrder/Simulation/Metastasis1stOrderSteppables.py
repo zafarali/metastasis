@@ -27,7 +27,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../minor_adv_'+time_info
+save_dir = '../simualtion_out/minor_adv_'+time_info
 os.makedirs( save_dir )
 
 
@@ -39,7 +39,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
-            self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_.csv')
+            self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv')
 
     def start(self):
         
@@ -82,7 +82,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
     def finish(self):
         if save_flag:
-            tracker = Tracker2( file_name = save_dir+'/finish_cells_.csv' )
+            tracker = Tracker2( file_name = save_dir+'/finish_cells_'+time_info+'.csv' )
 
             for cell in self.cellList:
                 z = cell.zCOM
@@ -92,7 +92,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
             tracker.save_stash() # save final cell data
             self.start_tracker.save_stash() # save initial cell data
-            save_genomes( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_.csv' ) #save genomes
+            save_genomes( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
 
         
 
@@ -147,7 +147,7 @@ class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
         if save_flag:
-            self.mitosis_tracker = Tracker2(file_name=save_dir+'/division_events_.csv')
+            self.mitosis_tracker = Tracker2(file_name=save_dir+'/division_events_'+time_info+'.csv')
 
     def start(self):
         # we initialize the stash function
