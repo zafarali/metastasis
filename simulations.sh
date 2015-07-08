@@ -42,7 +42,11 @@ python dispatch_analysis.py $SIMULATIONS_OUT > ./simulation_out/analysis_log.txt
 echo 'dispatching completed'
 
 echo "SIMULATIONS AND ANALYSIS COMPLETED $(date)" > x.txt
+
 git add x.txt
 git commit -m 'auto command #39'
 git push origin master
-	
+
+git add simulation_out/*/pipe_out_*/*
+git commit -m 'results of simulation $(date) #39'
+git push origin master
