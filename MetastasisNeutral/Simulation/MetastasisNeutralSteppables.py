@@ -27,7 +27,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../minor_adv_'+time_info
+save_dir = '../neutral_model_'+time_info
 os.makedirs( save_dir )
 
 

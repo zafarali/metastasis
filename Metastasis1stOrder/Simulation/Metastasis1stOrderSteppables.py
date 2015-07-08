@@ -19,7 +19,7 @@ GLOBAL = {
     'cancer1_divideThreshold':63,
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.7,
-    'cancer1_additional_dV':0,
+    'cancer1_additional_dV':0.7,
     'dV':0.05
 }
 

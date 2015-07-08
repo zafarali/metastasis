@@ -36,7 +36,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../minor_adv_'+time_info
+save_dir = '../CSCs_'+time_info
 os.makedirs( save_dir )
 
 from cc3dtools.Tracker import Tracker2
