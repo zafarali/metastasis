@@ -39,5 +39,10 @@ done
 echo 'initializations done'
 
 python dispatch_analysis.py $SIMULATIONS_OUT > ./simulation_out/analysis_log.txt
-echo 'dispatching now.'
+echo 'dispatching completed'
+
+echo "SIMULATIONS AND ANALYSIS COMPLETED $(date)" > x.txt
+git add x.txt
+git commit -m 'auto command #39'
+git push origin master
 	
