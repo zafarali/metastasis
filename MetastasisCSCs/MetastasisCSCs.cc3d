@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/MetastasisCSCs.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/MetastasisCSCs.py</PythonScript>
+   <Resource Type="Python">Simulation/MetastasisCSCsSteppables.py</Resource>
+   <PIFFile>Simulation/twocell.piff</PIFFile>        
+</Simulation>

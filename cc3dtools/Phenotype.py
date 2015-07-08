@@ -96,3 +96,12 @@ class Phenotype( object ):
 	def get_counts ( self ):
 		return self.counts
 
+	def replicate ( self ):
+		"""
+			returns a copy of the current phenotype counter
+		"""
+		to_be_returned = Phenotype ( self.phenotypes )
+		to_be_returned.counts = dict( self.get_counts().items() )
+
+		return to_be_returned
+

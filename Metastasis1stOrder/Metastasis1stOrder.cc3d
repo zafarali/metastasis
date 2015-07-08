@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/Metastasis1stOrder.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Metastasis1stOrder.py</PythonScript>
+   <Resource Type="Python">Simulation/Metastasis1stOrderSteppables.py</Resource>
+   <PIFFile>Simulation/twocell.piff</PIFFile>        
+</Simulation>
