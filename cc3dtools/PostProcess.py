@@ -92,6 +92,7 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 		plt.ylabel('y-axis')
 		plt.title('Locations of Genomes at time of final sampling')
 
+	plt.axes().set_aspect('equal', 'datalim')
 	if plot_stack:
 		while len( plot_stack ):
 			args = plot_stack.pop()
@@ -303,6 +304,7 @@ class SpacePlot ( object ):
 			plt.title(title)
 
 
+		plt.axes().set_aspect('equal', 'datalim')
 
 		if save_fig:
 			plt.savefig( save_fig , format='png')
