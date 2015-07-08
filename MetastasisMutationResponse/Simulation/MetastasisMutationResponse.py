@@ -40,23 +40,10 @@ from MetastasisMutationResponseSteppables import MitosisSteppable
 MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
+from Metastasis1stOrderSteppables import SuperTracker
+SuperTrackerInstance = SuperTracker(sim, _frequency= 10 )
+steppableRegistry.registerSteppable(SuperTrackerInstance)
 
-from MetastasisMutationResponseSteppables import DeathSteppable
-DeathSteppableInstance=DeathSteppable(sim,_frequency=1)
-steppableRegistry.registerSteppable(DeathSteppableInstance)
-
-# 
-
-from MetastasisMutationResponseSteppables import NeighborTrackerPrinterSteppable
-steppableRegistry.registerSteppable( NeighborTrackerPrinterSteppable(_simulator = sim, _frequency = 10 ) )
-
-
-"""
-	COMMENT OUT DUE TO CLI MODE
-"""
-# from MetastasisV1Steppables import ExtraMultiPlotSteppable
-# extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
-# steppableRegistry.registerSteppable(extraMultiPlotSteppable)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         

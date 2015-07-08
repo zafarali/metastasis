@@ -317,3 +317,56 @@ class DeathSteppable(SteppableBasePy):
 #         #         if cell.type==1:
 #         #             cell.targetVolume==0
 #         #             cell.lambdaVolume==100
+
+
+class SuperTracker(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=10):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+        self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
+        self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
+
+    def step(self,mcs):
+        cancer1 = 0
+        cancer2 = 0
+        normal = 0
+        mean_normal_volume = 0
+        mean_cancer1_volume = 0
+        mean_cancer2_volume = 0
+        all_cells = 0
+        mean_overall_volume = 0
+
+        for cell in self.cellList:
+            if cell.type == self.NORMAL:
+                mean_normal_volume += cell.volume
+                normal += 1
+            elif cell.type == self.CANCER1:
+                mean_cancer1_volume += cell.volume
+                cancer1 += 1
+            elif cell.type == self.CANCER2:
+                mean_cancer2_volume += cell.volume
+                cancer2 += 1
+            
+            all_cells += 1
+            mean_overall_volume += cell.volume
+
+        mean_overall_volume = mean_overall_volume/float(all_cells) if all_cells > 0 else 0
+        mean_normal_volume = mean_normal_volume/float(normal) if normal > 0 else 0
+        mean_cancer2_volume =mean_cancer2_volume/ float(cancer2) if cancer2 > 0 else 0
+        mean_cancer1_volume =mean_cancer1_volume/ float(cancer1) if cancer1 > 0 else 0
+
+        self.cell_tracker.stash( [ mcs , 0 , normal ] )
+        self.cell_tracker.stash( [ mcs , 1 , cancer1 ] )
+        self.cell_tracker.stash( [ mcs , 2 , cancer2 ] )
+        self.cell_tracker.stash( [ mcs , -1 , all_cells ] )
+
+
+        self.volume_tracker.stash( [ mcs , 0 , mean_normal_volume ] )
+        self.volume_tracker.stash( [ mcs , 1 , mean_cancer1_volume ] )
+        self.volume_tracker.stash( [ mcs , 2 , mean_cancer2_volume ] )
+        self.volume_tracker.stash( [ mcs , -1 , mean_overall_volume ] )
+
+        
+    def finish(self):
+        self.cell_tracker.save_stash()
+        self.volume_tracker.save_stash()
+        

@@ -41,7 +41,9 @@ MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
 
-
+from Metastasis1stOrderSteppables import SuperTracker
+SuperTrackerInstance = SuperTracker(sim, _frequency= 10 )
+steppableRegistry.registerSteppable(SuperTrackerInstance)
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
         

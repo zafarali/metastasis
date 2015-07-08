@@ -40,16 +40,9 @@ from MetastasisCSCsSteppables import MitosisSteppable
 MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
         
-
-from MetastasisCSCsSteppables import DeathSteppable
-DeathSteppableInstance=DeathSteppable(sim,_frequency=1)
-steppableRegistry.registerSteppable(DeathSteppableInstance)
-
-# 
-
-from MetastasisCSCsSteppables import NeighborTrackerPrinterSteppable
-steppableRegistry.registerSteppable( NeighborTrackerPrinterSteppable(_simulator = sim, _frequency = 10 ) )
-
+from Metastasis1stOrderSteppables import SuperTracker
+SuperTrackerInstance = SuperTracker(sim, _frequency= 10 )
+steppableRegistry.registerSteppable(SuperTrackerInstance)
 
 """
 	COMMENT OUT DUE TO CLI MODE
