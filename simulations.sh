@@ -7,7 +7,8 @@ cd ~
 mkdir ~/simulation_out
 echo "simulation_out created"
 
-SIMULATIONS_NAME="$@"
+SIMULATION_TIMES="$1"
+SIMULATIONS_NAME="${@:2}"
 
 # run the simulations
 # cd CC3D_*
@@ -19,7 +20,7 @@ SIMULATIONS_NAME="$@"
 
 echo "running python dispatch_simulations"
 cd ~/summer15/metastasis
-python dispatch_simulations.py $SIMULATIONS_NAME
+python dispatch_simulations.py $SIMULATION_TIMES $SIMULATIONS_NAME
 echo "completed dispatch_simulations"
 cd ~
 
