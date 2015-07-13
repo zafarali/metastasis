@@ -247,10 +247,19 @@ if SPEC_lookup( 'global' , 'sample' ):
 								data = pp.frequency_analyze_ND( [ sample[i][1] , sample[-i-1][1] ] )
 								PostProcess.plot_2D_frequency(data , title='Shell ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) , \
 									save_fig=current_dir+'/2D_at_shell_'+str(i)+'.png' )
+
 								print2('Saved 2D Shell at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) )
+
+								if u'2D_pickles' in sampling[u'save']:
+									with open(current_dir+'/2Dfrequency_spectra_shell_'+str(i)+'.pickle', 'w') as f:
+										pickle.dump( data , f )
+										print2('Saved 2D analysis pickle')
+									#end with
+								#end if
+
 							except Exception as e:
 								print2('(!) Unable to save 2D Shell at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) + '\n'+ str(e) )
-
+							#end try
 						#endfor
 					#endif shell
 
@@ -262,6 +271,12 @@ if SPEC_lookup( 'global' , 'sample' ):
 								PostProcess.plot_2D_frequency(data , title='Adjacent ' + str(i) + ' / Clusters at distances: '+str(sample[i][0])+' and '+str(sample[i+1][0]) , \
 									save_fig=current_dir+'/2D_at_adjacent_'+str(i)+'.png' )
 								print2('Saved 2D adjacent slices at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) )
+
+								if u'2D_pickles' in sampling[u'save']:
+									with open(current_dir+'/2Dfrequency_spectra_adjacent_'+str(i)+'.pickle', 'w') as f:
+										pickle.dump( data , f )
+										print2('Saved 2D analysis pickle')
+
 							except Exception as e:
 								print2('(!) Unable to save 2D adjacent slices at distances: '+str(sample[i][0])+' and '+str(sample[-1-i][0]) + '\n'+ str(e) )
 						#endfor
@@ -272,14 +287,14 @@ if SPEC_lookup( 'global' , 'sample' ):
 		#endif save
 		
 		# save pickles
-		if u'counter_pickles' in sampling[u'save']:
-			with open(current_dir+'/counters.pickle', 'w') as f:
+		if u'sample_pickle' in sampling[u'save']:
+			with open(current_dir+'/samples.pickle', 'w') as f:
 				pickle.dump( sample , f )
-				print2('Saved counter pickle')
-		if u'analysis_pickles' in sampling[u'save']:
-			with open(current_dir+'/analysis.pickle', 'w') as f:
+				print2('Saved samples pickle')
+		if u'1D_pickles' in sampling[u'save']:
+			with open(current_dir+'/1Dfrequency_spectra.pickle', 'w') as f:
 				pickle.dump( analyzed , f )
-				print2('Saved analysis pickle')
+				print2('Saved 1D analysis pickles')
 		#endif pickles
 	#endfor
 #endif
