@@ -3,9 +3,12 @@ import sys
 from os import environ
 from os import getcwd
 import string
+import getpass
 
 sys.path.append(environ["PYTHON_MODULE_PATH"])
-sys.path.append('/Users/zafaraliahmed/summer15/metastasis/')
+
+user = getpass.getuser()
+sys.path.append('/Users/'+user+'/summer15/metastasis/')
 
 
 import CompuCellSetup
