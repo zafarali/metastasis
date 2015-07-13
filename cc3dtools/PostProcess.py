@@ -880,22 +880,119 @@ class PostProcess( object ):
 				plt.show()
 
 
-
-
-	def pickle_save( self ):
-		raise DeprecationWarning('This function is yet to be implemented')
-		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
-
-		pickle.dump( self.data , file( 'pp.executed.pickle' , 'w' ) )
+class TimeSeriesPlotters( object ):
+	"""
+		contains plotting functions for time series data
+	"""
 
 	@staticmethod
-	def from_pickle( file_name = 'pp.executed.pickle' ):
-		raise FutureWarning('This function is yet to be implemented')
-		to_return = PostProcess( 'x' , 'x' , pickle_import = True )
+	def process_counts( cell_counts, dtype=np.int ):
+		a = np.array( cell_counts, dtype = dtype )
 
-		to_return.data = pickle.load( file( file_name , 'r' ) )
-		to_return.__executed__ = True
-		to_return.__frompickle__ = True
+		allcells = a[np.where(a[:,1] == -1 )]
+		normal = a[np.where(a[:,1] == 0 )]
+		cancer1 = a[np.where(a[:,1] == 1 )]
+		cancer2 = a[np.where(a[:,1] == 2 )]
+
+		t = normal[:,0]
+
+		y0 = normal[:,2] 
+		y1 = cancer1[:,2]
+		y2 = cancer2[:,2]
+		a = allcells[:,2]
+
+		return t, y0, y1, y2, a
+
+
+	@staticmethod
+	def cell_counts_plot( cell_counts , file_name = './cell_count.png' ):		
+		"""
+			CELL NUMBER PLOTS
+		"""
+
+		plt.figure()
+
+		t, y0, y1, y2, _ = TimeSeriesPlotters.process_counts( cell_counts )
+
+		plt.plot(t, y0, label='normal cells')
+		if not all(y1):
+			plt.plot(t, y1, label='cancer1 cells')
+
+		if not all(y2):
+			plt.plot(t, y2, label='cancer2 cells')
+
+		plt.xlabel('Time (MCS)')
+		plt.ylabel('Number of cells')
+		plt.title('Number of cells in tumor vs time')
+		plt.legend()
+		plt.savefig( file_name , format='png')
+		plt.clf()
+
+	@staticmethod
+	def cell_proportions_plot( cell_counts , file_name = './cell_proportions.png' ):		
+		"""
+			CELL NUMBER PLOTS
+		"""
+
+		plt.figure()
+
+		t, y0, y1, y2, a = TimeSeriesPlotters.process_counts( cell_counts )
+
+		y0 = y0 / a.astype(float)
+		y1 = y1 / a.astype(float)
+		y2 = y2 / a.astype(float)
+
+		plt.plot(t, y0, label='normal cells')
+		if not all(y1):
+			plt.plot(t, y1, label='cancer1 cells')
+
+		if not all(y2):
+			plt.plot(t, y2, label='cancer2 cells')
+
+		plt.xlabel('Time (MCS)')
+		plt.ylabel('Proportion of cells')
+		plt.title('Proportion of cells in tumor vs time')
+
+		plt.legend()
+		plt.savefig( file_name , format='png')
+		plt.clf()
+
+	@staticmethod
+	def all_cells_plot ( cell_counts , file_name = './all_cells_plot.png' ):
+
+		t, y0, y1, y2, a = TimeSeriesPlotters.process_counts( cell_counts )
+
+		plt.plot(t, a, )
+
+		plt.xlabel('Time (MCS)')
+		plt.ylabel('Number of cells')
+		plt.title('Number of cells in tumor vs time')
+
+		plt.savefig( file_name , format='png')
+		plt.clf()
+
+
+
+	@staticmethod
+	def volume_plot( volume_data , file_name = './volume_plot.png' ):
+
+		t, y0, y1, y2, a = TimeSeriesPlotters.process_counts( volume_data , dtype=np.float)
+
+
+		plt.plot(t, y0, label='normal cells')
+		if not all(y1):
+			plt.plot(t, y1, label='cancer1 cells')
+
+		if not all(y2):
+			plt.plot(t, y2, label='cancer2 cells')
+
+		plt.xlabel('Time (MCS)')
+		plt.ylabel('Mean Volume of Cells')
+		plt.title('Volume of cells in tumor vs time')
+		plt.legend()
+		plt.savefig( file_name , format='png')
+
+		plt.clf()
 
 
 
