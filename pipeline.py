@@ -130,7 +130,7 @@ print2('saving to:' + FILES['out'])
 
 
 
-from cc3dtools.PostProcess import SpacePlot, PostProcess
+from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters
 from cc3dtools.GenomeCompare import GenomeCompare
 from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
@@ -153,9 +153,10 @@ if SPEC_lookup('global', 'spatial_plot'):
 """
 L I N E A G E S
 """
-ml = MultiLineage( file_name = FILES['division'] )
 
 if SPEC_lookup( 'global' , 'multilineage' ):
+	ml = MultiLineage( file_name = FILES['division'] )
+
 	if SPEC_lookup('multilineage', 'color_by_initial'):
 		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
 		# print member_lists[0]
@@ -191,12 +192,14 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 	Sampling
 """
 
-gc = GenomeCompare.from_gen_file(FILES['genomes'])
-print2('Loaded GenomeCompare module')
-pp = PostProcess(end_file=FILES['finish'], gc=gc)
-print2('Loaded PostProcess module')
 
 if SPEC_lookup( 'global' , 'sample' ):
+
+	gc = GenomeCompare.from_gen_file(FILES['genomes'])
+	print2('Loaded GenomeCompare module')
+	pp = PostProcess(end_file=FILES['finish'], gc=gc)
+	print2('Loaded PostProcess module')
+
 	for i, sampling in enumerate(sampling_strategies):
 		current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
 		os.makedirs( current_dir )
@@ -320,82 +323,14 @@ if SPEC_lookup( 'global', 'cell_plots' ):
 
 	if success:
 		try:
-			a = np.array( cell_counts, dtype = np.int )
-
-			allcells = a[np.where(a[:,1] == -1 )]
-			normal = a[np.where(a[:,1] == 0 )]
-			cancer1 = a[np.where(a[:,1] == 1 )]
-			cancer2 = a[np.where(a[:,1] == 2 )]
-
-			"""
-				PROPORTION PLOTS
-			"""
-			t = normal[:,0]
-
-			y0 = normal[:,2] / allcells[:,2].astype(float)
-			y1 = cancer1[:,2] / allcells[:,2].astype(float)
-			y2 = cancer2[:,2] / allcells[:,2].astype(float)
-
-			plt.figure
-
-			plt.plot(t, y0, label='normal cells')
-			if not all(y1):
-				plt.plot(t, y1, label='cancer1 cells')
-
-			if not all(y2):
-				plt.plot(t, y2, label='cancer2 cells')
-
-			plt.xlabel('Time (MCS)')
-			plt.ylabel('Proportion of cells')
-			plt.title('Proportion of cells in tumor vs time')
-			plt.legend()
-			plt.savefig( FILES['out']+'/cell_proportions.png' , format='png')
+			TimeSeriesPlotters.cell_proportions_plot( cell_counts , file_name = FILES['out']+'/cell_proportions.png' )
 			print2('saved proportion_plots')
 
-			"""
-				CELL NUMBER PLOTS
-			"""
-			t = normal[:,0]
-
-			y0 = normal[:,2] 
-			y1 = cancer1[:,2]
-			y2 = cancer2[:,2]
-
-			
-
-
-			plt.plot(t, y0, label='normal cells')
-			if not all(y1):
-				plt.plot(t, y1, label='cancer1 cells')
-
-			if not all(y2):
-				plt.plot(t, y2, label='cancer2 cells')
-
-			plt.xlabel('Time (MCS)')
-			plt.ylabel('Count of cells')
-			plt.title('Count of cells in tumor vs time')
-			plt.legend()
-			plt.savefig( FILES['out']+'/cell_count.png' , format='png')
-			
+			TimeSeriesPlotters.cell_counts_plot( cell_counts , file_name = FILES['out']+'/cell_counts.png' )
 			print2('saved cell_number plots')
 
-			"""
-				TOTAL CELLS
-			"""
-			
-			t = normal[:,0]
-			y = allcells[:,2]
-
-			
-			plt.plot(t, y)
-
-			plt.xlabel('Time (MCS)')
-			plt.ylabel('Number of cells')
-			plt.title('Number of cells in tumor vs time')
-			
-			plt.savefig( FILES['out']+'/all_cells_counts.png' , format='png')
-
-			print2('saved all_cells graph')
+			TimeSeriesPlotters.all_cells_plot( cell_counts , file_name = FILES['out']+'/all_cells_plot.png' )
+			print2('saved all cells plot')
 
 		except Exception as e:
 			print2('(!) SOFT FAIL: \n'+str(e))
@@ -423,56 +358,9 @@ if SPEC_lookup( 'global', 'volume_plots' ):
 
 	if success:
 		try:
-			a = np.array( volume_data, dtype = np.float )
-
-			allcells = a[np.where(a[:,1] == -1 )]
-			normal = a[np.where(a[:,1] == 0 )]
-			cancer1 = a[np.where(a[:,1] == 1 )]
-			cancer2 = a[np.where(a[:,1] == 2 )]
-
-
-			"""
-				VOLUME PLOTS
-			"""
-			t = normal[:,0]
-
-			y0 = normal[:,2] 
-			y1 = cancer1[:,2]
-			y2 = cancer2[:,2]
-
-			
-			plt.plot(t, y0, label='normal cells')
-			if not all(y1):
-				plt.plot(t, y1, label='cancer1 cells')
-
-			if not all(y2):
-				plt.plot(t, y2, label='cancer2 cells')
-
-			plt.xlabel('Time (MCS)')
-			plt.ylabel('Mean Volume of Cells')
-			plt.title('Volume of cells in tumor vs time')
-			plt.legend()
-			plt.savefig( FILES['out']+'/volume_plot.png' , format='png')
+			TimeSeriesPlotters.volume_plot( volume_data, FILES['out']+'/volume_plot.png' )
 			
 			print2('saved volume plots')
-
-			"""
-				ALL volume_plots
-			"""
-			
-			t = normal[:,0]
-			y = allcells[:,2]
-
-			
-			plt.plot(t, y)
-
-			plt.xlabel('Time (MCS)')
-			plt.ylabel('Mean Volume of Cells')
-			plt.title('Volume of cells in tumor vs time')
-
-			plt.savefig( FILES['out']+'/all_cells_volume.png' , format='png')
-
-			print2('saved all_cells volume graph')
 
 		except Exception as e:
 			print2('(!) SOFT FAIL: \n'+str(e))
