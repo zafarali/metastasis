@@ -153,14 +153,7 @@ class Genome(object):
 
 		self.chromosomes = [ Chromosome( mutation_rate = self.mutation_rate , chromosome_order = self.genome_order , name = self.name + '_' + str(i) ) for i in xrange( ploidy ) ]
 
-		if ploidy == 1:
-			# to maintain backward compatibility, if there is only one chromosome
-			# we link the references of the genome to that of its only chromosome
-			self.mutated_loci = self.chromosomes[0].mutated_loci
-		else:
-			# if not ploidy == 1
-			# we create an empty set
-			self.mutated_loci = list()
+		self.mutated_loci = list()
 
 	
 	def replicate ( self , name = '' ):
@@ -174,8 +167,21 @@ class Genome(object):
 
 		replicated_chromosomes = []
 
+
 		for i , chromosome in enumerate( self.chromosomes ):
-			replicated_chromosomes.append( chromosome.replicate( name = name + '_' + str(i) ) )
+			replicated_chromosomes.append( chromosome.replicate( name = chromosome.name ) )
+
+			replication_error = np.random.uniform() < self.ploidy_probability
+
+			if replication_error:
+				if np.random.uniform() < 0.5:
+					# replicate this chromosome twice
+					replicated_chromosomes.append( chromosome.replicate( name = chromosome.name+'_replicated' ) )
+				else:
+					# delete a random chromsome
+					replicated_chromosomes.pop( np.random.randint( len(replicated_chromosomes) ) )
+		
+
 
 		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
 		
@@ -189,10 +195,10 @@ class Genome(object):
 			mutates the genome and returns the loci that were mutated
 		"""	
 
-		loci = set()
+		loci = list()
 
 		for chromosome in self.chromosomes:
-			loci = loci.union( chromsome.mutate() )		
+			loci = loci.extend( chromsome.mutate() )		
 
 		# update the mutated_loci array
 		self.mutated_loci = self.mutated_loci.extend( loci )
@@ -201,29 +207,26 @@ class Genome(object):
 		# return mutated loci
 		return loci
 
-	#@TODO
-	def get_mutated_loci ( self , form = 'list', method = 'list' ):
+
+	def get_mutated_loci ( self , form = 'list', method = 'list', unique_only = False ):
 		""" 
 			@params: form / str / list
-				the format of the return
+						the format of the return
+					method / str / list
+						the format of the return
+					unique_only / bool / False
+						returns only unique mutations as a set()
+
 			@return: list of ints
-				location of the loci of the mutation (bits that are 1)
+					location of the loci of the mutation (bits that are 1)
 		"""
 		# if form == 'set':
 		# 	print 'SET is no longer supported as a method of export'
-		if len(self.chromsomes) == 1:
-			if form == 'set' or method == 'set':
-				return self.mutated_loci
-			else:
-				return list( self.mutated_loci )
 
-		for chromsome in chromsomes:
-			get_mutated_loci
+		if form == 'set' or method == 'set' or unique_only:
+			return set(self.mutated_loci)
 
-		if form == 'set':
-			return self.mutated_loci
-
-		return list( self.mutated_loci )
+		return self.mutated_loci 
 
 	def annotate ( self , locus , name ):
 		self.annotations[name] = locus
