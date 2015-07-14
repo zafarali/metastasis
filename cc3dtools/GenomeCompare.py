@@ -179,7 +179,7 @@ class GenomeCompare:
 		return GenomeCompare( genomes = genomes )
 
 	@staticmethod
-	def from_gen_file2( file_name , old = False ):
+	def from_gen2_file( file_name ):
 		"""
 			use a new gen_file generated from multiple chromosomes to get genomes
 		"""
@@ -204,24 +204,17 @@ class GenomeCompare:
 							ploidy_probability = ploidy_probability, genome_order = genome_order  )
 
 
-					current_G = int( row[1] )
+					current_G = str( row[1] )
 					genome_details['mutation_rate'] = int( row[2] )
-					genome_details['ploidy_probability'] = int( row[3] )
+					genome_details['ploidy_probability'] = float( row[3] )
 					genome_details['genome_order'] = int( row[4] )
 					genome_details['chromosome_data'] = []
 					continue
 				else:
 					genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
 
+		return GenomeCompare( genomes = genomes )
 
-
-
-
-
-
-
-
-		pass
 
 	@staticmethod
 	def from_aligned_gen_file ( file_name ):

@@ -253,12 +253,12 @@ class Genome(object):
 		"""
 			Generates a Genome from an array of chromsome loci
 		"""
-		to_return = Genome( mutation_rate = mutated_loci , ploidy_probability = ploidy_probability, genome_order = genome_order )
+		to_return = Genome( mutation_rate = mutation_rate , ploidy_probability = ploidy_probability, genome_order = genome_order )
 		chromosomes = []
 		mutated_loci = []
 		for chromosome in chromosome_data:
-			chromsomes.append( Chromosome.from_mutated_loci( chromosome['loci'] , mutation_rate = chromosome['mutation_rate'], name= chromosome['name']) )
-			mutated_loci.extend( chromsome['loci'] )
+			chromosomes.append( Chromosome.from_mutated_loci( chromosome['loci'] , mutation_rate = chromosome['mutation_rate'], name= chromosome['name']) )
+			mutated_loci.extend( chromosome['loci'] )
 
 		to_return.mutated_loci = mutated_loci
 		to_return.chromosomes = chromosomes
@@ -346,12 +346,15 @@ def save_genomes2( genomes , file_name = 'genomes_saved_output'):
 	"""
 		method for saving new genomes, supply an array of Genome objects
 	"""
+	assert genomes is not None ,  'you must supply an array of genomes as the first argument'
+	assert len( genomes ) > 0 , 'you must supply at least one genome'
+	import csv
 	with open( file_name + '.gen2' , 'w' ) as f:
 		writer = csv.writer( f )
 		for genome in genomes:
 			writer.writerow( [ 'G', genome.name, genome.mutation_rate, genome.ploidy_probability , genome.genome_order ] )
-			for chromsome in genome.chromsomes:
-				writer.writerow( [ chromosome.name, chromsome.mutation_rate ] + sorted( chromsome.get_mutated_loci() ) )
+			for chromosome in genome.chromosomes:
+				writer.writerow( [ chromosome.name, chromosome.mutation_rate ] + sorted( chromosome.get_mutated_loci() ) )
 	print('saved genome data to ' + file_name + '.gen2' )
 
 def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'naive' ):
