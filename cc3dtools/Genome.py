@@ -3,6 +3,19 @@
 ## V0.2
 import numpy as np
 
+class Chromosome(object):
+	def __init__ ( self , **kwargs ):
+		"""
+			holds a chromosome
+
+		"""
+		pass
+
+class Genome2(object):
+	def __init__ ( self , **kwargs ):
+		pass
+
+
 """
 	Genome
 		emulates a 'genome' of a cell. has replication and mutation capabilities
@@ -214,12 +227,6 @@ class Mutation(object):
 		return hash(self.locus)
 
 
-class GenomeCompare:
-	def __init__ ( self, genomes = [ None , None ] ):
-		"""
-			GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare
-		"""
-		raise DeprecationWarning('GenomeCompare has been moved to its own file. Reimport from cc3dtools.GenomeCompare' )
 
 def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'naive' ):
 	"""
