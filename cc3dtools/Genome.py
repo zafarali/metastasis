@@ -108,12 +108,12 @@ class Chromosome(object):
 		# a location is given in terms of a int, create a mutation object and check if it exists
 		return Mutation(location) in self.mutated_loci
 	
-@staticmethod
-def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name = '' ):
-	to_return = Chromosome( name = name , mutation_rate = mutation_rate )
-	to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
+	@staticmethod
+	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name = '' ):
+		to_return = Chromosome( name = name , mutation_rate = mutation_rate )
+		to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
 
-	return to_return
+		return to_return
 
 
 
@@ -180,7 +180,6 @@ class Genome(object):
 				else:
 					# delete a random chromsome
 					replicated_chromosomes.pop( np.random.randint( len(replicated_chromosomes) ) )
-		
 
 
 		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
@@ -190,7 +189,7 @@ class Genome(object):
 		return replicated_genome
 
 
-	def mutate ( self ):
+	def mutate ( self , unique_only = False):
 		"""
 			mutates the genome and returns the loci that were mutated
 		"""	
@@ -203,6 +202,8 @@ class Genome(object):
 		# update the mutated_loci array
 		self.mutated_loci = self.mutated_loci.extend( loci )
 
+		if unique_only:
+			return set(loci)
 
 		# return mutated loci
 		return loci
@@ -245,9 +246,21 @@ class Genome(object):
 		raise DeprecationWarning('Genome.is_mutated is no longer supported')
 
 	@staticmethod
-	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name= '' ):
-		#@TODO
-		pass
+	def from_chromosome_data ( chromosome_data , mutation_rate = 0 , name = '' , ploidy_probability = 0 , genome_order = 15 ):
+		"""
+			Generates a Genome from an array of chromsome loci
+		"""
+		to_return = Genome( mutation_rate = mutated_loci , ploidy_probability = ploidy_probability, genome_order = genome_order )
+		chromosomes = []
+		mutated_loci = []
+		for chromosome in chromosome_data:
+			chromsomes.append( Chromosome.from_mutated_loci( chromosome['loci'] , mutation_rate = chromosome['mutation_rate'], name= chromosome['name']) )
+			mutated_loci.extend( chromsome['loci'] )
+
+		to_return.mutated_loci = mutated_loci
+		to_return.chromosomes = chromosomes
+
+		return to_return
 
 
 """
@@ -326,6 +339,17 @@ class Mutation(object):
 		return hash(self.locus)
 
 
+def save_genomes2( genomes , file_name = 'genomes_saved_output'):
+	"""
+		method for saving new genomes, supply an array of Genome objects
+	"""
+	with open( file_name + '.gen2' , 'w' ) as f:
+		writer = csv.writer( f )
+		for genome in genomes:
+			writer.writerow( [ 'G', genome.name, genome.mutation_rate, genome.ploidy_probability , genome.genome_order ] )
+			for chromsome in genome.chromsomes:
+				writer.writerow( [ chromosome.name, chromsome.mutation_rate ] + sorted( chromsome.get_mutated_loci() ) )
+	print('saved genome data to ' + file_name + '.gen2' )
 
 def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'naive' ):
 	"""
@@ -390,3 +414,8 @@ def save_genomes( genomes , file_name = 'genomes_saved_output.csv' , method = 'n
 				writer.writerow( [ genome.name, genome.mutation_rate ] + sorted( genome.get_mutated_loci() ) )
 		print 'saved genome data to '+file_name
 
+def csv_to_gen2( file_name ):
+	"""
+		converts an old genome saved in the csv format into the new gen2 format
+	"""
+	pass

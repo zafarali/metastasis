@@ -179,6 +179,51 @@ class GenomeCompare:
 		return GenomeCompare( genomes = genomes )
 
 	@staticmethod
+	def from_gen_file2( file_name , old = False ):
+		"""
+			use a new gen_file generated from multiple chromosomes to get genomes
+		"""
+		import csv
+		genomes = {}
+
+		with open( file_name , 'r' ) as f:
+			reader = csv.reader( f )
+
+			current_G = None
+			genome_details = {}
+
+			for row in reader:
+				if row[0] == 'G':
+					if current_G is not None:
+						# save all the previous data we collected
+						chromosome_data = genome_details['chromosome_data']
+						mutation_rate = genome_details['mutation_rate']
+						ploidy_probability = genome_details['ploidy_probability']
+						genome_order = genome_details['genome_order']
+						genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
+							ploidy_probability = ploidy_probability, genome_order = genome_order  )
+
+
+					current_G = int( row[1] )
+					genome_details['mutation_rate'] = int( row[2] )
+					genome_details['ploidy_probability'] = int( row[3] )
+					genome_details['genome_order'] = int( row[4] )
+					genome_details['chromosome_data'] = []
+					continue
+				else:
+					genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
+
+
+
+
+
+
+
+
+
+		pass
+
+	@staticmethod
 	def from_aligned_gen_file ( file_name ):
 		"""
 			imports the new format of aligned gen_file and returns a GenomeCompare object
