@@ -133,17 +133,35 @@ class Genome(object):
 				the order of the genome (10^genome_order)
 			name / str / ''
 				name of the genome
+			ploidy / int / 2
+				number of sets of chromosomes
 		"""
 
 		self.genome_order = int ( kwargs.get( 'genome_order', 15 ) )
 
 		self.name = kwargs.get( 'name' , '' )
+		
+		self.ploidy_probability = int ( kwargs.get( 'ploidy_probability' , 0 ) )
+
+		ploidy = kwargs.get( 'ploidy' , 1 )
 
 		self.mutation_rate = int( kwargs.get( 'mutation_rate' , 0 ) )
 		assert self.mutation_rate > -1 , ' mutation rate cannot be negative '
 
 		self.annotations = {}
-		self.mutated_loci = set()
+		
+
+		self.chromosomes = [ Chromosome( mutation_rate = self.mutation_rate , chromosome_order = self.genome_order , name = self.name + '_' + str(i) ) for i in xrange( ploidy ) ]
+
+		if ploidy == 1:
+			# to maintain backward compatibility, if there is only one chromosome
+			# we link the references of the genome to that of its only chromosome
+			self.mutated_loci = self.chromosomes[0].mutated_loci
+		else:
+			# if not ploidy == 1
+			# we create an empty set
+			self.mutated_loci = list()
+
 	
 	def replicate ( self , name = '' ):
 		"""
@@ -153,11 +171,15 @@ class Genome(object):
 				name / str
 				the name of the new genome
 		"""
-		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
-		# replicated_genome.mutated_loci.extend( self.mutated_loci )
-		replicated_genome.mutated_loci = replicated_genome.mutated_loci.union( self.mutated_loci )
 
-		replicated_genome.annotations = dict( self.annotations )
+		replicated_chromosomes = []
+
+		for i , chromosome in enumerate( self.chromosomes ):
+			replicated_chromosomes.append( chromosome.replicate( name = name + '_' + str(i) ) )
+
+		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
+		
+		replicated_genome.chromosomes = replicated_chromosomes
 
 		return replicated_genome
 
@@ -166,38 +188,21 @@ class Genome(object):
 		"""
 			mutates the genome and returns the loci that were mutated
 		"""	
-		# generate how many mutations we want
-		number_of_mutations = np.random.poisson( self.mutation_rate )
-		# generate random numbers representing loci
 
+		loci = set()
 
-		# loci = map( Mutation ,  np.around( np.random.uniform(  size = number_of_mutations ) , decimals = self.genome_order ) )
-		loci = set( map( Mutation ,  np.random.randint( 10 ** self.genome_order , size = number_of_mutations ) ) )
-		# print loci
-		# store the loci in mutated_loci if they aren't already there to represent
-		
-		# for locus in loci:
-		# 	# if locus in self.mutated_loci:
-		# 	# 	# If they are there, remove that loci to represent 
-		# 	# 	self.mutated_loci.remove( locus )
-		# 	# else:
-		# 		# a bit flip to 1
-		# 		self.mutated_loci.add( locus )
+		for chromosome in self.chromosomes:
+			loci = loci.union( chromsome.mutate() )		
 
-		# for locus in loci:
-		# 	if not ( locus in self.mutated_loci ) :
-		# 		self.mutated_loci.add( locus )
-		
+		# update the mutated_loci array
+		self.mutated_loci = self.mutated_loci.extend( loci )
 
-		## The probability of two loci being the same is extremely small 1e-10
-		# self.mutated_loci.extend( loci )
-
-		self.mutated_loci = self.mutated_loci.union( loci )
 
 		# return mutated loci
 		return loci
 
-	def get_mutated_loci ( self , form = 'list' ):
+	#@TODO
+	def get_mutated_loci ( self , form = 'list', method = 'list' ):
 		""" 
 			@params: form / str / list
 				the format of the return
@@ -206,6 +211,15 @@ class Genome(object):
 		"""
 		# if form == 'set':
 		# 	print 'SET is no longer supported as a method of export'
+		if len(self.chromsomes) == 1:
+			if form == 'set' or method == 'set':
+				return self.mutated_loci
+			else:
+				return list( self.mutated_loci )
+
+		for chromsome in chromsomes:
+			get_mutated_loci
+
 		if form == 'set':
 			return self.mutated_loci
 
@@ -225,31 +239,12 @@ class Genome(object):
 			@return
 				boolean: depending on if the gene has been mutated
 		"""
-
-		
-		# get locus
-			# if no locus, get the name
-			# get the locus of that name
-			# if no locus related to the name, return None
-
-		location = kwargs.get( 'locus' , self.annotations.get( kwargs.get( 'name' , None ) or kwargs.get( 'annotation' , None ) , None ) )
-
-		# if no location is given return false
-		if location is None:
-			return False
-
-		# if a mutation is given as a search term, check for the mutation itself
-		if isinstance( location , Mutation ):
-			return location in self.mutated_loci
-
-		# a location is given in terms of a int, create a mutation object and check if it exists
-		return Mutation(location) in self.mutated_loci
+		raise DeprecationWarning('Genome.is_mutated is no longer supported')
 
 	@staticmethod
 	def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name= '' ):
-		to_return = Genome( name=name , mutation_rate = mutation_rate )
-		to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
-		return to_return
+		#@TODO
+		pass
 
 
 """
