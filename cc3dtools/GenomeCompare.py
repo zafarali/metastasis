@@ -202,7 +202,7 @@ class GenomeCompare:
 						genome_order = genome_details['genome_order']
 						genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
 							ploidy_probability = ploidy_probability, genome_order = genome_order  )
-
+					#endif
 
 					current_G = str( row[1] )
 					genome_details['mutation_rate'] = int( row[2] )
@@ -212,6 +212,9 @@ class GenomeCompare:
 					continue
 				else:
 					genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
+				#endif
+			#endfor
+		#endwith
 
 		return GenomeCompare( genomes = genomes )
 

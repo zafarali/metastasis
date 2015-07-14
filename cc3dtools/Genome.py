@@ -424,4 +424,20 @@ def csv_to_gen2( file_name ):
 	"""
 		converts an old genome saved in the csv format into the new gen2 format
 	"""
-	pass
+	import csv
+	with open( file_name , 'r' ) as f_in:
+		with open( file_name.replace('.csv', '.gen2') ,  'w' ) as f_out:
+			writer = csv.writer( f_out )
+			reader = csv.reader( f_in )
+
+
+			for i, row in enumerate(reader):
+				# write in the genome headers
+				writer.writerow( [ 'G' , row[0] , row[1] , 0 , 15 ] )
+				# write in the chromosome data
+				writer.writerow( row )
+			#endfor
+		#endwith
+	#endwith
+
+
