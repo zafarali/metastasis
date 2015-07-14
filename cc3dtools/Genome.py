@@ -1,19 +1,120 @@
 ### WRITTEN BY ZAFARALI AHMED
-### June 2015
-## V0.2
+### July 2015
+## V0.3
 import numpy as np
 
 class Chromosome(object):
 	def __init__ ( self , **kwargs ):
 		"""
 			holds a chromosome
-
+			@params:
+			mutation_rate / int / 0
+				the mean number of new mutations that will be produced
+				every mutate() event.
+			chromosome_order / int / 15
+				the number of loci in the genome ( 10^chromosome_order )
+			name / str / ''
+				the name of the chromosome.
 		"""
-		pass
 
-class Genome2(object):
-	def __init__ ( self , **kwargs ):
-		pass
+		self.name = kwargs.get( 'name' , '' )
+
+		self.chromosome_order = int ( kwargs.get( 'chromosome_order' , 15 ) )
+		self.mutation_rate = int ( kwargs.get( 'mutation_rate' , 0 ) )
+		assert self.mutation_rate > - 1 , 'mutation rate cannot be negative'
+
+		self.annotations = {}
+		self.mutated_loci = set()
+
+	def replicate( self , name = '' ):
+		"""
+			replicates the current chromosome and all its features
+			and returns a new one
+			@params
+				name / str
+					the name of the new chromosome
+		"""
+
+		replicated_chromosome = Chromosome( mutation_rate = self.mutation_rate , chromosome_order = self.chromosome_order , name = name )
+		replicated_chromosome.mutated_loci = replicated_chromosome.mutated_loci.union( self.mutated_loci )
+
+		replicated_chromosome.annotations = dict( self.annotations )
+
+		return replicated_chromosome
+
+	def mutate( self ):
+		"""
+			Mutates the chromosome
+			@returns:
+				set / the loci which were mutated
+		"""
+
+		# generate the number of mutations needed
+		number_of_mutations = np.random.poisson( self.mutation_rate )
+		number_of_loci = 10**self.genome_order
+
+		loci = set( map( Mutation , np.random.randint( number_of_loci , size = number_of_mutations ) ) )
+
+
+		self.mutated_loci = self.mutated_loci.union( loci )
+
+		# return the newly mutated loci / can be used by cc3dtools.Phenotype
+		return loci
+
+	def get_mutated_loci ( self , form = 'list' ):
+		""" 
+			@params: form / str / list
+				the format of the return
+			@return: list of ints
+				location of the loci of the mutation (bits that are 1)
+		"""
+
+		if form == 'set':
+			return self.mutated_loci
+
+		return list( self.mutated_loci )
+
+	def annotate( self , locus , name ):
+		self.annotations[name] = locus
+
+	def is_mutated ( self , **kwargs ):
+		"""
+			is_mutated
+				returns if a locus or specified annotation is mutated (i.e bit == 1)
+			@params
+				locus: index of gene
+				name: annotation of the locus (use Genome.annotate to annotate loci)
+				annotation: annotation of the locus (use Genome.annotate to annotate loci)
+			@return
+				boolean: depending on if the gene has been mutated
+		"""
+
+		
+		# get locus
+			# if no locus, get the name
+			# get the locus of that name
+			# if no locus related to the name, return None
+
+		location = kwargs.get( 'locus' , self.annotations.get( kwargs.get( 'name' , None ) or kwargs.get( 'annotation' , None ) , None ) )
+
+		# if no location is given return false
+		if location is None:
+			return False
+
+		# if a mutation is given as a search term, check for the mutation itself
+		if isinstance( location , Mutation ):
+			return location in self.mutated_loci
+
+		# a location is given in terms of a int, create a mutation object and check if it exists
+		return Mutation(location) in self.mutated_loci
+	
+@staticmethod
+def from_mutated_loci ( mutated_loci , mutation_rate = 0 , name = '' ):
+	to_return = Chromosome( name = name , mutation_rate = mutation_rate )
+	to_return.mutated_loci = set( map( Mutation , sorted( list( mutated_loci ) ) ) )
+
+	return to_return
+
 
 
 """
