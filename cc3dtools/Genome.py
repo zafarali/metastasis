@@ -51,7 +51,7 @@ class Chromosome(object):
 
 		# generate the number of mutations needed
 		number_of_mutations = np.random.poisson( self.mutation_rate )
-		number_of_loci = 10**self.genome_order
+		number_of_loci = 10**self.chromosome_order
 
 		loci = set( map( Mutation , np.random.randint( number_of_loci , size = number_of_mutations ) ) )
 
@@ -135,13 +135,16 @@ class Genome(object):
 				name of the genome
 			ploidy / int / 2
 				number of sets of chromosomes
+			ploidy_probability / float / 0
+				the probability of a ploidy event
 		"""
 
 		self.genome_order = int ( kwargs.get( 'genome_order', 15 ) )
 
-		self.name = kwargs.get( 'name' , '' )
+		self.name = kwargs.get( 'name' , '' ) 
 		
-		self.ploidy_probability = int ( kwargs.get( 'ploidy_probability' , 0 ) )
+		self.ploidy_probability = float ( kwargs.get( 'ploidy_probability' , 0 ) )
+		assert self.ploidy_probability <= 1 and self.ploidy_probability >= 0, 'ploidy_probability must be between 0 and 1'
 
 		ploidy = kwargs.get( 'ploidy' , 1 )
 
@@ -194,13 +197,13 @@ class Genome(object):
 			mutates the genome and returns the loci that were mutated
 		"""	
 
-		loci = list()
+		loci = []
 
 		for chromosome in self.chromosomes:
-			loci = loci.extend( chromsome.mutate() )		
+			loci.extend( chromosome.mutate() )		
 
 		# update the mutated_loci array
-		self.mutated_loci = self.mutated_loci.extend( loci )
+		self.mutated_loci.extend( loci )
 
 		if unique_only:
 			return set(loci)
