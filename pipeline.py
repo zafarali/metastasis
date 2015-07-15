@@ -91,7 +91,10 @@ with open( FILES['specifications'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		SPECS[ row[0] ] = SPECS.get( row[0] , {} )
-		SPECS[ row[0] ][ row[1] ] = row[2:]
+		if len( row[2:] ) == 1:
+			SPECS[ row[0] ][ row[1] ] = row[2:][0]
+		else:
+			SPECS[ row[0] ][ row[1] ] = row[2:]
 
 # convinience method for looking up SPEC object
 def SPEC_lookup( function_name , argument_name , default = None ):
@@ -240,6 +243,17 @@ if SPEC_lookup( 'global' , 'sample' ):
 						print2('(!) Unable to save 1D frequency plot at '+str( analysis[0] ) +'\n'+str(e) )
 				#endfor
 			#endif
+
+			if u'1D_plots_scaled' in sampling[u'save']:
+				for analysis in analyzed:
+					try:
+						PostProcess.plot_frequency_graph(analysis[1], title = 'Distance : '+str( analysis[0] ) , save_fig = current_dir + '/1D_scaled_at_'+ str( analysis[0] ) + '.png' , scaled = True , ymax = int( SPEC_lookup( 'plots' , '1dscale' , 10000 )  ) ) 
+						print2('Saved scaled 1D frequency plot at '+ str( analysis[0] ) )
+					except Exception as e:
+						print2('(!) Unable to save scaled 1D frequency plot at '+str( analysis[0] ) +'\n'+str(e) )
+				#endfor
+			#endif
+
 
 			if u'2D_plots' in sampling[u'save']:
 				if sampling[u'2D_methodology']:

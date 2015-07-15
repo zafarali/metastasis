@@ -801,7 +801,7 @@ class PostProcess( object ):
 		return I, len( clusters[0] ) , len( clusters[1] )
 
 	@staticmethod
-	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None ):
+	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None , scaled = True, ymax = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:
@@ -830,10 +830,22 @@ class PostProcess( object ):
 
 			plt.title('( # of shared mutations ) VS ( # of cells ) '+title)
 
+			if scaled:
+				if ymax is None:
+					ymax = y.mean() + y.std()
+				#end if
+
+				plt.ylim( [ 0 , ymax ] )
+				plt.xlim( [ 0 , 1 ] )
+
+			#end if
+
 			if plot_stack:
 				while len( plot_stack ):
 					args = plot_stack.pop()
 					plt.plot(*args)
+				#endwhile
+			#endif
 
 			if save_fig:
 				plt.savefig( save_fig , format='png')
