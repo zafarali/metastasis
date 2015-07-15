@@ -154,7 +154,7 @@ class Genome(object):
 		self.annotations = {}
 		
 
-		self.chromosomes = [ Chromosome( mutation_rate = self.mutation_rate , chromosome_order = self.genome_order , name = self.name + '_' + str(i) ) for i in xrange( ploidy ) ]
+		self.chromosomes = [ Chromosome( mutation_rate = self.mutation_rate , chromosome_order = self.genome_order , name = str(self.name) + '_' + str(i) ) for i in xrange( ploidy ) ]
 
 		self.mutated_loci = list()
 
@@ -226,6 +226,13 @@ class Genome(object):
 		"""
 		# if form == 'set':
 		# 	print 'SET is no longer supported as a method of export'
+
+		if len(self.mutated_loci) == 0:
+			for chromosome in self.chromosomes:
+				self.mutated_loci.extend( chromosome.get_mutated_loci( form = 'list' ) )
+			#end for
+		#end if
+
 
 		if form == 'set' or method == 'set' or unique_only:
 			return set(self.mutated_loci)

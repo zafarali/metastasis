@@ -152,8 +152,13 @@ class GenomeCompare:
 		"""
 			returns a genome referenced by its @param'name'
 		"""
-
-		return self.genomes[ name ]
+		try:
+			return self.genomes[ name ]
+		except KeyError:
+			try:
+				return self.genomes[ str(name) ]
+			except KeyError:
+				return False
 
 	@staticmethod
 	def from_gen_file ( file_name , old = False ):
