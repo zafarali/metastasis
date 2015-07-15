@@ -100,6 +100,8 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 	if save_fig:
 		plt.savefig( save_fig , format='png')
+		plt.clf()
+		plt.cla()
 	else:
 		plt.show()
 
@@ -308,6 +310,8 @@ class SpacePlot ( object ):
 
 		if save_fig:
 			plt.savefig( save_fig , format='png')
+			plt.clf()
+			plt.cla()
 		else:
 			plt.show()
 
@@ -833,6 +837,8 @@ class PostProcess( object ):
 
 			if save_fig:
 				plt.savefig( save_fig , format='png')
+				plt.clf()
+				plt.cla()
 			else:
 				plt.show()
 
@@ -876,6 +882,8 @@ class PostProcess( object ):
 			
 			if save_fig:
 				plt.savefig( save_fig , format='png')
+				plt.clf()
+				plt.cla()
 			else:
 				plt.show()
 
@@ -927,6 +935,7 @@ class TimeSeriesPlotters( object ):
 		plt.legend()
 		plt.savefig( file_name , format='png')
 		plt.clf()
+		plt.cla()
 
 	@staticmethod
 	def cell_proportions_plot( cell_counts , file_name = './cell_proportions.png' ):		
@@ -956,6 +965,7 @@ class TimeSeriesPlotters( object ):
 		plt.legend()
 		plt.savefig( file_name , format='png')
 		plt.clf()
+		plt.cla()
 
 	@staticmethod
 	def all_cells_plot ( cell_counts , file_name = './all_cells_plot.png' ):
@@ -970,6 +980,7 @@ class TimeSeriesPlotters( object ):
 
 		plt.savefig( file_name , format='png')
 		plt.clf()
+		plt.cla()
 
 
 
@@ -993,6 +1004,7 @@ class TimeSeriesPlotters( object ):
 		plt.savefig( file_name , format='png')
 
 		plt.clf()
+		plt.cla()
 
 
 
