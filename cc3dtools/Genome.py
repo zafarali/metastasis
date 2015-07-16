@@ -170,19 +170,25 @@ class Genome(object):
 
 		replicated_chromosomes = []
 
+		replication_error = np.random.uniform() < self.ploidy_probability
+
+		if replication_error:
+			idx = np.random.randint( len(self.chromosomes) )
+			deleterious = np.random.uniform() < 0.5
 
 		for i , chromosome in enumerate( self.chromosomes ):
 			replicated_chromosomes.append( chromosome.replicate( name = chromosome.name ) )
 
-			replication_error = np.random.uniform() < self.ploidy_probability
-
-			if replication_error:
-				if np.random.uniform() < 0.5:
+			if replication_error and idx == i:
+				if deleterious:
+					# delete a random chromsome
+					replicated_chromosomes.pop( np.random.randint( len(replicated_chromosomes) ) )					
+				else:
 					# replicate this chromosome twice
 					replicated_chromosomes.append( chromosome.replicate( name = chromosome.name+'_replicated' ) )
-				else:
-					# delete a random chromsome
-					replicated_chromosomes.pop( np.random.randint( len(replicated_chromosomes) ) )
+				#endif
+			#endif
+		#endfor
 
 
 		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
