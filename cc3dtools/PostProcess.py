@@ -801,7 +801,7 @@ class PostProcess( object ):
 		return I, len( clusters[0] ) , len( clusters[1] )
 
 	@staticmethod
-	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None , scaled = True, ymax = None ):
+	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None , scaled = False, ymax = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:

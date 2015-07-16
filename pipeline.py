@@ -198,7 +198,14 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 
 if SPEC_lookup( 'global' , 'sample' ):
 
-	gc = GenomeCompare.from_gen_file(FILES['genomes'])
+	if FILES['genomes'].split('.')[-1] == 'csv':
+		print2('Converting csv file to gen2 file')
+		from cc3dtools.Genome import csv_to_gen2
+		csv_to_gen2(FILES['genomes'])
+		FILES['genomes'] = FILES['genomes'].replace('csv', 'gen2')
+
+	print2('loading genomes from: '+FILES['genomes'])
+	gc = GenomeCompare.from_gen2_file(FILES['genomes'])
 	print2('Loaded GenomeCompare module')
 	pp = PostProcess(end_file=FILES['finish'], gc=gc)
 	print2('Loaded PostProcess module')
