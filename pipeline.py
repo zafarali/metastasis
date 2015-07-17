@@ -9,6 +9,9 @@
 # division_*
 # genomes_*
 # specs.txt
+import matplotlib
+matplotlib.use('Agg') # prevent use of a display
+
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -72,7 +75,8 @@ try:
 		'out': analysis_directory+'/pipe_out_'+time_info
 	}
 	del analysis_directory
-except IndexError:
+except IndexError as e:
+	print2('(!) Failed to run: \n'+str(e))
 	sys.exit('---> (!) Incomplete files for data analysis. Analysis directory must have the following files:\n\
 	start_cells_*\n\
 	finish_cells_*\n\
