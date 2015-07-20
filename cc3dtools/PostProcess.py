@@ -493,7 +493,13 @@ class PostProcess( object ):
 
 		for cellid in cellids:
 			# get the loci 
-			mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
+			try:
+				mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
+			except Exception as e:
+				print cellid, cellids
+				print str(e)
+				raise e
+
 
 			# counts the number of times a given mutation appears in the cluster
 			counter.update( mutated_loci )

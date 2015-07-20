@@ -164,6 +164,7 @@ class GenomeCompare:
 					print '(!) ERROR OCCUED'
 					print name
 					print type(name)
+					print self.genomes
 					raise e
 
 	@staticmethod
