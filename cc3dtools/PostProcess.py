@@ -1019,6 +1019,39 @@ class TimeSeriesPlotters( object ):
 		plt.cla()
 
 
+def proportion_pairwise_differences ( allele_frequencies ):
+	"""
+		Calculates E(pi) = the expected proportion of pairwise
+						differences 
+		@params:
+			allele_frequencies:
+				the output from PostProcess.sample_analyze()
+		@return:
+			E_of_pi : calculated according to the equation:
+						## E(pi) = sum_{l=1}^M 2 * X_l ( 1 - X_l)
+						## l = locus , M = number of loci
+						## X_l = pairwise proportional difference at site l
+
+	"""
+	frequency_results , number_of_cells = allele_frequencies
+
+	if len( frequency_results ):
+		# 
+		x, _ = zip( *frequency_results.items() )
+		x = np.array(x) 
+		x = x / float(number_of_cells) # proportion of cells in cluster mutated.
+		
+		##
+		## E(pi) = sum_{l=1}^M 2 * X_l ( 1 - X_l)
+		## l = locus , M = number of loci
+		## X_l = pairwise proportional difference at site l
+		
+		E_of_pi = np.sum( 2 * x * ( 1 - x ) ) 
+
+		return E_of_pi 
+
+	
+
 
 def distance_between ( a , b ):
 	q = b[0] - a[0] 
