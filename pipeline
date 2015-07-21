@@ -150,6 +150,17 @@ sp = SpacePlot( start_file = FILES['start'], \
 	)
 
 
+
+# locate which cell is the cancer cell.
+cancer_cell_ids = []
+
+with open( FILES['start'] , 'r' ) as f:
+	reader = csv.reader( f )
+	for row in reader:
+		if int(row[2]) != 1 :
+				cancer_cell_ids= int( row[1] )
+
+
 """
 S P A C E P L O T
 """
@@ -165,7 +176,10 @@ L I N E A G E S
 """
 
 if SPEC_lookup( 'global' , 'multilineage' ):
-	ml = MultiLineage( file_name = FILES['division'] )
+	if SPEC_lookup( 'multilineage' , 'cancer_only' ):
+		ml = MultiLineage( file_name = FILES['division'] , cancer_cell_ids = cancer_cell_ids )
+	else:
+		ml = MultiLineage( file_name = FILES['division'] )
 
 	if SPEC_lookup('multilineage', 'color_by_initial'):
 		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
