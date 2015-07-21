@@ -158,7 +158,7 @@ with open( FILES['start'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		if int(row[2]) != 1 :
-				cancer_cell_ids= int( row[1] )
+				cancer_cell_ids.append( int( row[1] ) )
 
 
 """
