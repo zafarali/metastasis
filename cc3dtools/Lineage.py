@@ -337,7 +337,7 @@ class Lineage:
 
 
 class MultiLineage(object):
-    def __init__ ( self , file_name , format = ( 't' , 'p' , 'c1' , 'c2' ) ):
+    def __init__ ( self , file_name , format = ( 't' , 'p' , 'c1' , 'c2' ) , cancer_cell_ids = []):
         """
             allows manipulation of division_outputs which might have multiple roots and 
             thus multiple lineages
@@ -360,7 +360,6 @@ class MultiLineage(object):
 
                     for lineage in lineages:
                         if p in lineage['members']:
-
                             lineage['members'].append( int( info['c1'] ) ) # save members
 
                             lineage['lineage'].divide( parent = info['p'] , \
@@ -376,6 +375,20 @@ class MultiLineage(object):
                             time = 0 , isRoot = True ) \
                             } )
 
+        # remove non-cancer lineages
+        if len(cancer_cell_ids):
+            cancer_cell_ids = set( cancer_cell_ids ) # for efficiency
+            schedule_delete = []
+            for k, lineage in enumerate(lineages):
+                members = set( lineage['members'] )
+                is_subset = cancer_cell_ids < members # check if the cancer cells are a subset of this lineages members
+                print k, is_subset
+                if not is_subset: schedule_delete.append(k)
+            for k in sorted( schedule_delete , reverse=True ): #delete backwards
+                lineages.pop(k)
+
+
+        self.cancer_cell_ids = list( cancer_cell_ids )
         self.lineages = lineages
 
     def draw( self , width = 20 , save_fig = None ):
@@ -389,10 +402,13 @@ class MultiLineage(object):
         to_be_returned = []
 
         for i, lineage in enumerate(self.lineages):
-            temp = save_fig.split('.png')
-            temp.append(str(i+1))
-            temp.append('.png')
-            save_fig_temp = ''.join(temp)
+            if save_fig:
+                temp = save_fig.split('.png')
+                temp.append(str(i+1))
+                temp.append('.png')
+                save_fig_temp = ''.join(temp)
+            else:
+                save_fig_temp = None
             to_be_returned.extend( lineage['lineage'].draw( 20 , save_fig = save_fig_temp ) ) # lineage.draw returns a list of points
 
         return to_be_returned
