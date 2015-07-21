@@ -161,10 +161,7 @@ class GenomeCompare:
 				try:
 					return self.genomes [ int(name) ]
 				except Exception as e:
-					print '(!) ERROR OCCUED'
-					print name
-					print type(name)
-					print self.genomes
+					print '(!) ERROR OCCUED'+str(e)
 					raise e
 
 	@staticmethod
