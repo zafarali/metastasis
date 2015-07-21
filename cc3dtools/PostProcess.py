@@ -499,7 +499,13 @@ class PostProcess( object ):
 
 		for cellid in cellids:
 			# get the loci 
-			mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
+			try:
+				mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
+			except Exception as e:
+				print cellid, cellids
+				print str(e)
+				raise e
+
 
 			# counts the number of times a given mutation appears in the cluster
 			counter.update( mutated_loci )
@@ -809,7 +815,7 @@ class PostProcess( object ):
 		return I, len( clusters[0] ) , len( clusters[1] )
 
 	@staticmethod
-	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None , scaled = True, ymax = None ):
+	def plot_frequency_graph( frequency_results , title = '' , plot_stack = None , save_fig = None , scaled = False, ymax = None ):
 		"""
 			Plots the results of PostProcess.frequency_analyze()
 			@params:
