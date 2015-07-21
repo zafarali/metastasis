@@ -548,7 +548,7 @@ class PostProcess( object ):
 					[ { 'id': id, 'x': x, 'y':y, 'z':z, 'type':type } , ... ]
 		"""
 
-		filtered_list = self.cell_locations
+		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
@@ -560,7 +560,7 @@ class PostProcess( object ):
 		return filter( lambda r: r.x - x **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors ) 
 
 	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None ):
-		filtered_list = self.cell_locations.items()
+		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
@@ -706,13 +706,14 @@ class PostProcess( object ):
 					the plot stack will be returned for future plotting in cc3dtools.SpacePlot
 		"""
 
-		filtered_list = self.cell_locations
+		filtered_list = self.cell_locations.values()
 		
 		# remove the points which do not have the required type.
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
 			filtered_list = filter( lambda cell: cell.type in type_restrictions, filtered_list )
 
+		r_vectors = filtered_list
 		# obtain cell information
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
