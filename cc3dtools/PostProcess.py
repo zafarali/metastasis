@@ -5,6 +5,7 @@ from matplotlib.colors import LogNorm
 from matplotlib.path import Path
 from mpl_toolkits.mplot3d import Axes3D
 from collections import Counter
+from Cell import Cell
 import numpy as np
 import csv
 import math
@@ -140,14 +141,16 @@ class SpacePlot ( object ):
 
 				marker = 'x' if data['initial'] else 'o'
 
-				cells[ data['id'] ] = {
-					'id': data['id'] ,
-					'x': data['x'] ,
-					'y': data['y'] ,
-					'z': data['z'] ,
-					'initial' : data['initial'] ,
-					'type': data['type']
-				}
+				# cells[ data['id'] ] = {
+				# 	'id': data['id'] ,
+				# 	'x': data['x'] ,
+				# 	'y': data['y'] ,
+				# 	'z': data['z'] ,
+				# 	'initial' : data['initial'] ,
+				# 	'type': data['type']
+				# }
+
+				cells[ data['id'] ] = Cell( data['id'] , data['x'] , data['y'] , data['type'] , data['initial'] )
 
 
 		self.cells = cells
@@ -224,21 +227,23 @@ class SpacePlot ( object ):
 			try:
 				return self.cells[ individual.id ]
 			except KeyError:
-				return {
-					'x':0,
-					'y':0,
-					'z':0,
-					'initial':-1, # -1 represents that the cell died.
-					'id': individual.id,
-				}
+				# return {
+				# 	'x':0,
+				# 	'y':0,
+				# 	'z':0,
+				# 	'initial':-1, # -1 represents that the cell died.
+				# 	'id': individual.id,
+				# }
+				return Cell( id=individual.id , x=0 , y=0 , z=0 , type=0 , initial=-1)
 			except AttributeError:
-				return {
-					'x':0,
-					'y':0,
-					'z':0,
-					'initial':-1,
-					'id':individual
-				}
+				# return {
+				# 	'x':0,
+				# 	'y':0,
+				# 	'z':0,
+				# 	'initial':-1,
+				# 	'id':individual
+				# }
+				return Cell( id=individual , x=0 , y=0 , z=0 , type=0 , initial=-1 )
 
 		# first plot the clusters
 		for cluster_id, cluster in enumerate( args ):
@@ -246,28 +251,28 @@ class SpacePlot ( object ):
 
 			cells_with_data = map( individual_to_cell_data , cluster )
 			
-			for data in cells_with_data:
+			for cell in cells_with_data:
 
 				# cell died, thus we just skip plotting it
-				if data['initial'] == -1:
+				if cell.initial == -1:
 					continue
 
 				# add the id of the cell to the plotted_ids so we plot everything else in grey
-				plotted_ids.append( data['id'] )
+				plotted_ids.append( cell.id )
 
 				selected_color = colormap( cluster_id )
-				marker = 'x' if data['initial'] else 'o'
+				marker = 'x' if cell.initial else 'o'
 
 				if projection == '3d':
-					ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
+					ax.scatter( cell.x , cell.y , cell.z , marker = marker , color = selected_color )
 
 					if not hide_numbers:
-						ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+						ax.text( cell.x+0.5 , cell.y+0.5 , cell.z , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
 				else:
-					plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
+					plt.plot( cell.x , cell.y , marker = marker, color = selected_color )
 					
 					if not hide_numbers:
-						plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+						plt.text( cell.x+0.5 , cell.y+0.5 , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
 		
 
 
@@ -276,24 +281,24 @@ class SpacePlot ( object ):
 		for _ , data in self.cells.items():
 			
 			# skip if this has already been plotted!
-			if data['id'] in plotted_ids: 
+			if cell.id in plotted_ids: 
 				continue
 
 			# select the color gray
 			selected_color = (.5,.5,.5,1.0)
 
 
-			marker = 'x' if data['initial'] else 'o'
+			marker = 'x' if cell.initial else 'o'
 			if projection == '3d':
-				ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = selected_color )
+				ax.scatter( cell.x , cell.y , cell.z , marker = marker , color = selected_color )
 
 				if not hide_numbers:
-					ax.text( data['x']+0.5 , data['y']+0.5 , data['z'] , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+					ax.text( cell.x+0.5 , cell.y+0.5 , cell.z , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
 			else:
-				plt.plot( data['x'] , data['y'] , marker = marker, color = selected_color )
+				plt.plot( cell.x , cell.y , marker = marker, color = selected_color )
 
 				if not hide_numbers:
-					plt.text( data['x']+0.5 , data['y']+0.5 , str( data['id'] ) , horizontalalignment = 'center' , color = selected_color )
+					plt.text( cell.x+0.5 , cell.y+0.5 , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
 
 		if projection == '3d':
 			ax.set_xlabel( 'x-axis' )
@@ -347,7 +352,8 @@ class PostProcess( object ):
 					data['z'] = float( data['z'] )
 
 					self.cells_available.append( data['id'] ) # save available cell ids
-					self.cell_locations[ data['id'] ] = ( data['x'] , data['y'] , data['z'] , data['type'] ) # save tuple of details
+					# self.cell_locations[ data['id'] ] = ( data['x'] , data['y'] , data['z'] , data['type'] ) # save tuple of details
+					self.cell_locations[ data['id'] ] = Cell( data['id'] , data['x'] , data['y'] , data['z'] , data['type'] )
 
 			self.__frompickle__ = False
 			self.__executed__ = False
@@ -473,7 +479,7 @@ class PostProcess( object ):
 		"""
 		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
 
-		return self.data[c1][c2]
+		return self.data[c1][c2] 
 
 		pass
 
@@ -519,7 +525,7 @@ class PostProcess( object ):
 		"""
 
 		# get all cancer cells, extract the location data from it into a numpy array
-		r_vectors = map( lambda x: np.array([ x[1][0], x[1][1], x[1][2] ]) , filter( lambda x: x[1][3] == 2 or x[1][3] == 3, self.cell_locations.items() ) )
+		r_vectors = map( lambda cell: np.array([ cell.x, cell.y, cell.z ]) , filter( lambda cell: cell.type == 2 or cell.type == 3, self.cell_locations ) )
 
 		# since it is now in a numpy array, we can do elementwise-summation:
 		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
@@ -542,26 +548,28 @@ class PostProcess( object ):
 					[ { 'id': id, 'x': x, 'y':y, 'z':z, 'type':type } , ... ]
 		"""
 
-		filtered_list = self.cell_locations.items()
+		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
-			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+			filtered_list = filter( lambda cell: cell.type in type_restrictions, filtered_list )
 
+		r_vectors = filtered_list
 		# first map the cell_locations into a new dict
-		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: ( r['x'] - x )**2 + ( r['y'] - y )**2 + ( r['z'] - z )**2 <= radius**2, r_vectors )
+		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		return filter( lambda r: r.x - x **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors ) 
 
 	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None ):
-		filtered_list = self.cell_locations.items()
+		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
-			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+			filtered_list = filter( lambda cell: cell.type in type_restrictions, filtered_list )
 
+		r_vectors = filtered_list
 		# first map the cell_locations into a new dict
-		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: ( ( r['x'] - x ) / radii[0] )**2 + ( (  r['y'] - y  )/radii[1] )**2 + ( ( r['z'] - z )/radii[2])**2 <= 1, r_vectors )
+		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		return filter( lambda r: ( ( r.x - x ) / radii[0] )**2 + ( (  r.y - y  )/radii[1] )**2 + ( ( r.z - z )/radii[2])**2 <= 1, r_vectors )
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
@@ -637,7 +645,7 @@ class PostProcess( object ):
 
 			# do the sampling
 			sample = self.cells_in_ellipse_at( position_x , position_y , z , radii = radii , type_restrictions = type_restrictions )
-			sample_cellids = [ cell['id'] for cell in sample ]
+			sample_cellids = [ cell.id for cell in sample ]
 
 			#analyze that sample
 			results.append( ( distance_travelled , sample_cellids ) )
@@ -698,15 +706,16 @@ class PostProcess( object ):
 					the plot stack will be returned for future plotting in cc3dtools.SpacePlot
 		"""
 
-		filtered_list = self.cell_locations.items()
+		filtered_list = self.cell_locations.values()
 		
 		# remove the points which do not have the required type.
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
-			filtered_list = filter( lambda x: x[1][3] in type_restrictions, filtered_list )
+			filtered_list = filter( lambda cell: cell.type in type_restrictions, filtered_list )
 
+		r_vectors = filtered_list
 		# obtain cell information
-		r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
+		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
 		results, plot_stack = [], []
 
@@ -738,8 +747,8 @@ class PostProcess( object ):
 			p = Path( current_polygon_points )
 
 			# sample only those which are
-			sample = filter( lambda r: p.contains_point( [ r['x'], r['y'] ] ) , r_vectors )
-			results.append( ( distance_travelled , [ cell['id'] for cell in sample ] ) )
+			sample = filter( lambda r: p.contains_point( [ r.x , r.y ] ) , r_vectors )
+			results.append( ( distance_travelled , [ cell.id for cell in sample ] ) )
 
 
 		# final points for plotting

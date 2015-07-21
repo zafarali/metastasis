@@ -1,8 +1,15 @@
 from collections import namedtuple
 
-# class Cell( namedtuple('Cell', 'x y z id type initial') ):
-# 	def __new__( _cls , x , y , z , id , type , initial = 0 ):
-# 		return super(Call, cls).__new__( _cls, ( x, y , id , type , inital ) ) 
+Cell_ = namedtuple('Cell', 'id x y z type initial')
+Cell_.__new__.__defaults__ = ( 0, 0, )
 
-Cell = namedtuple('Cell', 'id x y z type initial')
-Cell.__new__.__defaults__ = ( 0, )
+class Cell(Cell_):
+	"""
+		Generic holder for cell details.
+		@params:
+			id - unique cell identifier
+			x, y, z - position of cell in space
+			type(=0) - cel type 
+			initial(=0) - non-zero if the cell is an initial cell
+	"""
+
