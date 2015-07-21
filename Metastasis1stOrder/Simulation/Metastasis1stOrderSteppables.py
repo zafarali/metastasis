@@ -32,7 +32,7 @@ os.makedirs( save_dir )
 
 
 from cc3dtools.Tracker import Tracker2
-from cc3dtools.Genome import Genome, save_genomes
+from cc3dtools.Genome import Genome, save_genomes2
 genomes = {}
 
 class ConstraintInitializerSteppable(SteppableBasePy):
@@ -55,13 +55,13 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.lambdaVolume=1.5
 
             if simulate_flag:
-                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id )
+                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0001 , ploidy=2 )
 
             if cell.id == r:
                 cell.type = self.CANCER1
 
                 if simulate_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id )
+                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
 
             if save_flag:
                 self.start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )
@@ -92,7 +92,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
             tracker.save_stash() # save final cell data
             self.start_tracker.save_stash() # save initial cell data
-            save_genomes( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
+            save_genomes2( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
 
         
 
