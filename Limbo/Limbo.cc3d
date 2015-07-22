@@ -2,5 +2,4 @@
    <XMLScript Type="XMLScript">Simulation/Limbo.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/Limbo.py</PythonScript>
    <Resource Type="Python">Simulation/LimboSteppables.py</Resource>
-   <PIFFile>Simulation/twocell.piff</PIFFile>        
 </Simulation>
