@@ -151,23 +151,22 @@ class GrowthSteppable(SteppableBasePy):
 
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=1):
-        raw_input('registered mitosis steppables')
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
-
+        
     def start(self):
         # we initialize the stash function
-        raw_input('mitosis steppable start')
+        # raw_input('mitosis steppable start') # WORKS
         if save_flag:
             self.mitosis_tracker = Tracker2(file_name=save_dir+'/division_events_'+time_info+'.csv')
+            # raw_input('created tracker')
         if save_flag:
             for cell in self.cellList:
                 #R for 'root'
                 self.mitosis_tracker.stash( [ 'R' , cell.id, cell.id, cell.id ] )
         pass
 
-
     def step(self,mcs):
-        print "INSIDE MITOSIS STEPPABLE"
+        print "------------>INSIDE MITOSIS STEPPABLE"
         raw_input('mitosis steppable step')
         cells_to_divide=[]
         for cell in self.cellList:
@@ -314,100 +313,100 @@ class SuperTracker(SteppableBasePy):
         self.volume_tracker.save_stash()
 
 
-class DeathCheckSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+# class DeathCheckSteppable(SteppableBasePy):
+#     def __init__(self,_simulator,_frequency=10):
+#         SteppableBasePy.__init__(self,_simulator,_frequency)
 
-    def step(self,mcs):
-        # print divide_times
-        # for cell in self.cellList:
-        #     if mcs - divide_times[cell.id] > 450:
-        #         cell.targetVolume -= 0.007 
-        #         cell.lambdaVolume = 1
+#     def step(self,mcs):
+#         # print divide_times
+#         # for cell in self.cellList:
+#         #     if mcs - divide_times[cell.id] > 450:
+#         #         cell.targetVolume -= 0.007 
+#         #         cell.lambdaVolume = 1
 
-        for cell in self.cellList:
-            z = cell.zCOM
-            y = cell.yCOM
-            x = cell.xCOM
-            if cell.type == self.DEAD: continue
+#         for cell in self.cellList:
+#             z = cell.zCOM
+#             y = cell.yCOM
+#             x = cell.xCOM
+#             if cell.type == self.DEAD: continue
 
-            if not ( ( x >= 50 and x <= 450 ) and ( y >= 50 and y <=450 ) ):
-                # cell.lambdaVolume = 5
-                cell.type = self.DEAD
-                self.lambdaVolume = 1
-                # print('-------------------------------->LIMBO ZONE')
-                # print cell.targetVolume, cell.volume
+#             if not ( ( x >= 50 and x <= 450 ) and ( y >= 50 and y <=450 ) ):
+#                 # cell.lambdaVolume = 5
+#                 cell.type = self.DEAD
+#                 self.lambdaVolume = 1
+#                 # print('-------------------------------->LIMBO ZONE')
+#                 # print cell.targetVolume, cell.volume
             
-class DeathSteppable(SteppableBasePy):
-    def __init__(self, _simulator, _frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+# class DeathSteppable(SteppableBasePy):
+#     def __init__(self, _simulator, _frequency=1):
+#         SteppableBasePy.__init__(self,_simulator,_frequency)
 
-    def step(self,mcs):
-        for cell in self.cellList:
-            if cell.type == self.DEAD:
-                cell.targetVolume -= 10 * GLOBAL['dV']
+#     def step(self,mcs):
+#         for cell in self.cellList:
+#             if cell.type == self.DEAD:
+#                 cell.targetVolume -= 10 * GLOBAL['dV']
 
-class ExtraMultiPlotSteppable(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
+# class ExtraMultiPlotSteppable(SteppableBasePy):
+#     def __init__(self,_simulator,_frequency=10):
+#         SteppableBasePy.__init__(self,_simulator,_frequency)
 
-    def start(self):
+#     def start(self):
         
-        # avg volumes
-        self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
-        self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
-        # self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
-        self.pWVol.addPlot(_plotName='MTVol',_style='Dots',_color='green',_size=5)        
+#         # avg volumes
+#         self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
+#         self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
+#         # self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
+#         self.pWVol.addPlot(_plotName='MTVol',_style='Dots',_color='green',_size=5)        
 
 
-        # number of cells
-        self.pWNum=CompuCellSetup.addNewPlotWindow(_title='Number of Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Number')                
-        self.pWNum.addPlot(_plotName='Cancer',_color='green', _size=2)
-        self.pWNum.addPlot(_plotName='Normal',_color='blue', _size=2)
-        self.pWNum.addPlot(_plotName='Total',_color='red', _size=2)
+#         # number of cells
+#         self.pWNum=CompuCellSetup.addNewPlotWindow(_title='Number of Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Number')                
+#         self.pWNum.addPlot(_plotName='Cancer',_color='green', _size=2)
+#         self.pWNum.addPlot(_plotName='Normal',_color='blue', _size=2)
+#         self.pWNum.addPlot(_plotName='Total',_color='red', _size=2)
 
-        # proportions
-        self.pWProp=CompuCellSetup.addNewPlotWindow(_title='Proportions of Cancer vs Normal Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='%')                
-        self.pWProp.addPlot(_plotName='Cancer',_color='green', _size=2)
-        self.pWProp.addPlot(_plotName='Normal',_color='blue', _size=2)
+#         # proportions
+#         self.pWProp=CompuCellSetup.addNewPlotWindow(_title='Proportions of Cancer vs Normal Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='%')                
+#         self.pWProp.addPlot(_plotName='Cancer',_color='green', _size=2)
+#         self.pWProp.addPlot(_plotName='Normal',_color='blue', _size=2)
         
-    def step(self,mcs):
-        cancer = 0
-        normal = 0
-        meanSurface=0.0
-        meanVolume=0.0
-        meanTargetVolume = 0.0
-        numberOfCells=0
-        for cell  in  self.cellList:
-            meanVolume+=cell.volume
-            meanTargetVolume += cell.targetVolume
-            meanSurface+=cell.surface
-            numberOfCells+=1
-            if cell.type == 1:
-                normal+=1
-            else:
-                cancer+=1
+#     def step(self,mcs):
+#         cancer = 0
+#         normal = 0
+#         meanSurface=0.0
+#         meanVolume=0.0
+#         meanTargetVolume = 0.0
+#         numberOfCells=0
+#         for cell  in  self.cellList:
+#             meanVolume+=cell.volume
+#             meanTargetVolume += cell.targetVolume
+#             meanSurface+=cell.surface
+#             numberOfCells+=1
+#             if cell.type == 1:
+#                 normal+=1
+#             else:
+#                 cancer+=1
 
-        meanVolume/=float(numberOfCells)
-        meanSurface/=float(numberOfCells)
-        meanTargetVolume /= float(numberOfCells)
+#         meanVolume/=float(numberOfCells)
+#         meanSurface/=float(numberOfCells)
+#         meanTargetVolume /= float(numberOfCells)
         
-        self.pWVol.addDataPoint("MVol",mcs,meanVolume)
-        # self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
-        self.pWVol.addDataPoint("MTVol",mcs,meanTargetVolume)
+#         self.pWVol.addDataPoint("MVol",mcs,meanVolume)
+#         # self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
+#         self.pWVol.addDataPoint("MTVol",mcs,meanTargetVolume)
 
 
-        self.pWNum.addDataPoint("Cancer",mcs,cancer)
-        self.pWNum.addDataPoint("Normal",mcs,normal)
-        self.pWNum.addDataPoint("Total",mcs,numberOfCells)
+#         self.pWNum.addDataPoint("Cancer",mcs,cancer)
+#         self.pWNum.addDataPoint("Normal",mcs,normal)
+#         self.pWNum.addDataPoint("Total",mcs,numberOfCells)
 
 
-        self.pWProp.addDataPoint("Cancer",mcs,cancer/float(numberOfCells))
-        self.pWProp.addDataPoint("Normal",mcs,normal/float(numberOfCells))
+#         self.pWProp.addDataPoint("Cancer",mcs,cancer/float(numberOfCells))
+#         self.pWProp.addDataPoint("Normal",mcs,normal/float(numberOfCells))
         
 
-        print "meanVolume=",meanVolume,"meanSurface=",meanSurface
+#         print "meanVolume=",meanVolume,"meanSurface=",meanSurface
                 
-        self.pWVol.showAllPlots()
-        self.pWNum.showAllPlots()
-        self.pWProp.showAllPlots()
+#         self.pWVol.showAllPlots()
+#         self.pWNum.showAllPlots()
+#         self.pWProp.showAllPlots()
