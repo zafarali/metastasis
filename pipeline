@@ -144,31 +144,37 @@ from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters
 from cc3dtools.GenomeCompare import GenomeCompare
 from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
-sp = SpacePlot( start_file = FILES['start'], \
-	end_file = FILES['finish'], \
-	projection = SPEC_lookup( 'spatial_plot' , 'projection', '2d' ) \
-	)
-
-
-
 # locate which cell is the cancer cell.
 cancer_cell_ids = []
+skip_types = [ 4 ]
+
+
+
+sp = SpacePlot( start_file = FILES['start'], \
+	end_file = FILES['finish'], \
+	projection = SPEC_lookup( 'spatial_plot' , 'projection', '2d' ), \
+	skip_types = skip_types )
+
 
 with open( FILES['start'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
-		if int(row[2]) != 1 :
+		if int(row[1]) != 1 and int(row[1]) != 4:
 				cancer_cell_ids.append( int( row[1] ) )
+	print2( 'There are ' + str( len( cancer_cell_ids ) ) + ' cancer cells' )
 
 
 """
 S P A C E P L O T
 """
 if SPEC_lookup('global', 'spatial_plot'):
-	sp.plot_all( hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
-		save_fig = FILES['out']+'/spatial_plot.png' \
-		)
-	print2('saved spatial_plot')
+	try:
+		sp.plot_all( hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
+			save_fig = FILES['out']+'/spatial_plot.png' \
+			)
+		print2('saved spatial_plot')
+	except Exception as e:
+		print2('(!) Unable to save spatial_plot \n' + str(e) )
 
 
 """
@@ -178,12 +184,15 @@ L I N E A G E S
 if SPEC_lookup( 'global' , 'multilineage' ):
 	if SPEC_lookup( 'multilineage' , 'cancer_only' ):
 		ml = MultiLineage( file_name = FILES['division'] , cancer_cell_ids = cancer_cell_ids )
+		print2('Loaded MultiLineage for cancer_cell_ids only')
 	else:
 		ml = MultiLineage( file_name = FILES['division'] )
+		print2('Loaded MultiLineage')
 
 	if SPEC_lookup('multilineage', 'color_by_initial'):
 		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
 		# print member_lists[0]
+		print2('Number of lineages: ' + str( len( ml.lineages ) ) )
 		try:
 			sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
 			print2('saved space_plot_by_initial')
@@ -195,7 +204,12 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 		for i , lineage in enumerate(ml.lineages):
 			current_dir = FILES['out'] + '/detail_lineage' + str( i + 1 )
 			os.makedirs( current_dir )
+			# try:
 			levels = lineage_bfs( lineage['lineage'] )
+			# except Exception as e:
+				# print2('(!) Unable to do lineage_bfs\n'+str(e))
+				# continue
+
 
 			if SPEC_lookup('multilineage', 'color_by_branch'):
 				for depth, level in levels.items():
@@ -228,7 +242,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 	print2('loading genomes from: '+FILES['genomes'])
 	gc = GenomeCompare.from_gen2_file(FILES['genomes'])
 	print2('Loaded GenomeCompare module')
-	pp = PostProcess(end_file=FILES['finish'], gc=gc)
+	pp = PostProcess(end_file=FILES['finish'], gc=gc, skip_types=skip_types)
 	print2('Loaded PostProcess module')
 
 	for i, sampling in enumerate(sampling_strategies):

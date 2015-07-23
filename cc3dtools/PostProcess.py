@@ -37,7 +37,7 @@ def discrete_cmap(N, base_cmap='prism'):
 	return base.from_list(cmap_name, color_list, N+1)
 
 
-def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None , save_fig = None):
+def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' , 'y') , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d', hide_numbers = True , plot_stack = None , save_fig = None , skip_types = [] ):
 	"""
 		displays the positions of the cellids at the time of sampling within a simulation
 	"""
@@ -64,6 +64,9 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 			# data converstion
 			data['id'] = int( data['id'] )
 			data['type'] = int( data['type'] )
+
+			if data['type'] in skip_types:
+				continue
 
 			data['x'] = float( data['x'] )
 			data['y'] = float( data['y'] )
@@ -108,7 +111,7 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 
 class SpacePlot ( object ):
-	def __init__ ( self , start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' ):
+	def __init__ ( self , start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g', 'y' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' , skip_types = [] ):
 		"""
 			This class allows us to make spatial plots
 		"""
@@ -132,6 +135,9 @@ class SpacePlot ( object ):
 				# data converstion
 				data['id'] = int( data['id'] )
 				data['type'] = int( data['type'] )
+				
+				if data['type'] in skip_types:
+					continue
 
 				data['x'] = float( data['x'] )
 				data['y'] = float( data['y'] )
@@ -160,6 +166,7 @@ class SpacePlot ( object ):
 		self.projection = projection
 		self.start_file = start_file
 		self.end_file = end_file
+		self.skip_types = skip_types
 
 
 	def plot_all( self , hide_numbers = True , plot_stack = None , save_fig = None ):
@@ -176,7 +183,8 @@ class SpacePlot ( object ):
 			projection = self.projection , \
 			hide_numbers = hide_numbers , \
 			plot_stack = plot_stack , \
-			save_fig = save_fig )
+			save_fig = save_fig , \
+			skip_types = self.skip_types )
 		pass
 
 
@@ -323,7 +331,7 @@ class SpacePlot ( object ):
 		pass
 
 class PostProcess( object ):
-	def __init__ ( self , end_file , gc , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , pickle_import = False  ):
+	def __init__ ( self , end_file , gc , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , pickle_import = False , skip_types = [] ):
 		"""
 			allows us to get pairwise distances, shared and private mutations
 			between all cells.
@@ -346,6 +354,10 @@ class PostProcess( object ):
 
 					data['id'] = int( data['id'] )
 					data['type'] = int( data['type'] )
+
+					# skip types
+					if data['type'] in skip_types:
+						continue
 
 					data['x'] = float( data['x'] )
 					data['y'] = float( data['y'] )
