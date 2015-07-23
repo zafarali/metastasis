@@ -4,8 +4,8 @@
       
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="500" y="500" z="1"/>
-      <Steps>8000</Steps>
-      <Temperature>5.0</Temperature>
+      <Steps>10000</Steps>
+      <Temperature>10</Temperature>
       <NeighborOrder>2</NeighborOrder>
       <RandomSeed>1232232</RandomSeed>
    </Potts>
@@ -44,11 +44,11 @@
       <Energy Type1="Normal" Type2="Dead">10</Energy>
       <Energy Type1="Normal" Type2="Cancer2">10</Energy>
 
-      <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
+      <Energy Type1="Cancer1" Type2="Cancer1">8.0</Energy>
       <Energy Type1="Cancer1" Type2="Dead">10.0</Energy>
-      <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>
+      <Energy Type1="Cancer1" Type2="Cancer2">8.0</Energy>
 
-      <Energy Type1="Cancer2" Type2="Cancer2">10.0</Energy>
+      <Energy Type1="Cancer2" Type2="Cancer2">8.0</Energy>
       <Energy Type1="Cancer2" Type2="Dead">10.0</Energy>
 
       <Energy Type1="Dead" Type2="Dead">10.0</Energy>
@@ -57,15 +57,25 @@
    </Plugin>
 
  
-   <Steppable Type="BlobInitializer">   
+<Steppable Type="BlobInitializer">   
    <Region>
       <Center x="250" y="250" z="0"/>
-      <Radius>200</Radius>
+      <Radius>170</Radius>
       <Gap>0</Gap>
       <Width>5</Width>
       <Types>Normal</Types>
    </Region>
 </Steppable>
 
+
+<Steppable Type="UniformInitializer">   
+   <Region>
+      <BoxMin x="250" y="250" z="0"/>
+      <BoxMax x="255" y="255" z="1"/>
+      <Gap>0</Gap>
+      <Width>5</Width>
+      <Types>Cancer1</Types>
+   </Region>
+</Steppable>
 
 </CompuCell3D>

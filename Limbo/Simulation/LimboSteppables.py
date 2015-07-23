@@ -18,9 +18,9 @@ GLOBAL = {
     'cancer2_divideThreshold':42,
     'cancer1_divideThreshold':42,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.04,
-    'cancer1_additional_dV':0.04,
-    'dV':0.07
+    'cancer2_additional_dV':0.1,
+    'cancer1_additional_dV':0.1,
+    'dV':0.1
 }
 
 import time 
@@ -45,7 +45,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
         
         num_cells = len(self.cellList)
 
-        r = np.random.randint(0,num_cells)
+        # r = np.random.randint(0,num_cells)
 
         for cell in self.cellList:
             
@@ -57,8 +57,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             if simulate_flag:
                 genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0001 , ploidy=2 )
 
-            if cell.id == r:
-                cell.type = self.CANCER1
+            if cell.type == self.CANCER1:
 
                 if simulate_flag:
                     genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
@@ -312,7 +311,7 @@ class DeathCheckSteppable(SteppableBasePy):
             x = cell.xCOM
             if cell.type == self.DEAD: continue
 
-            if not ( ( x >= 50 and x <= 450 ) and ( y >= 50 and y <=450 ) ):
+            if not ( ( x >= 100 and x <= 400 ) and ( y >= 100 and y <=400 ) ):
                 # cell.lambdaVolume = 5
                 cell.type = self.DEAD
                 self.lambdaVolume = 1
