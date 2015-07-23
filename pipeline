@@ -146,7 +146,8 @@ from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
 # locate which cell is the cancer cell.
 cancer_cell_ids = []
-skip_types = [ 4 ]
+# skip_types = [ 4 ]
+skip_types = [ ]
 
 
 
@@ -190,9 +191,14 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 		print2('Loaded MultiLineage')
 
 	if SPEC_lookup('multilineage', 'color_by_initial'):
-		member_lists = map( lambda lineage: lineage['members'], ml.lineages )
+
+		#all members
+		member_lists = map( lambda lineage: lineage['members'], ml.get_lineages() )
 		# print member_lists[0]
-		print2('Number of lineages: ' + str( len( ml.lineages ) ) )
+		print2('Number of lineages: ' + str( len( ml.get_lineages() ) ) )
+
+		# cancer lineages only
+		print2('Number of cancer lineages: ' + str( len( ml.get_cancer_lineages() ) ) )
 		try:
 			sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
 			print2('saved space_plot_by_initial')
@@ -201,7 +207,14 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 
 
 	if SPEC_lookup('multilineage', 'color_by_branch') or SPEC_lookup('multilineage', 'save_all'):
-		for i , lineage in enumerate(ml.lineages):
+
+		# make sure we get the right lineages to loop over!
+		if SPEC_lookup('multilineage', 'cancer_only'):
+			to_be_enumerated = ml.get_cancer_lineages()
+		else:
+			to_be_enumerated = ml.get_lineages()
+
+		for i , lineage in enumerate( to_be_enumerated ):
 			current_dir = FILES['out'] + '/detail_lineage' + str( i + 1 )
 			os.makedirs( current_dir )
 			# try:
