@@ -379,10 +379,15 @@ class MultiLineage(object):
         if len(cancer_cell_ids):
             cancer_cell_ids = set( cancer_cell_ids ) # for efficiency
             schedule_delete = []
+            print 'cancer_cells:',cancer_cell_ids
             for k, lineage in enumerate(lineages):
                 members = set( lineage['members'] )
-                is_subset = cancer_cell_ids < members # check if the cancer cells are a subset of this lineages members
+                # print 'members of lineage',k
+                # print members
+
+                is_subset = any(cell_id in members for cell_id in cancer_cell_ids) #check if the cancer cells are a subset of this lineages members
                 # print k, is_subset
+                # print 'is ',cancer_cell_ids, ' a subset of members? ', is_subset
                 if not is_subset: schedule_delete.append(k)
             for k in sorted( schedule_delete , reverse=True ): #delete backwards
                 lineages.pop(k)
