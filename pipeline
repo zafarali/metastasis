@@ -160,7 +160,7 @@ with open( FILES['start'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		if int(row[1]) != 1 and int(row[1]) != 4:
-				cancer_cell_ids.append( int( row[1] ) )
+				cancer_cell_ids.append( int( row[0] ) )
 	print2( 'There are ' + str( len( cancer_cell_ids ) ) + ' cancer cells' )
 
 
