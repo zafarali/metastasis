@@ -7,7 +7,7 @@
       <Steps>10000</Steps>
       <Temperature>10</Temperature>
       <NeighborOrder>2</NeighborOrder>
-      <RandomSeed>1232232</RandomSeed>
+      <!-- <RandomSeed>1232232</RandomSeed> -->
    </Potts>
    
    <Plugin Name="CellType">
