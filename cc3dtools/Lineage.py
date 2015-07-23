@@ -375,10 +375,10 @@ class MultiLineage(object):
                             time = 0 , isRoot = True ) \
                             } )
 
-        # remove non-cancer lineages
+        # # remove non-cancer lineages
         if len(cancer_cell_ids):
             cancer_cell_ids = set( cancer_cell_ids ) # for efficiency
-            schedule_delete = []
+            cancer_lineages = []
             print 'cancer_cells:',cancer_cell_ids
             for k, lineage in enumerate(lineages):
                 members = set( lineage['members'] )
@@ -388,13 +388,34 @@ class MultiLineage(object):
                 is_subset = any(cell_id in members for cell_id in cancer_cell_ids) #check if the cancer cells are a subset of this lineages members
                 # print k, is_subset
                 # print 'is ',cancer_cell_ids, ' a subset of members? ', is_subset
-                if not is_subset: schedule_delete.append(k)
-            for k in sorted( schedule_delete , reverse=True ): #delete backwards
-                lineages.pop(k)
+                if is_subset:
+                    cancer_lineages.append( lineage )
+
 
 
         self.cancer_cell_ids = list( cancer_cell_ids )
         self.lineages = lineages
+        self.cancer_lineages = cancer_lineages
+
+    def get_lineages( self ):
+        """
+            Returns all lineages
+        """
+
+        return self.lineages
+
+    def get_cancer_lineages( self ):
+        """
+            returns cancer lineages specified when entering MultiLineage(..., cancer_cell_ids=...)
+            if no cancer_cells given, this throws an error
+        """
+        # to_be_returned = []
+        
+        if len(self.cancer_cell_ids):
+            return self.cancer_lineages
+        else:
+            raise IndexError('No cancer_cell_ids were supplied thus MultiLineage.get_cancer_lineages() cannot return anything')
+
 
     def draw( self , width = 20 , save_fig = None ):
         """
