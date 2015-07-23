@@ -40,33 +40,32 @@
       <Energy Type1="Medium" Type2="Dead">10</Energy>
 
       <Energy Type1="Normal" Type2="Normal">10</Energy>
-      <Energy Type1="Normal" Type2="Cancer1">11</Energy>
-      <Energy Type1="Normal" Type2="Cancer2">11</Energy>
-      <Energy Type1="Normal" Type2="Dead">12</Energy>
-
-      <Energy Type1="Dead" Type2="Cancer1">11</Energy>
-      <Energy Type1="Dead" Type2="Cancer2">11</Energy>
-      <Energy Type1="Dead" Type2="Dead">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer1">10</Energy>
+      <Energy Type1="Normal" Type2="Dead">10</Energy>
+      <Energy Type1="Normal" Type2="Cancer2">10</Energy>
 
       <Energy Type1="Cancer1" Type2="Cancer1">10.0</Energy>
+      <Energy Type1="Cancer1" Type2="Dead">10.0</Energy>
       <Energy Type1="Cancer1" Type2="Cancer2">10.0</Energy>
+
       <Energy Type1="Cancer2" Type2="Cancer2">10.0</Energy>
+      <Energy Type1="Cancer2" Type2="Dead">10.0</Energy>
+
+      <Energy Type1="Dead" Type2="Dead">10.0</Energy>
+
       <NeighborOrder>2</NeighborOrder>
    </Plugin>
 
-
-   <Steppable Type="UniformInitializer">
-      <Region>
-      <BoxMin x="100" y="100" z="0"/>
-      <BoxMax x="400" y="400" z="1"/>
+ 
+   <Steppable Type="BlobInitializer">   
+   <Region>
+      <Center x="250" y="250" z="0"/>
+      <Radius>200</Radius>
       <Gap>0</Gap>
       <Width>5</Width>
       <Types>Normal</Types>
-      </Region>
-   </Steppable>
+   </Region>
+</Steppable>
 
-<!--   <Steppable Type="PIFInitializer">
-    <PIFName>Simulation/twocell.piff</PIFName>
-  </Steppable> -->
 
 </CompuCell3D>

@@ -14,13 +14,13 @@ simulate_flag = True
 divide_times = {'last_division':0}
 GLOBAL = {
     'targetVolume':50,
-    'divideThreshold':55,
-    'cancer2_divideThreshold':53,
-    'cancer1_divideThreshold':53,
-    'maxTargetVolume':100,
-    'cancer2_additional_dV':0.03,
-    'cancer1_additional_dV':0.03,
-    'dV':0.05
+    'divideThreshold':45,
+    'cancer2_divideThreshold':42,
+    'cancer1_divideThreshold':42,
+    'maxTargetVolume':75,
+    'cancer2_additional_dV':0.04,
+    'cancer1_additional_dV':0.04,
+    'dV':0.07
 }
 
 import time 
@@ -105,11 +105,10 @@ class GrowthSteppable(SteppableBasePy):
         print "INSIDE GROWTH STEPPABLE"
         #                   print '----->Global targetVolume',GLOBAL['targetVolume']
         for cell in self.cellList:
-            if cell.type == self.DEAD: continue
-            z = cell.zCOM
-            y = cell.yCOM
-            x = cell.xCOM
 
+            if cell.type == self.DEAD:
+                # do not grow if dead
+                continue
             # don't grow if your volume is very very large
             # print cell.targetVolume - cell.volume
             # if cell.targetVolume - cell.volume < 1: 
@@ -152,32 +151,31 @@ class GrowthSteppable(SteppableBasePy):
 class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
-        
-    def start(self):
-        # we initialize the stash function
-        # raw_input('mitosis steppable start') # WORKS
         if save_flag:
             self.mitosis_tracker = Tracker2(file_name=save_dir+'/division_events_'+time_info+'.csv')
-            # raw_input('created tracker')
+
+    def start(self):
+        # we initialize the stash function
         if save_flag:
             for cell in self.cellList:
-                #R for 'root'
+                                        # R for 'root'
                 self.mitosis_tracker.stash( [ 'R' , cell.id, cell.id, cell.id ] )
-        pass
+
 
     def step(self,mcs):
-        print "------------>INSIDE MITOSIS STEPPABLE"
-        raw_input('mitosis steppable step')
+        print "INSIDE MITOSIS STEPPABLE"
         cells_to_divide=[]
         for cell in self.cellList:
-            print 'checking cells for division'
-            if cell.type == self.DEAD: continue
+
+            if cell.type == self.DEAD:
+                # do not divide if dead
+                continue
+
 
             if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
             ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
             cell.volume > GLOBAL['divideThreshold'] :
             # if cell.volume > 100:
-                print '-------------------> DIVIDING CELL.ID=',cell.id
                 cells_to_divide.append(cell)
                 
         for cell in cells_to_divide:
@@ -189,6 +187,7 @@ class MitosisSteppable(MitosisSteppableBase):
             # self.divideCellAlongMinorAxis(cell)                               # this is a valid option
 
     def updateAttributes(self):
+        print "---->DIVISION EVENT"
         parentCell=self.mitosisSteppable.parentCell
         childCell=self.mitosisSteppable.childCell
         #                           print '------>mitosis event:',childCell.volume, parentCell.volume
@@ -245,18 +244,6 @@ class MitosisSteppable(MitosisSteppableBase):
             self.mitosis_tracker.save_stash()
         pass
 
- 
-    def __init__(self,_simulator,_frequency=1):
-        SteppableBasePy.__init__(self,_simulator,_frequency)
-
-    def step(self,mcs):
-        # print divide_times
-        # for cell in self.cellList:
-        #     if mcs - divide_times[cell.id] > 450:
-        #         cell.targetVolume -= 0.007 
-        #         cell.lambdaVolume = 1
-
-        pass
 
 class SuperTracker(SteppableBasePy):
     def __init__(self,_simulator,_frequency=10):
@@ -287,8 +274,7 @@ class SuperTracker(SteppableBasePy):
             
             all_cells += 1
             mean_overall_volume += cell.volume
-        
-        # TEMP @TODO REMOVE THIS
+
         if cancer1 == 0 and cancer2 == 0:
             sys.exit('(!) ALL CANCER CELLS DIED')
         mean_overall_volume = mean_overall_volume/float(all_cells) if all_cells > 0 else 0
@@ -311,102 +297,35 @@ class SuperTracker(SteppableBasePy):
     def finish(self):
         self.cell_tracker.save_stash()
         self.volume_tracker.save_stash()
+        
 
 
-# class DeathCheckSteppable(SteppableBasePy):
-#     def __init__(self,_simulator,_frequency=10):
-#         SteppableBasePy.__init__(self,_simulator,_frequency)
+class DeathCheckSteppable(SteppableBasePy):
+    def __init__(self,_simulator,_frequency=10):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
 
-#     def step(self,mcs):
-#         # print divide_times
-#         # for cell in self.cellList:
-#         #     if mcs - divide_times[cell.id] > 450:
-#         #         cell.targetVolume -= 0.007 
-#         #         cell.lambdaVolume = 1
+    def step(self,mcs):
+        print "INSIDE DEATH CHECK STEPPABLE"
+        for cell in self.cellList:
+            z = cell.zCOM
+            y = cell.yCOM
+            x = cell.xCOM
+            if cell.type == self.DEAD: continue
 
-#         for cell in self.cellList:
-#             z = cell.zCOM
-#             y = cell.yCOM
-#             x = cell.xCOM
-#             if cell.type == self.DEAD: continue
-
-#             if not ( ( x >= 50 and x <= 450 ) and ( y >= 50 and y <=450 ) ):
-#                 # cell.lambdaVolume = 5
-#                 cell.type = self.DEAD
-#                 self.lambdaVolume = 1
-#                 # print('-------------------------------->LIMBO ZONE')
-#                 # print cell.targetVolume, cell.volume
+            if not ( ( x >= 50 and x <= 450 ) and ( y >= 50 and y <=450 ) ):
+                # cell.lambdaVolume = 5
+                cell.type = self.DEAD
+                self.lambdaVolume = 1
+                # print('-------------------------------->LIMBO ZONE')
+                # print cell.targetVolume, cell.volume
             
-# class DeathSteppable(SteppableBasePy):
-#     def __init__(self, _simulator, _frequency=1):
-#         SteppableBasePy.__init__(self,_simulator,_frequency)
+class DeathSteppable(SteppableBasePy):
+    def __init__(self, _simulator, _frequency=1):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
 
-#     def step(self,mcs):
-#         for cell in self.cellList:
-#             if cell.type == self.DEAD:
-#                 cell.targetVolume -= 10 * GLOBAL['dV']
+    def step(self,mcs):
+        print "INSIDE DEATH STEPPABLE"
+        for cell in self.cellList:
+            if cell.type == self.DEAD:
+                cell.targetVolume -= 10 * GLOBAL['dV']
 
-# class ExtraMultiPlotSteppable(SteppableBasePy):
-#     def __init__(self,_simulator,_frequency=10):
-#         SteppableBasePy.__init__(self,_simulator,_frequency)
-
-#     def start(self):
-        
-#         # avg volumes
-#         self.pWVol=CompuCellSetup.addNewPlotWindow(_title='Average Volume',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Average Volume')        
-#         self.pWVol.addPlot(_plotName='MVol',_style='Dots',_color='red',_size=5)        
-#         # self.pWVol.addPlot(_plotName='TVol',_style='Dots',_color='blue',_size=5)        
-#         self.pWVol.addPlot(_plotName='MTVol',_style='Dots',_color='green',_size=5)        
-
-
-#         # number of cells
-#         self.pWNum=CompuCellSetup.addNewPlotWindow(_title='Number of Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='Number')                
-#         self.pWNum.addPlot(_plotName='Cancer',_color='green', _size=2)
-#         self.pWNum.addPlot(_plotName='Normal',_color='blue', _size=2)
-#         self.pWNum.addPlot(_plotName='Total',_color='red', _size=2)
-
-#         # proportions
-#         self.pWProp=CompuCellSetup.addNewPlotWindow(_title='Proportions of Cancer vs Normal Cells',_xAxisTitle='MonteCarlo Step (MCS)',_yAxisTitle='%')                
-#         self.pWProp.addPlot(_plotName='Cancer',_color='green', _size=2)
-#         self.pWProp.addPlot(_plotName='Normal',_color='blue', _size=2)
-        
-#     def step(self,mcs):
-#         cancer = 0
-#         normal = 0
-#         meanSurface=0.0
-#         meanVolume=0.0
-#         meanTargetVolume = 0.0
-#         numberOfCells=0
-#         for cell  in  self.cellList:
-#             meanVolume+=cell.volume
-#             meanTargetVolume += cell.targetVolume
-#             meanSurface+=cell.surface
-#             numberOfCells+=1
-#             if cell.type == 1:
-#                 normal+=1
-#             else:
-#                 cancer+=1
-
-#         meanVolume/=float(numberOfCells)
-#         meanSurface/=float(numberOfCells)
-#         meanTargetVolume /= float(numberOfCells)
-        
-#         self.pWVol.addDataPoint("MVol",mcs,meanVolume)
-#         # self.pWVol.addDataPoint("TVol",mcs,GLOBAL['targetVolume'])
-#         self.pWVol.addDataPoint("MTVol",mcs,meanTargetVolume)
-
-
-#         self.pWNum.addDataPoint("Cancer",mcs,cancer)
-#         self.pWNum.addDataPoint("Normal",mcs,normal)
-#         self.pWNum.addDataPoint("Total",mcs,numberOfCells)
-
-
-#         self.pWProp.addDataPoint("Cancer",mcs,cancer/float(numberOfCells))
-#         self.pWProp.addDataPoint("Normal",mcs,normal/float(numberOfCells))
-        
-
-#         print "meanVolume=",meanVolume,"meanSurface=",meanSurface
-                
-#         self.pWVol.showAllPlots()
-#         self.pWNum.showAllPlots()
-#         self.pWProp.showAllPlots()

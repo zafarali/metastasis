@@ -42,25 +42,22 @@ steppableRegistry.registerSteppable(GrowthSteppableInstance)
 from LimboSteppables import MitosisSteppable
 MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)
 steppableRegistry.registerSteppable(MitosisSteppableInstance)
-        
 
-
-# from LimboSteppables import DeathSteppable, DeathCheckSteppable
-
-# DeathSteppableInstance=DeathSteppable(sim, _frequency=1)
-# DeathCheckSteppableInstance=DeathCheckSteppable(sim, _frequency=10)
-
-# steppableRegistry.registerSteppable(DeathSteppableInstance)
-# steppableRegistry.registerSteppable(DeathCheckSteppableInstance)
 
 from LimboSteppables import SuperTracker
 SuperTrackerInstance = SuperTracker(sim, _frequency= 10 )
 steppableRegistry.registerSteppable(SuperTrackerInstance)
 
 
-# from LimboSteppables import ExtraMultiPlotSteppable
-# extraMultiPlotSteppable=ExtraMultiPlotSteppable(_simulator=sim,_frequency=10)
-# steppableRegistry.registerSteppable(extraMultiPlotSteppable)
+from LimboSteppables import DeathCheckSteppable
+DeathCheckSteppableInstance = DeathCheckSteppable(sim, _frequency= 10 )
+steppableRegistry.registerSteppable(DeathCheckSteppableInstance)
+
+
+from LimboSteppables import DeathSteppable
+DeathSteppableInstance = DeathSteppable(sim, _frequency= 1 )
+steppableRegistry.registerSteppable(DeathSteppableInstance)
+
 
 
 CompuCellSetup.mainLoop(sim,simthread,steppableRegistry)
