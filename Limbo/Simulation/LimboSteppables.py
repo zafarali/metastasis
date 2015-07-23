@@ -315,6 +315,7 @@ class DeathCheckSteppable(SteppableBasePy):
                 # cell.lambdaVolume = 5
                 cell.type = self.DEAD
                 self.lambdaVolume = 1
+                del genomes[cell.id]
                 # print('-------------------------------->LIMBO ZONE')
                 # print cell.targetVolume, cell.volume
             
