@@ -157,7 +157,7 @@ sp = SpacePlot( start_file = FILES['start'], \
 	skip_types = skip_types )
 
 
-with open( FILES['start'] , 'r' ) as f:
+with open( FILES['finish'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		if int(row[1]) != 1 and int(row[1]) != 4:

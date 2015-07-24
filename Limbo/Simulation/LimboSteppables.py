@@ -20,7 +20,8 @@ GLOBAL = {
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0.1,
-    'dV':0.1
+    'dV':0.1,
+    '_dV':0.1
 }
 
 import time 
@@ -73,9 +74,9 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             if cell.type == self.CANCER1:
                 count += 1
 
-        if count != 1:
-            print 'FAILED TO INITIALZE A CANCER CELL.'
-            sys.exit(0)
+        # if count != 1:
+        #     print 'FAILED TO INITIALZE A CANCER CELL.'
+        #     sys.exit(0)
 
         
 
@@ -95,15 +96,51 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
         
 
-        
+class UtillitySteppable(SteppableBasePy):
+    def __init__(self, _simulator, _frequency=1):
+        SteppableBasePy.__init__(self,_simulator,_frequency)
+
+    def step(self, mcs):
+        print 'INSIDE UtillitySteppable'
+        if mcs == 10:
+            
+            self.changeNumberOfWorkNodes(2)
+            self.frequency = 1000000000
+            print "NUMBER OF WORK NODES INCREASED"
+
+
+    def finish(self):
+        print 'THIS IS OVEA!'
+
+
 
 class GrowthSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
+
     def step(self,mcs):
         print "INSIDE GROWTH STEPPABLE"
         #                   print '----->Global targetVolume',GLOBAL['targetVolume']
+
+        create_cancer_cell = False
+        cancer_cell_created = False
+
+        if mcs > 2000 and not cancer_cell_created:
+            GLOBAL['dV'] = 0
+            create_cancer_cell = True
+
         for cell in self.cellList:
+            if create_cancer_cell and not cancer_cell_created:
+                z = cell.zCOM
+                y = cell.yCOM
+                x = cell.xCOM
+
+                if x < 255 and x > 245 and y < 255 and y>245:
+                    cell.type = self.CANCER1
+                    genomes[cell.id].mutation_rate = 120
+                    create_cancer_cell = False
+                    cancer_cell_created = True
+
 
             if cell.type == self.DEAD:
                 # do not grow if dead
@@ -274,8 +311,8 @@ class SuperTracker(SteppableBasePy):
             all_cells += 1
             mean_overall_volume += cell.volume
 
-        if cancer1 == 0 and cancer2 == 0:
-            sys.exit('(!) ALL CANCER CELLS DIED')
+        # if cancer1 == 0 and cancer2 == 0:
+        #     sys.exit('(!) ALL CANCER CELLS DIED')
         mean_overall_volume = mean_overall_volume/float(all_cells) if all_cells > 0 else 0
         mean_normal_volume = mean_normal_volume/float(normal) if normal > 0 else 0
         mean_cancer2_volume =mean_cancer2_volume/ float(cancer2) if cancer2 > 0 else 0
@@ -312,6 +349,8 @@ class DeathCheckSteppable(SteppableBasePy):
             if cell.type == self.DEAD: continue
 
             if not ( ( x >= 100 and x <= 400 ) and ( y >= 100 and y <=400 ) ):
+                if cell.type == self.CANCER1 or cell.type == self.CANCER2:
+                    self.stopSimulation()
                 # cell.lambdaVolume = 5
                 cell.type = self.DEAD
                 self.lambdaVolume = 1
@@ -327,5 +366,5 @@ class DeathSteppable(SteppableBasePy):
         print "INSIDE DEATH STEPPABLE"
         for cell in self.cellList:
             if cell.type == self.DEAD:
-                cell.targetVolume -= 10 * GLOBAL['dV']
+                cell.targetVolume -= 10 * GLOBAL['_dV']
 
