@@ -146,8 +146,8 @@ from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
 # locate which cell is the cancer cell.
 cancer_cell_ids = []
-# skip_types = [ 4 ]
-skip_types = [ ]
+skip_types = [ 4 ]
+# skip_types = [ ]
 
 
 
