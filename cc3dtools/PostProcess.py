@@ -222,6 +222,10 @@ class SpacePlot ( object ):
 			ax = fig.gca( projection = '3d' )
 
 		colormap = random_color_map( len(args) )
+
+
+
+
 		num_args = float ( len( args ) )
 
 		plotted_ids = []
@@ -259,6 +263,8 @@ class SpacePlot ( object ):
 
 			cells_with_data = map( individual_to_cell_data , cluster )
 			
+			selected_color = colormap( cluster_id ) if len(args) > 4 else np.random.rand(3,1)
+		
 			for cell in cells_with_data:
 
 				# cell died, thus we just skip plotting it
@@ -268,7 +274,6 @@ class SpacePlot ( object ):
 				# add the id of the cell to the plotted_ids so we plot everything else in grey
 				plotted_ids.append( cell.id )
 
-				selected_color = colormap( cluster_id )
 				marker = 'x' if cell.initial else 'o'
 
 				if projection == '3d':
