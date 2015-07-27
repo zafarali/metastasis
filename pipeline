@@ -291,7 +291,18 @@ if SPEC_lookup( 'global' , 'sample' ):
 					print2('(!) Saving global tumor_plot failed: \n' + str(e) )
 				
 			#endif
+			if u'pi' in sampling[u'save']:
+				to_save = []
+				for analysis in analyzed:
+					dist = analysis[0]
+					E_of_pi = proportion_pairwise_differences(analysis[1])
+					# save distance, E_of_pi, size of cluster
+					if E_of_pi is not None:
+						to_save.append( [ dist , E_of_pi, analysis[1][1] ] )
+					
+				#endfor
 
+<<<<<<< HEAD
 			if u'pi' in sampling[u'save']:
 				try:
 					to_save = []
@@ -314,7 +325,8 @@ if SPEC_lookup( 'global' , 'sample' ):
 				except Exception as e:
 					print2('(!) Unable to save E(pi) \n'+str(e))
 			#endif
-
+			
+>>>>>>> master
 			if u'1D_plots' in sampling[u'save']:
 				for analysis in analyzed:
 					try:
