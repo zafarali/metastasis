@@ -102,10 +102,8 @@ class UtillitySteppable(SteppableBasePy):
 
     def step(self, mcs):
         print 'INSIDE UtillitySteppable'
-        if mcs == 10:
-            
-            self.changeNumberOfWorkNodes(2)
-            self.frequency = 1000000000
+        if mcs == 10:            
+            self.frequency = 500000
             print "NUMBER OF WORK NODES INCREASED"
 
 
@@ -135,7 +133,7 @@ class GrowthSteppable(SteppableBasePy):
                 y = cell.yCOM
                 x = cell.xCOM
 
-                if x < 255 and x > 245 and y < 255 and y>245:
+                if x < 555 and x > 545 and y < 555 and y>545:
                     cell.type = self.CANCER1
                     genomes[cell.id].mutation_rate = 120
                     create_cancer_cell = False
@@ -348,7 +346,7 @@ class DeathCheckSteppable(SteppableBasePy):
             x = cell.xCOM
             if cell.type == self.DEAD: continue
 
-            if not ( ( x >= 100 and x <= 400 ) and ( y >= 100 and y <=400 ) ):
+            if not ( ( x >= 100 and x <= 900 ) and ( y >= 100 and y <=900 ) ):
                 if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                     self.stopSimulation()
                 # cell.lambdaVolume = 5
