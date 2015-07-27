@@ -3,7 +3,7 @@ import sys
 sys.path.append('/Users/zafaraliahmed/summer15/metastasis/')
 import dispatcher
 
-cpu=4 #number of cpus to use
+cpu=int(sys.argv[2]) #number of cpus to use
 
 
 # stores the commands we are going to run
@@ -11,7 +11,7 @@ commandlist=[]
 
 
 # names of the simulations we are going to run
-simulation_names = sys.argv[2:]
+simulation_names = sys.argv[3:]
 
 # number of times each simulation must be run
 num_times = int( sys.argv[1] )
