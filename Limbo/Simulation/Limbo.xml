@@ -71,7 +71,7 @@
 <Steppable Type="UniformInitializer">   
    <Region>
       <BoxMin x="500" y="500" z="0"/>
-      <BoxMax x="500" y="500" z="1"/>
+      <BoxMax x="505" y="505" z="1"/>
       <Gap>0</Gap>
       <Width>6</Width>
       <Types>Normal</Types>

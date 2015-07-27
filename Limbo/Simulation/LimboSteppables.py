@@ -24,6 +24,17 @@ GLOBAL = {
     '_dV':0.1
 }
 
+LATTICE = {
+    'x_max':900,
+    'y_max':900,
+    'x_min':100,
+    'y_min':100,
+    'center_x_max':555,
+    'center_x_min':545,
+    'center_y_max':555,
+    'center_y_min':545
+}
+
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
@@ -122,23 +133,28 @@ class GrowthSteppable(SteppableBasePy):
 
         create_cancer_cell = False
         cancer_cell_created = False
+        normal_cells_filled = False
 
-        if mcs > 2000 and not cancer_cell_created:
+        if normal_cells_filled and not cancer_cell_created:
             GLOBAL['dV'] = 0
             create_cancer_cell = True
 
         for cell in self.cellList:
-            if create_cancer_cell and not cancer_cell_created:
-                z = cell.zCOM
-                y = cell.yCOM
-                x = cell.xCOM
+            z = cell.zCOM
+            y = cell.yCOM
+            x = cell.xCOM
 
-                if x < 555 and x > 545 and y < 555 and y>545:
+            if create_cancer_cell and not cancer_cell_created:
+                if x < LATTICE['center_x_max'] and x > LATTICE['center_x_min'] and y < LATTICE['center_y_max'] and y > LATTICE['center_y_min']:
                     cell.type = self.CANCER1
                     genomes[cell.id].mutation_rate = 120
                     create_cancer_cell = False
                     cancer_cell_created = True
 
+            if not ( ( x >= LATTICE['x_min'] and x <= LATTICE['x_max'] ) and ( y >= LATTICE['y_min'] and y <=LATTICE['y_max'] ) ) and not normal_cells_filled:
+                GLOBAL['dV'] = 0
+                normal_cells_filled = True
+            #endif
 
             if cell.type == self.DEAD:
                 # do not grow if dead
@@ -309,6 +325,8 @@ class SuperTracker(SteppableBasePy):
             all_cells += 1
             mean_overall_volume += cell.volume
 
+        if all_cells==0:
+            sys.exit('(!) EXIT DUE TO NO CELLS REMAINING')
         # if cancer1 == 0 and cancer2 == 0:
         #     sys.exit('(!) ALL CANCER CELLS DIED')
         mean_overall_volume = mean_overall_volume/float(all_cells) if all_cells > 0 else 0
@@ -346,7 +364,7 @@ class DeathCheckSteppable(SteppableBasePy):
             x = cell.xCOM
             if cell.type == self.DEAD: continue
 
-            if not ( ( x >= 100 and x <= 900 ) and ( y >= 100 and y <=900 ) ):
+            if not ( ( x >= LATTICE['x_min'] and x <= LATTICE['x_max'] ) and ( y >= LATTICE['y_min'] and y <=LATTICE['y_max'] ) ) :
                 if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                     self.stopSimulation()
                 # cell.lambdaVolume = 5
