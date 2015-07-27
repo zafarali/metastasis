@@ -302,7 +302,6 @@ if SPEC_lookup( 'global' , 'sample' ):
 					
 				#endfor
 
-<<<<<<< HEAD
 			if u'pi' in sampling[u'save']:
 				try:
 					to_save = []
@@ -325,8 +324,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 				except Exception as e:
 					print2('(!) Unable to save E(pi) \n'+str(e))
 			#endif
-			
->>>>>>> master
+
 			if u'1D_plots' in sampling[u'save']:
 				for analysis in analyzed:
 					try:
