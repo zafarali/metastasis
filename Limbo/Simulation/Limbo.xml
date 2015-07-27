@@ -57,7 +57,7 @@
    </Plugin>
 
  
-<Steppable Type="BlobInitializer">   
+<!-- <Steppable Type="BlobInitializer">   
    <Region>
       <Center x="250" y="250" z="0"/>
       <Radius>170</Radius>
@@ -67,14 +67,14 @@
    </Region>
 </Steppable>
 
-
+ -->
 <Steppable Type="UniformInitializer">   
    <Region>
       <BoxMin x="250" y="250" z="0"/>
       <BoxMax x="255" y="255" z="1"/>
       <Gap>0</Gap>
-      <Width>5</Width>
-      <Types>Cancer1</Types>
+      <Width>6</Width>
+      <Types>Normal</Types>
    </Region>
 </Steppable>
 

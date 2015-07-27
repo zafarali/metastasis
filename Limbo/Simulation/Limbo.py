@@ -37,7 +37,12 @@ steppableRegistry.registerSteppable(ConstraintInitializerSteppableInstance)
 from LimboSteppables import GrowthSteppable
 GrowthSteppableInstance=GrowthSteppable(sim,_frequency=1)
 steppableRegistry.registerSteppable(GrowthSteppableInstance)
-        
+
+
+from LimboSteppables import UtillitySteppable
+UtillitySteppableInstance=UtillitySteppable(sim,_frequency=1)
+steppableRegistry.registerSteppable(UtillitySteppableInstance)
+
 
 from LimboSteppables import MitosisSteppable
 MitosisSteppableInstance=MitosisSteppable(sim, _frequency=10)

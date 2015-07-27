@@ -140,14 +140,14 @@ print2('saving to:' + FILES['out'])
 
 
 
-from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters
+from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters, proportion_pairwise_differences
 from cc3dtools.GenomeCompare import GenomeCompare
 from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
 # locate which cell is the cancer cell.
 cancer_cell_ids = []
-# skip_types = [ 4 ]
-skip_types = [ ]
+skip_types = [ 4 ]
+# skip_types = [ ]
 
 
 
@@ -157,7 +157,7 @@ sp = SpacePlot( start_file = FILES['start'], \
 	skip_types = skip_types )
 
 
-with open( FILES['start'] , 'r' ) as f:
+with open( FILES['finish'] , 'r' ) as f:
 	reader = csv.reader( f )
 	for row in reader:
 		if int(row[1]) != 1 and int(row[1]) != 4:
@@ -275,7 +275,10 @@ if SPEC_lookup( 'global' , 'sample' ):
 		elif sampling[u'method'] == u'rectangle':
 			sample, plot_stack = pp.sample_rectangle( return_plot_stack = True, **sampling[u'method_parameters'] )
 
-		analyzed = pp.sample_analyze(sample)
+		try:
+			analyzed = pp.sample_analyze(sample)
+		except Exception as e:
+			print2('(!) Unable to sample \n'+str(e))
 
 
 		if sampling[u'save']:
@@ -287,6 +290,29 @@ if SPEC_lookup( 'global' , 'sample' ):
 				except Exception as e:
 					print2('(!) Saving global tumor_plot failed: \n' + str(e) )
 				
+			#endif
+
+			if u'pi' in sampling[u'save']:
+				try:
+					to_save = []
+					for analysis in analyzed:
+						dist = analysis[0]
+						E_of_pi = proportion_pairwise_differences(analysis[1])
+						# save distance, E_of_pi, size of cluster
+						if E_of_pi is not None:
+							to_save.append( [ dist , E_of_pi, analysis[1][1] ] )
+						
+					#endfor
+
+					with open( current_dir + '/pi.csv', 'w' ) as f:
+						w = csv.writer(f)
+						for row in to_save:
+							w.writerow(row)
+						#endfor
+					print2('Saved E(pi) information')
+					#endwith
+				except Exception as e:
+					print2('(!) Unable to save E(pi) \n'+str(e))
 			#endif
 
 			if u'1D_plots' in sampling[u'save']:
