@@ -20,8 +20,8 @@ GLOBAL = {
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0.1,
-    'dV':0.1,
-    '_dV':0.1
+    'dV':0.2,
+    '_dV':0.2
 }
 
 LATTICE = {
@@ -113,9 +113,9 @@ class UtillitySteppable(SteppableBasePy):
 
     def step(self, mcs):
         print 'INSIDE UtillitySteppable'
-        if mcs == 10:            
-            self.frequency = 500000
-            print "NUMBER OF WORK NODES INCREASED"
+        # if mcs == 10:            
+            # self.frequency = 10000
+            # print "NUMBER OF WORK NODES INCREASED"
 
 
     def finish(self):
