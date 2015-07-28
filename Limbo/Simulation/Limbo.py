@@ -50,7 +50,7 @@ steppableRegistry.registerSteppable(MitosisSteppableInstance)
 
 
 from LimboSteppables import SuperTracker
-SuperTrackerInstance = SuperTracker(sim, _frequency= 10 )
+SuperTrackerInstance = SuperTracker(sim, _frequency= 100 )
 steppableRegistry.registerSteppable(SuperTrackerInstance)
 
 

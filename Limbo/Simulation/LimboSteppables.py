@@ -282,7 +282,7 @@ class MitosisSteppable(MitosisSteppableBase):
 
 
 class SuperTracker(SteppableBasePy):
-    def __init__(self,_simulator,_frequency=10):
+    def __init__(self,_simulator,_frequency=100):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
         self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
@@ -317,6 +317,12 @@ class SuperTracker(SteppableBasePy):
         mean_normal_volume = mean_normal_volume/float(normal) if normal > 0 else 0
         mean_cancer2_volume =mean_cancer2_volume/ float(cancer2) if cancer2 > 0 else 0
         mean_cancer1_volume =mean_cancer1_volume/ float(cancer1) if cancer1 > 0 else 0
+
+        print 'NUMBER OF CELLS REPORT:'
+        print 'Normal cells:',normal
+        print 'cancer1 cells',cancer1
+        print 'cancer2 cells',cancer2
+        print 'all_cells',all_cells
 
         self.cell_tracker.stash( [ mcs , 0 , normal ] )
         self.cell_tracker.stash( [ mcs , 1 , cancer1 ] )
