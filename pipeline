@@ -58,7 +58,7 @@ time_info = '_'.join(time.asctime().split(' '))
 
 # an analysis directory must be specified.
 try:
-	analysis_directory = './' + sys.argv[1]
+	analysis_directory = sys.argv[1]
 	if not os.path.exists( analysis_directory ):
 		raise IOError()
 except IndexError:
