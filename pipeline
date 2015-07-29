@@ -82,13 +82,15 @@ try:
 except IndexError as e:
 	print2('(!) Failed to run: \n'+str(e))
 	sys.exit('---> (!) Incomplete files for data analysis. Analysis directory must have the following files:\n\
-	start_cells_*\n\
-	finish_cells_*\n\
-	division_*\n\
-	genomes_*\n\
+	start_cells_* (glob out: ' + str( glob.glob( analysis_directory + 'start_cells_*' ) ) + ')\n\
+	finish_cells_* (glob out: ' + str( glob.glob( analysis_directory + 'finish_cells_*' ) ) + ')\n\
+	division_* (glob out: ' + str( glob.glob( analysis_directory + 'division_*' ) ) + ')\n\
+	genomes_* (glob out: ' + str( glob.glob( analysis_directory + 'genomes_*' ) ) + ')\n\
 	specs.txt\n\
-	These were not found in '+analysis_directory)
-
+	These were not found in '+analysis_directory+'\n\
+	GLOB OUT ' + str( glob.glob( analysis_directory ) ) + '\n\
+	Following exception occured:\n'+str(e))
+	# raise e
 
 # load sampling strategies
 print2('Importing Speficiations')
