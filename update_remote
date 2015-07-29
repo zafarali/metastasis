@@ -6,5 +6,5 @@ git checkout master
 scp -r ./cc3dtools/*.py zahmed@abacus:~/summer15/metastasis/cc3dtools
 scp -r ./pipeline_templates zahmed@abacus:~/summer15/metastasis
 scp pipeline zahmed@abacus:~/summer15/metastasis
-git checkout CURRENT_BRANCH
+git checkout $CURRENT_BRANCH
 echo "DONE"
