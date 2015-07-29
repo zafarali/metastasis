@@ -25,14 +25,14 @@ GLOBAL = {
 }
 
 LATTICE = {
-    'x_max':900,
-    'y_max':900,
+    'x_max':400,
+    'y_max':400,
     'x_min':100,
     'y_min':100,
-    'center_x_max':555,
-    'center_x_min':545,
-    'center_y_max':555,
-    'center_y_min':545
+    'center_x_max':455,
+    'center_x_min':445,
+    'center_y_max':455,
+    'center_y_min':445
 }
 
 import time 
@@ -372,11 +372,7 @@ class DeathCheckSteppable(SteppableBasePy):
             x = cell.xCOM
             if cell.type == self.DEAD: continue
 
-<<<<<<< HEAD
-            if not ( ( x >= 100 and x <= 400 ) and ( y >= 100 and y <=400 ) ):
-=======
             if not ( ( x >= LATTICE['x_min'] and x <= LATTICE['x_max'] ) and ( y >= LATTICE['y_min'] and y <=LATTICE['y_max'] ) ) :
->>>>>>> 8489cb4... Abstracted limits, add growth until first normal cell reaches the edge #60
                 if cell.type == self.CANCER1 or cell.type == self.CANCER2:
                     self.stopSimulation()
                 # cell.lambdaVolume = 5
