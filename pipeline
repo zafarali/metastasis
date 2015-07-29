@@ -67,6 +67,7 @@ except IOError:
 	sys.exit('IOError: (!) Analysis directory does not exist!')
 
 # read all necessary files
+print2('Analysis Directory: ' + analysis_directory)
 try:
 	FILES = {
 		'start' : glob.glob( analysis_directory + 'start_cells_*' )[0],
