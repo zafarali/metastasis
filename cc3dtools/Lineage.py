@@ -396,6 +396,11 @@ class MultiLineage(object):
         self.cancer_cell_ids = list( cancer_cell_ids )
         self.lineages = lineages
         self.cancer_lineages = cancer_lineages
+        
+        if len(cancer_cell_ids):
+            self.cancer_lineages = cancer_lineages
+        else:
+            self.cancer_lineages = []
 
     def get_lineages( self ):
         """
