@@ -1,0 +1,7 @@
+#!/bin/bash
+echo ${1}
+CURRENT=$(pwd)
+cd /sb/programs/itgenome/compucell3d/3.7.4/
+./runScript.command -i ${1} > ~/summer15/metastasis/sim_$(date '+%A_%d%m%Y_%H%M%S')_log.txt 
+cd $CURRENT
+echo 'DONE! :)'

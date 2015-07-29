@@ -1,0 +1,4 @@
+#!/bin/bash
+echo ${1}
+./pipeline init ${1}
+./pipeline ${1} > ${1}/out_log.txt

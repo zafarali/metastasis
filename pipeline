@@ -51,6 +51,7 @@ def print2( string ):
 	global event_sequence
 	string = str(string)
 	print ' Out [' + str(event_sequence) + ']: ' + string
+	sys.stdout.flush()
 	event_sequence += 1
 
 
