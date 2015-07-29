@@ -113,11 +113,9 @@ class UtillitySteppable(SteppableBasePy):
 
     def step(self, mcs):
         print 'INSIDE UtillitySteppable'
-        if mcs == 10:
-            
-            self.changeNumberOfWorkNodes(2)
-            self.frequency = 1000000000
-            print "NUMBER OF WORK NODES INCREASED"
+        # if mcs == 10:            
+            # self.changeNumberOfWorkNodes(2)
+            # print "NUMBER OF WORK NODES INCREASED"
 
 
     def finish(self):
