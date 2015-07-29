@@ -277,7 +277,18 @@ class GenomeCompare:
 
 		
 		
+def load_genomes_into_array(file_name):
+	"""
+		This loads gen2 file and returns an dict of genomes indexed by integer cell.ids
+	"""	
+	genomes = GenomeCompare.from_gen2_file(file_name).genomes
 
+	to_be_returned = {}
+
+	for cellid,genome in genomes.items():
+		to_be_returned[ int( cellid ) ] = genome
+
+	return to_be_returned
 
 
 def newick_order( s ):
