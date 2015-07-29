@@ -47,6 +47,12 @@ class Tracker2( object ):
             -> ( this class serves as a base class for most of the trackers used in cc3dtools )
         """
         assert file_name is not None , 'file_name must be supplied to use Tracker2'
+        try:
+            open(file_name, 'a').close()
+        except Exception as e:
+            print 'FAILED TO LOAD TRACKER2 MODULE'
+            print 'ERROR\n'+str(e)
+            raise e
         
         self.file_name = file_name
         self.internal_stash = [] # stores the rows for stashing
@@ -74,7 +80,7 @@ class Tracker2( object ):
         assert type( to_stash ) is list , 'to_stash must be a list'
         self.internal_stash.append( to_stash )
 
-    def save_stash( self , flag = 'w' ):
+    def save_stash( self , flag = 'wb' ):
         """
             saves the current state of the stash to a file
             ( note this is an write function by default )
@@ -82,13 +88,18 @@ class Tracker2( object ):
                 flag / str / 'w'
                     how to store the stash ('a' = append, 'w' = write )
         """
-        assert type( flag ) is str and len( flag ) == 1 , 'flag must be a string of len 1'
+        assert type( flag ) is str , 'flag must be a string'
         assert flag != 'r' , 'cannot save with a read flag'
 
-        with open( self.file_name , flag ) as f:
-            c = csv.writer( f )
-            for row in self.internal_stash:
-                c.writerow( row )
+        try:
+            with open( self.file_name , flag ) as f:
+                c = csv.writer( f )
+                for row in self.internal_stash:
+                    c.writerow( row )
 
-        print 'stash was saved to '+self.file_name
+            print 'stash was saved to '+self.file_name
+        except Exception as e:
+            print 'EXCEPTION OCCURED WHEN TRYING TO SAVE TO ',self.file_name
+            print 'The state of the stash is: \n',self.internal_stash
+            print '\n Exception was: ',str(e)
 

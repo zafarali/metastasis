@@ -1,0 +1,10 @@
+#!/bin/bash 
+
+
+echo "FOLDERS_TO_MOVE"
+FOLDERS_TO_MOVE="${@:1}"
+
+for folder in $FOLDERS_TO_MOVE; do
+	echo $folder
+	scp -r ./$folder zahmed@abacus:~/summer15/metastasis/
+done
