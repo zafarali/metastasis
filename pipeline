@@ -86,7 +86,8 @@ except IndexError as e:
 	finish_cells_*\n\
 	division_*\n\
 	genomes_*\n\
-	specs.txt')
+	specs.txt\n\
+	These were not found in '+analysis_directory)
 
 
 # load sampling strategies
