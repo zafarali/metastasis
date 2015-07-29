@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ssh zahmed@abacus "cd ~/summer15/metastasis; rm -rf cc3dtools; mkdir cc3dtools; rm pipeline; rm -rf ./pipeline_templates exit"
+scp -r ./cc3dtools/*.py zahmed@abacus:~/summer15/metastasis/cc3dtools
+scp -r ./pipeline_templates zahmed@abacus:~/summer15/metastasis
+scp pipeline zahmed@abacus:~/summer15/metastasis
+echo "DONE"
