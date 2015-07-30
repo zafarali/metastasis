@@ -69,16 +69,16 @@
 
  -->
 
-<!-- <Steppable Type="PIFDumper" Frequency="1000">
+<Steppable Type="PIFDumper" Frequency="1000">
    <PIFName>LIMBO_FROM_TEMPLATE</PIFName>
 </Steppable>
- -->
-<Steppable Type="PIFInitializer">
+
+<!-- <Steppable Type="PIFInitializer">
    <PIFName>Simulation/PIF_TEMPLATE.pif</PIFName>
 </Steppable>
+ -->
 
-
-<!-- <Steppable Type="UniformInitializer">   
+<Steppable Type="UniformInitializer">   
    <Region>
       <BoxMin x="500" y="500" z="0"/>
       <BoxMax x="505" y="505" z="1"/>
@@ -87,5 +87,5 @@
       <Types>Normal</Types>
    </Region>
 </Steppable>
- -->
+
 </CompuCell3D>

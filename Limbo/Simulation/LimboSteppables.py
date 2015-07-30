@@ -10,7 +10,7 @@ from PySteppablesExamples import MitosisSteppableBase
 
 save_flag = True
 simulate_flag = True
-template_flag = True
+template_flag = False
 
 TEMPLATE_ROOT = '../LIMBO_TEMPLATE' # in the future get this from a config file.
 TEMPLATES = {
