@@ -10,6 +10,17 @@ from PySteppablesExamples import MitosisSteppableBase
 
 save_flag = True
 simulate_flag = True
+template_flag = True
+
+TEMPLATE_ROOT = '../LIMBO_TEMPLATE' # in the future get this from a config file.
+TEMPLATES = {
+    'start_tracker': TEMPLATE_ROOT + '/start_cells.csv',
+    'mitosis_tracker': TEMPLATE_ROOT + '/division_events.csv',
+    'cell_tracker': TEMPLATE_ROOT + '/cell_count.csv',
+    'volume_tracker': TEMPLATE_ROOT + '/volume.csv',
+    'genome_file': TEMPLATE_ROOT + '/genomes.csv.gen2'
+}
+
 
 divide_times = {'last_division':0}
 GLOBAL = {
@@ -39,26 +50,34 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../simulation_out/limbo_'+time_info
+save_dir = '../simulation_out/limbo_from_template_'+time_info
 os.makedirs( save_dir )
 
 
 from cc3dtools.Tracker import Tracker2
 from cc3dtools.Genome import Genome, save_genomes2
+from cc3dtools.GenomeCompare import load_genomes_into_dict
+
 genomes = {}
 
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
-            self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv')
+            if template_flag:
+                self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv' , template = TEMPLATES['start_tracker'] )
+                print 'loaded start template'
+            else:
+                self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv')
 
     def start(self):
         
         num_cells = len(self.cellList)
 
         # r = np.random.randint(0,num_cells)
-
+        if simulate_flag and template_flag:
+            genomes = load_genomes_into_dict( file_name = TEMPLATES['genome_file'] )
+            pass
         for cell in self.cellList:
             
             divide_times[cell.id] = 0
@@ -66,12 +85,12 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.targetVolume=GLOBAL['targetVolume']
             cell.lambdaVolume=1.5
 
-            if simulate_flag:
+            if simulate_flag and not template_flag:
                 genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0001 , ploidy=2 )
 
             if cell.type == self.CANCER1:
 
-                if simulate_flag:
+                if simulate_flag and not template_flag:
                     genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
 
             if save_flag:
@@ -113,6 +132,7 @@ class UtillitySteppable(SteppableBasePy):
 
     def step(self, mcs):
         print 'INSIDE UtillitySteppable'
+        sys.stdout.flush() # flush the buffer, this allows continous saving into a file
         # if mcs == 10:            
             # self.changeNumberOfWorkNodes(2)
             # print "NUMBER OF WORK NODES INCREASED"
@@ -202,7 +222,11 @@ class MitosisSteppable(MitosisSteppableBase):
     def __init__(self,_simulator,_frequency=1):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
         if save_flag:
-            self.mitosis_tracker = Tracker2(file_name=save_dir+'/division_events_'+time_info+'.csv')
+            if template_flag:
+                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' , template=TEMPLATES['mitosis_tracker'] )
+                print 'loaded mitosis_tracker'
+            else:
+                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' )
 
     def start(self):
         # we initialize the stash function
@@ -298,8 +322,14 @@ class MitosisSteppable(MitosisSteppableBase):
 class SuperTracker(SteppableBasePy):
     def __init__(self,_simulator,_frequency=100):
         SteppableBasePy.__init__(self,_simulator,_frequency)
-        self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
-        self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
+        if save_flag:
+            if template_flag:
+                self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
+                self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
+                print 'cell and volume trackers'
+            else:
+                self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
+                self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
 
     def step(self,mcs):
         cancer1 = 0

@@ -4,7 +4,7 @@
       
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="500" y="500" z="1"/>
-      <Steps>1000</Steps>
+      <Steps>2000</Steps>
       <Temperature>10</Temperature>
       <NeighborOrder>2</NeighborOrder>
       <!-- <RandomSeed>1232232</RandomSeed> -->
@@ -69,8 +69,12 @@
 
  -->
 
-<Steppable Type="PIFDumper" Frequency="990">
-   <PIFName>OUT</PIFName>
+<!-- <Steppable Type="PIFDumper" Frequency="1000">
+   <PIFName>LIMBO_FROM_TEMPLATE</PIFName>
+</Steppable>
+ -->
+<Steppable Type="PIFInitializer">
+   <PIFName>Simulation/PIF_TEMPLATE.pif</PIFName>
 </Steppable>
 
 
