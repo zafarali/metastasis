@@ -262,22 +262,20 @@ class Genome(object):
 		raise DeprecationWarning('Genome.is_mutated is no longer supported')
 
 	@staticmethod
-	def from_chromosome_data ( chromosome_data , mutation_rate = 0 , name = '' , ploidy_probability = 0 , genome_order = 15 ):
+	def from_chromosome_data ( chromosome_data , mutation_rate = 0 , name = '' , ploidy_probability = 0 , genome_order = 15 , force_loci = False ):
 		"""
 			Generates a Genome from an array of chromsome loci
 		"""
 		to_return = Genome( mutation_rate = mutation_rate , ploidy_probability = ploidy_probability, genome_order = genome_order )
 		chromosomes = []
-		mutated_loci = []
 		for chromosome in chromosome_data:
 			chromosomes.append( Chromosome.from_mutated_loci( chromosome['loci'] , mutation_rate = chromosome['mutation_rate'], name= chromosome['name']) )
-			mutated_loci.extend( chromosome['loci'] )
 
-		to_return.mutated_loci = mutated_loci
 		to_return.chromosomes = chromosomes
+		if force_loci:
+			to_return.get_mutated_loci() # force the loading of loci into genome memory
 
 		return to_return
-
 
 """
 	Mutation
