@@ -191,6 +191,11 @@ class GenomeCompare:
 	def from_gen2_file( file_name , force_loci = False ):
 		"""
 			use a new gen_file generated from multiple chromosomes to get genomes
+			@params:
+				file_name: name of the file to load
+				force_loci / bool / False:
+					load the mutated loci into memory at run time
+
 		"""
 		import csv
 		genomes = {}
@@ -277,9 +282,15 @@ class GenomeCompare:
 
 		
 		
-def load_genomes_into_array( file_name , force_loci = False ):
+def load_genomes_into_dict( file_name , force_loci = False ):
 	"""
 		This loads gen2 file and returns an dict of genomes indexed by integer cell.ids
+		@params:
+			file_name: name of the file to load
+			force_loci / bool / False:
+				load the mutated loci into memory at run time
+		@returns:
+			dict of cc3dtools.Genome objects
 	"""	
 	genomes = GenomeCompare.from_gen2_file(file_name, force_loci = force_loci).genomes
 

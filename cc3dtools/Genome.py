@@ -265,7 +265,23 @@ class Genome(object):
 	def from_chromosome_data ( chromosome_data , mutation_rate = 0 , name = '' , ploidy_probability = 0 , genome_order = 15 , force_loci = False ):
 		"""
 			Generates a Genome from an array of chromsome loci
+			This is an internal method and is probably not a good idea to use stand-alone
+			@params:
+				chromosome_data: chromosome data that needs to be fed into the genome
+				mutation_rate / int / 0
+					the number of new mutations to be introduced at each division event
+				name / str / ''
+					name of the genome
+				ploidy_probability / float / 0
+					how likely it is that a division event will result in the change of the ploidy
+				genome_order / int / 15
+					the size of the genome is 10^genome_order
+				force_loci / bool / False
+					force the loci to be pre-populated at run time
 		"""
+		assert mutation_rate >= 0 , 'mutation_rate must be >= 0'
+		assert ploidy_probability >= 0 , 'ploidy_probability must be >= 0'
+		assert genome_order >= 0 , 'genome_order must be >= 0 '
 		to_return = Genome( mutation_rate = mutation_rate , ploidy_probability = ploidy_probability, genome_order = genome_order )
 		chromosomes = []
 		for chromosome in chromosome_data:
