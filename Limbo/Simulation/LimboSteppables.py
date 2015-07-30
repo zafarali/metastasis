@@ -31,8 +31,19 @@ GLOBAL = {
     'maxTargetVolume':75,
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0.1,
-    'dV':0.1,
-    '_dV':0.1
+    'dV':0.2,
+    '_dV':0.2
+}
+
+LATTICE = {
+    'x_max':900,
+    'y_max':900,
+    'x_min':100,
+    'y_min':100,
+    'center_x_max':555,
+    'center_x_min':545,
+    'center_y_max':555,
+    'center_y_min':545
 }
 
 LATTICE = {
