@@ -75,7 +75,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
         # r = np.random.randint(0,num_cells)
         if simulate_flag and template_flag:
-            genomes = load_genomes_into_dict( file_name = TEMPLATES['genome_file'] )
+            genomes.update( load_genomes_into_dict( file_name = TEMPLATES['genome_file'] ) )
             pass
         for cell in self.cellList:
             
