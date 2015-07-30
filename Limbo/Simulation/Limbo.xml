@@ -78,7 +78,7 @@
 </Steppable>
 
 
-<Steppable Type="UniformInitializer">   
+<!-- <Steppable Type="UniformInitializer">   
    <Region>
       <BoxMin x="250" y="250" z="0"/>
       <BoxMax x="255" y="255" z="1"/>
@@ -87,5 +87,5 @@
       <Types>Normal</Types>
    </Region>
 </Steppable>
-
+ -->
 </CompuCell3D>
