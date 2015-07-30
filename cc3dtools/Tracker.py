@@ -38,7 +38,7 @@ class Tracker:
     		newickFileName = self.fileName.split('csv')[0].join('newick')
 
 class Tracker2( object ):
-    def __init__ ( self , file_name = None ):
+    def __init__ ( self , file_name = None , template = None ):
         """ 
             Allows us to store and track various events and properties
             @params:
@@ -53,9 +53,18 @@ class Tracker2( object ):
             print 'FAILED TO LOAD TRACKER2 MODULE'
             print 'ERROR\n'+str(e)
             raise e
-        
-        self.file_name = file_name
+
         self.internal_stash = [] # stores the rows for stashing
+
+        if template is not None:
+            with open( template , 'r' ) as f:
+                reader = csv.reader( f )
+
+                for row in reader:
+                    self.internal_stash.append( row )
+
+        self.file_name = file_name
+        
 
     def save_now( self , to_save ):
         """

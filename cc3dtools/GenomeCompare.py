@@ -188,9 +188,14 @@ class GenomeCompare:
 		return GenomeCompare( genomes = genomes )
 
 	@staticmethod
-	def from_gen2_file( file_name ):
+	def from_gen2_file( file_name , force_loci = False ):
 		"""
 			use a new gen_file generated from multiple chromosomes to get genomes
+			@params:
+				file_name: name of the file to load
+				force_loci / bool / False:
+					load the mutated loci into memory at run time
+
 		"""
 		import csv
 		genomes = {}
@@ -210,7 +215,7 @@ class GenomeCompare:
 						ploidy_probability = genome_details['ploidy_probability']
 						genome_order = genome_details['genome_order']
 						genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
-							ploidy_probability = ploidy_probability, genome_order = genome_order  )
+							ploidy_probability = ploidy_probability, genome_order = genome_order , force_loci = force_loci  )
 					#endif
 
 					current_G = str( row[1] )
@@ -277,7 +282,24 @@ class GenomeCompare:
 
 		
 		
+def load_genomes_into_dict( file_name , force_loci = False ):
+	"""
+		This loads gen2 file and returns an dict of genomes indexed by integer cell.ids
+		@params:
+			file_name: name of the file to load
+			force_loci / bool / False:
+				load the mutated loci into memory at run time
+		@returns:
+			dict of cc3dtools.Genome objects
+	"""	
+	genomes = GenomeCompare.from_gen2_file(file_name, force_loci = force_loci).genomes
 
+	to_be_returned = {}
+
+	for cellid,genome in genomes.items():
+		to_be_returned[ int( cellid ) ] = genome
+
+	return to_be_returned
 
 
 def newick_order( s ):
