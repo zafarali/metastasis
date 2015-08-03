@@ -7,6 +7,8 @@ import numpy as np
 
 from PySteppablesExamples import MitosisSteppableBase
 
+## FIXED PATHS
+sys.path.append('/home/zahmed/summer15/metastasis/')
 
 save_flag = True
 simulate_flag = True
@@ -50,8 +52,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '../simulation_out/limbo_from_template_'+time_info
-os.makedirs( save_dir )
+save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo'
 
 
 from cc3dtools.Tracker import Tracker2
