@@ -2,5 +2,5 @@
    <XMLScript Type="XMLScript">Simulation/Limbo1stOrder.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/Limbo1stOrder.py</PythonScript>
    <Resource Type="Python">Simulation/Limbo1stOrderSteppables.py</Resource>
-   <PIFFile>Simulation/PIF_TEMPLATE.pif</PIFFile>        
+   <PIFFile>/home/zahmed/summer15/LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFFile>        
 </Simulation>

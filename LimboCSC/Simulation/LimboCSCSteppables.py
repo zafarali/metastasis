@@ -52,7 +52,7 @@ import time
 time_info = '_'.join(time.asctime().split(' '))
 
 import os
-save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo_1st'
+save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo_CSC'
 
 
 from cc3dtools.Tracker import Tracker2
