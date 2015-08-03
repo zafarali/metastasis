@@ -155,9 +155,10 @@ class GrowthSteppable(SteppableBasePy):
         cancer_cell_created = False
         normal_cells_filled = False
 
-        if normal_cells_filled and not cancer_cell_created:
-            GLOBAL['dV'] = 0
-            create_cancer_cell = True
+        # #COMMENT THIS BACK IN TO ENABLE THE CREATION OF CANCER CELLS!
+        # if normal_cells_filled and not cancer_cell_created:
+        #     GLOBAL['dV'] = 0
+        #     create_cancer_cell = True 
 
         for cell in self.cellList:
             z = cell.zCOM
