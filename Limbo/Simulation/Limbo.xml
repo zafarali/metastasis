@@ -70,7 +70,7 @@
  -->
 
 <Steppable Type="PIFDumper" Frequency="9999">
-   <PIFName>LIMBO_TEMPLATE</PIFName>
+   <PIFName>/home/zahmed/summer15/metastasis/LIMBO_TEMPLATE</PIFName>
 </Steppable>
 
 <!-- <Steppable Type="PIFInitializer">
