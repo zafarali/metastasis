@@ -46,17 +46,6 @@ LATTICE = {
     'center_y_min':545
 }
 
-LATTICE = {
-    'x_max':400,
-    'y_max':400,
-    'x_min':100,
-    'y_min':100,
-    'center_x_max':455,
-    'center_x_min':445,
-    'center_y_max':455,
-    'center_y_min':445
-}
-
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 

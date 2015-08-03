@@ -5,7 +5,7 @@
       <!-- Basic properties of CPM (GGH) algorithm -->
       <Dimensions x="1000" y="1000" z="1"/>
       <Steps>50000</Steps>
-      <Temperature>10</Temperature>
+      <Temperature>5</Temperature>
       <NeighborOrder>2</NeighborOrder>
       <!-- <RandomSeed>1232232</RandomSeed> -->
    </Potts>
@@ -34,7 +34,7 @@
    <Plugin Name="Contact">
       <!-- Specification of adhesion energies -->
       <Energy Type1="Medium" Type2="Medium">10</Energy>
-      <Energy Type1="Medium" Type2="Normal">10</Energy>
+      <Energy Type1="Medium" Type2="Normal">8</Energy>
       <Energy Type1="Medium" Type2="Cancer1">10</Energy>
       <Energy Type1="Medium" Type2="Cancer2">10</Energy>
       <Energy Type1="Medium" Type2="Dead">10</Energy>
@@ -69,8 +69,8 @@
 
  -->
 
-<Steppable Type="PIFDumper" Frequency="1000">
-   <PIFName>LIMBO_FROM_TEMPLATE</PIFName>
+<Steppable Type="PIFDumper" Frequency="9999">
+   <PIFName>LIMBO_TEMPLATE</PIFName>
 </Steppable>
 
 <!-- <Steppable Type="PIFInitializer">
@@ -81,7 +81,7 @@
 <Steppable Type="UniformInitializer">   
    <Region>
       <BoxMin x="500" y="500" z="0"/>
-      <BoxMax x="505" y="505" z="1"/>
+      <BoxMax x="506" y="506" z="1"/>
       <Gap>0</Gap>
       <Width>6</Width>
       <Types>Normal</Types>
