@@ -14,7 +14,7 @@ save_flag = True
 simulate_flag = True
 template_flag = True
 
-TEMPLATE_ROOT = '/home/zahmed/summer15/LIMBO_TEMPLATE' # in the future get this from a config file.
+TEMPLATE_ROOT = '/home/zahmed/summer15/metastasis/LIMBO_TEMPLATE' # in the future get this from a config file.
 TEMPLATES = {
     'start_tracker': TEMPLATE_ROOT + '/start_cells.csv',
     'mitosis_tracker': TEMPLATE_ROOT + '/division_events.csv',

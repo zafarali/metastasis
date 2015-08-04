@@ -2,5 +2,5 @@
    <XMLScript Type="XMLScript">Simulation/LimboCSC.xml</XMLScript>
    <PythonScript Type="PythonScript">Simulation/LimboCSC.py</PythonScript>
    <Resource Type="Python">Simulation/LimboCSCSteppables.py</Resource>
-   <PIFFile>/home/zahmed/summer15/LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFFile>        
+   <PIFFile>../LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFFile>        
 </Simulation>
