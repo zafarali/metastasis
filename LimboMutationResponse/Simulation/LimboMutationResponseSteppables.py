@@ -8,8 +8,8 @@ import numpy as np
 from PySteppablesExamples import MitosisSteppableBase
 
 ## FIXED PATHS
-# GLOBAL_PATH = '/home/zahmed/summer15/metastasis/'
-GLOBAL_PATH = '/Users/zahmed/summer15/metastasis/'
+GLOBAL_PATH = '/home/zahmed/summer15/metastasis/'
+# GLOBAL_PATH = '/Users/zahmed/summer15/metastasis/'
 sys.path.append( GLOBAL_PATH )
 
 save_flag = True
@@ -35,8 +35,8 @@ GLOBAL = {
     'cancer2_divideThreshold':42,
     'cancer1_divideThreshold':42,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.05,
-    'cancer1_additional_dV':0.05,
+    'cancer2_additional_dV':0.1,
+    'cancer1_additional_dV':0.1,
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
     '_dV':0.2
 }
@@ -158,7 +158,11 @@ class UtillitySteppable(SteppableBasePy):
         # if mcs == 10:            
             # self.changeNumberOfWorkNodes(2)
             # print "NUMBER OF WORK NODES INCREASED"
-
+        global stop_simulation
+        if stop_simulation:
+            save_genomes2( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
+            self.stopSimulation()
+        #endif
 
     def finish(self):
         print 'THIS IS OVEA!'
@@ -382,8 +386,8 @@ class SuperTracker(SteppableBasePy):
 
             if all_cells==0:
                 sys.exit('(!) EXIT DUE TO NO CELLS REMAINING')
-            # if cancer1 == 0 and cancer2 == 0:
-            #     sys.exit('(!) ALL CANCER CELLS DIED')
+            if cancer1 == 0 and cancer2 == 0:
+                sys.exit('(!) ALL CANCER CELLS DIED')
             mean_overall_volume = mean_overall_volume/float(all_cells) if all_cells > 0 else 0
             mean_normal_volume = mean_normal_volume/float(normal) if normal > 0 else 0
             mean_cancer2_volume =mean_cancer2_volume/ float(cancer2) if cancer2 > 0 else 0
@@ -419,9 +423,6 @@ class DeathCheckSteppable(SteppableBasePy):
 
     def step(self,mcs):
         print "INSIDE DEATH CHECK STEPPABLE"
-        global stop_simulation
-        if stop_simulation:
-            self.stopSimulation()
 
         for cell in self.cellList:
             z = cell.zCOM
@@ -445,8 +446,7 @@ class DeathSteppable(SteppableBasePy):
 
     def step(self,mcs):
         print "INSIDE DEATH STEPPABLE"
-        if mcs > 100:
-            stop_simulation = True
+
         for cell in self.cellList:
             if cell.type == self.DEAD:
                 cell.targetVolume -= 10 * GLOBAL['_dV']
