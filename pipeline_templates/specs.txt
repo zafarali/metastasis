@@ -6,4 +6,6 @@ multilineage,color_by_branch,1
 multilineage,color_by_initial,1
 multilineage,newick,1
 global,sample,1
+sample,total_pi,1
 plots,1dscale,100000
+multilineage,cancer_only,1

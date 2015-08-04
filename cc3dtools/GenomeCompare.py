@@ -197,46 +197,9 @@ class GenomeCompare:
 					load the mutated loci into memory at run time
 
 		"""
-		import csv
-		genomes = {}
-
-		with open( file_name , 'r' ) as f:
-			reader = csv.reader( f )
-
-			current_G = None
-			genome_details = {}
-
-			for row in reader:
-				if row[0] == 'G':
-					if current_G is not None:
-						# save all the previous data we collected
-						chromosome_data = genome_details['chromosome_data']
-						mutation_rate = genome_details['mutation_rate']
-						ploidy_probability = genome_details['ploidy_probability']
-						genome_order = genome_details['genome_order']
-						genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
-							ploidy_probability = ploidy_probability, genome_order = genome_order , force_loci = force_loci  )
-					#endif
-
-					current_G = str( row[1] )
-					genome_details['mutation_rate'] = int( row[2] )
-					genome_details['ploidy_probability'] = float( row[3] )
-					genome_details['genome_order'] = int( row[4] )
-					genome_details['chromosome_data'] = []
-					continue
-				else:
-					genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
-				#endif
-			#endfor
-
-			# save data about the last genome.
-			chromosome_data = genome_details['chromosome_data']
-			mutation_rate = genome_details['mutation_rate']
-			ploidy_probability = genome_details['ploidy_probability']
-			genome_order = genome_details['genome_order']
-			genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
-				ploidy_probability = ploidy_probability, genome_order = genome_order  )
-		#endwith
+		from cc3dtools.Genome import gen2_to_dict
+		
+		genomes = gen2_to_dict( file_name , force_loci = force_loci )
 
 		return GenomeCompare( genomes = genomes )
 
@@ -279,27 +242,6 @@ class GenomeCompare:
 
 		
 		return GenomeCompare( genomes = genomes )
-
-		
-		
-def load_genomes_into_dict( file_name , force_loci = False ):
-	"""
-		This loads gen2 file and returns an dict of genomes indexed by integer cell.ids
-		@params:
-			file_name: name of the file to load
-			force_loci / bool / False:
-				load the mutated loci into memory at run time
-		@returns:
-			dict of cc3dtools.Genome objects
-	"""	
-	genomes = GenomeCompare.from_gen2_file(file_name, force_loci = force_loci).genomes
-
-	to_be_returned = {}
-
-	for cellid,genome in genomes.items():
-		to_be_returned[ int( cellid ) ] = genome
-
-	return to_be_returned
 
 
 def newick_order( s ):

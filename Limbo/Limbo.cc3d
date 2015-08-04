@@ -1,0 +1,6 @@
+<Simulation version="3.6.2">
+   <XMLScript Type="XMLScript">Simulation/Limbo.xml</XMLScript>
+   <PythonScript Type="PythonScript">Simulation/Limbo.py</PythonScript>
+   <Resource Type="Python">Simulation/LimboSteppables.py</Resource>
+   <PIFFile>Simulation/PIF_TEMPLATE.pif</PIFFile>        
+</Simulation>
