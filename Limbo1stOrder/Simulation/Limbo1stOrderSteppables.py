@@ -14,7 +14,7 @@ save_flag = True
 simulate_flag = True
 template_flag = True
 
-TEMPLATE_ROOT = '/home/zahmed/summer15/LIMBO_TEMPLATE' # in the future get this from a config file.
+TEMPLATE_ROOT = '/home/zahmed/summer15/metastasis/LIMBO_TEMPLATE' # in the future get this from a config file.
 TEMPLATES = {
     'start_tracker': TEMPLATE_ROOT + '/start_cells.csv',
     'mitosis_tracker': TEMPLATE_ROOT + '/division_events.csv',
@@ -54,7 +54,6 @@ time_info = '_'.join(time.asctime().split(' '))
 import os
 save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo_1st'
 
-
 from cc3dtools.Tracker import Tracker2
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 
@@ -77,6 +76,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
         cancer_cell_created = False
 
         if simulate_flag and template_flag:
+            print 'loading genomes'
             genomes.update( load_genomes_into_dict( file_name = TEMPLATES['genome_file'] ) )
             pass
 

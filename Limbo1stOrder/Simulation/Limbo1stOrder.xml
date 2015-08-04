@@ -74,7 +74,8 @@
 </Steppable> -->
 
 <Steppable Type="PIFInitializer">
-   <PIFName>/home/zahmed/summer15/LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFName>
+   <!-- <PIFName>/home/zahmed/summer15/LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFName> -->
+   <PIFName>../LIMBO_TEMPLATE/PIF_TEMPLATE.pif</PIFName>
 </Steppable>
 
 
