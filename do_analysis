@@ -1,4 +1,6 @@
 #!/bin/bash
 echo ${1}
 ./pipeline init ${1}
-./pipeline ${1} > ${1}/out_$(date '+%A_%d%m%Y_%H%M%S')_log.txt
+dt=$(date '+%A_%d%m%Y_%H%M%S')
+mkdir ${1}/pipe_out_$dt
+./pipeline ${1} ${1}pipe_out_$dt/ > ${1}pipe_out_$dt/out_log.txt
