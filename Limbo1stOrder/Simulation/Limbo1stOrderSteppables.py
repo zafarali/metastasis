@@ -390,7 +390,8 @@ class DeathCheckSteppable(SteppableBasePy):
 
             if not ( ( x >= LATTICE['x_min'] and x <= LATTICE['x_max'] ) and ( y >= LATTICE['y_min'] and y <=LATTICE['y_max'] ) ) :
                 if cell.type == self.CANCER1 or cell.type == self.CANCER2:
-                    self.stopSimulation()
+                    # self.stopSimulation()
+                    pass
                 # cell.lambdaVolume = 5
                 cell.type = self.DEAD
                 self.lambdaVolume = 1
