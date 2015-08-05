@@ -8,13 +8,17 @@ import numpy as np
 from PySteppablesExamples import MitosisSteppableBase
 
 ## FIXED PATHS
-sys.path.append('/home/zahmed/summer15/metastasis/')
+GLOBAL_PATH = sys.argv[-2].split('simulation_out/')[0]
+# GLOBAL_PATH = '/Users/zahmed/summer15/metastasis/'
+sys.path.append( GLOBAL_PATH )
+
 
 save_flag = True
 simulate_flag = True
 template_flag = True
 
-TEMPLATE_ROOT = '/home/zahmed/summer15/metastasis/LIMBO_TEMPLATE' # in the future get this from a config file.
+TEMPLATE_ROOT = GLOBAL_PATH + 'LIMBO_TEMPLATE' # in the future get this from a config file.
+
 TEMPLATES = {
     'start_tracker': TEMPLATE_ROOT + '/start_cells.csv',
     'mitosis_tracker': TEMPLATE_ROOT + '/division_events.csv',
@@ -56,7 +60,7 @@ with open(GLOBAL_PATH+'outs.txt', 'a') as f:
     f.write('\n')
 
 import os
-save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo_1st'
+save_dir = sys.argv[-2]
 
 from cc3dtools.Tracker import Tracker2
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict

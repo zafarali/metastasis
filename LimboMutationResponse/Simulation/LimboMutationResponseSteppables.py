@@ -8,7 +8,7 @@ import numpy as np
 from PySteppablesExamples import MitosisSteppableBase
 
 ## FIXED PATHS
-GLOBAL_PATH = '/home/zahmed/summer15/metastasis/'
+GLOBAL_PATH = sys.argv[-2].split('simulation_out/')[0]
 # GLOBAL_PATH = '/Users/zahmed/summer15/metastasis/'
 sys.path.append( GLOBAL_PATH )
 
@@ -64,7 +64,7 @@ with open(GLOBAL_PATH+'outs.txt', 'a') as f:
     f.write('\n')
 
 import os
-save_dir = GLOBAL_PATH + 'simulation_out/limbo_mutation_response'
+save_dir = sys.argv[-2]
 
 
 from cc3dtools.Tracker import Tracker2
