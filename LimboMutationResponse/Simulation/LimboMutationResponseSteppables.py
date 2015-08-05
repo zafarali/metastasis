@@ -59,6 +59,10 @@ phenotype_template = {
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
+with open(GLOBAL_PATH+'outs.txt', 'a') as f:
+    f.write(time_info)
+    f.write('\n')
+
 import os
 save_dir = GLOBAL_PATH + 'simulation_out/limbo_mutation_response'
 

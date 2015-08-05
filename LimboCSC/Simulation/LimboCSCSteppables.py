@@ -51,6 +51,10 @@ LATTICE = {
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
+with open(GLOBAL_PATH+'outs.txt', 'a') as f:
+    f.write(time_info)
+    f.write('\n')
+
 import os
 save_dir = '/home/zahmed/summer15/metastasis/simulation_out/limbo_CSC'
 
