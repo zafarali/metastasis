@@ -1,7 +1,12 @@
 #!/bin/bash
 echo ${1}
 CURRENT=$(pwd)
+q=$(echo ~)
+SIM_TYPE=${1#$q'/summer15/metastasis/'} 
+SAVEDIR=~/summer15/metastasis/simulation_out/${SIM_TYPE:0:$[${#SIM_TYPE}/2-3]}_$(date '+%A_%d%m%Y_%H%M%S')
+mkdir $SAVEDIR
+echo 'saving to '$SAVEDIR
 cd /sb/programs/itgenome/compucell3d/3.7.4/
-./runScript.sh -i ${1} -f 250000 > ~/summer15/metastasis/sim_$(date '+%A_%d%m%Y_%H%M%S')_log.txt 
+./runScript.sh -i ${1} -f 250000 $SAVEDIR > $SAVEDIR/sim_$(date '+%A_%d%m%Y_%H%M%S')_log.txt 
 cd $CURRENT
 echo 'DONE! :)'
