@@ -83,26 +83,27 @@ except IndexError as e:
 print2('Output Directory: ' + out_directory)
 try:
 	FILES = {
-		'start' : glob.glob( analysis_directory + 'start_cells_*' )[0],
-		'finish' : glob.glob( analysis_directory + 'finish_cells_*' )[0],
-		'division' : glob.glob( analysis_directory + 'division_*' )[0],
-		'genomes' : glob.glob( analysis_directory + 'genomes_*' )[0],
+		'start' : glob.glob( analysis_directory + '/start_cells_*' )[0],
+		'finish' : glob.glob( analysis_directory + '/finish_cells_*' )[0],
+		'division' : glob.glob( analysis_directory + '/division_*' )[0],
+		'genomes' : glob.glob( analysis_directory + '/genomes_*' )[0],
 		'directory': analysis_directory,
-		'specifications': glob.glob( analysis_directory + 'specs*' )[0],
+		'specifications': glob.glob( analysis_directory + '/specs*' )[0],
 		'out': out_directory
 	}
 	del analysis_directory
 except IndexError as e:
 	print2('(!) Failed to run: \n'+str(e))
-	sys.exit('---> (!) Incomplete files for data analysis. Analysis directory must have the following files:\n\
-	start_cells_* (glob out: ' + str( glob.glob( analysis_directory + 'start_cells_*' ) ) + ')\n\
-	finish_cells_* (glob out: ' + str( glob.glob( analysis_directory + 'finish_cells_*' ) ) + ')\n\
-	division_* (glob out: ' + str( glob.glob( analysis_directory + 'division_*' ) ) + ')\n\
-	genomes_* (glob out: ' + str( glob.glob( analysis_directory + 'genomes_*' ) ) + ')\n\
+	print2('---> (!) Incomplete files for data analysis. Analysis directory must have the following files:\n\
+	start_cells_* (glob out: ' + str( glob.glob( analysis_directory + '/start_cells_*' ) ) + ')\n\
+	finish_cells_* (glob out: ' + str( glob.glob( analysis_directory + '/finish_cells_*' ) ) + ')\n\
+	division_* (glob out: ' + str( glob.glob( analysis_directory + '/division_*' ) ) + ')\n\
+	genomes_* (glob out: ' + str( glob.glob( analysis_directory + '/genomes_*' ) ) + ')\n\
 	specs.txt\n\
 	These were not found in '+analysis_directory+'\n\
-	GLOB OUT ' + str( glob.glob( analysis_directory ) ) + '\n\
+	GLOB OUT ' + str( glob.glob( analysis_directory +'/' ) ) + '\n\
 	Following exception occured:\n'+str(e))
+	sys.exit(1)
 	# raise e
 
 # load sampling strategies
@@ -132,10 +133,10 @@ def SPEC_lookup( function_name , argument_name , default = None ):
 print2('SPECS LOADED')
 
 if SPEC_lookup( 'global', 'sample' ):
-	if os.path.exists( FILES['directory'] + 'sampling.json' ):
-		FILES['sampling'] = FILES['directory'] + 'sampling.json'
+	if os.path.exists( FILES['directory'] + '/sampling.json' ):
+		FILES['sampling'] = FILES['directory'] + '/sampling.json'
 
-		with open( FILES['directory'] + 'sampling.json' ) as f:
+		with open( FILES['sampling'] ) as f:
 			sampling_strategies = json.load( f )['sampling_strategies']
 			print2('sampling strategies loaded')
 	else:
@@ -416,7 +417,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 
 if SPEC_lookup( 'global', 'cell_plots' ):
 	try:
-		FILES['cell_counts'] = glob.glob( FILES['directory'] + 'cell_count_*' )[0]
+		FILES['cell_counts'] = glob.glob( FILES['directory'] + '/cell_count_*' )[0]
 		with open( FILES['cell_counts'] ,'r' ) as f:
 			reader = csv.reader(f)
 			cell_counts = []
@@ -451,7 +452,7 @@ if SPEC_lookup( 'global', 'cell_plots' ):
 
 if SPEC_lookup( 'global', 'volume_plots' ):
 	try:
-		FILES['volume_data'] = glob.glob( FILES['directory'] + 'volume_*' )[0]
+		FILES['volume_data'] = glob.glob( FILES['directory'] + '/volume_*' )[0]
 		with open( FILES['volume_data'] ,'r' ) as f:
 			reader = csv.reader(f)
 			volume_data = []

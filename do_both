@@ -18,4 +18,4 @@ echo 'DONE SIMULATIONS! :)'
 dt=$(date '+%A_%d%m%Y_%H%M%S')
 mkdir $SAVEDIR/pipe_out_$dt
 echo 'Analysis saving to: '$SAVEDIR/pipe_out_$dt
-./pipeline $SAVEDIR/ $SAVEDIR/pipe_out_$dt/ > $SAVEDIR/pipe_out_$dt/out_log.txt
+./pipeline $SAVEDIR $SAVEDIR/pipe_out_$dt > $SAVEDIR/pipe_out_$dt/out_log.txt
