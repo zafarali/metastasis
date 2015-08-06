@@ -235,33 +235,41 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 				for i , lineage in enumerate( to_be_enumerated ):
 					current_dir = FILES['out'] + '/detail_lineage' + str( i + 1 )
 					os.makedirs( current_dir )
-					# try:
-					levels = lineage_bfs( lineage['lineage'] )
-					# except Exception as e:
-						# print2('(!) Unable to do lineage_bfs\n'+str(e))
-						# continue
 
+					try:
+						levels = lineage_bfs( lineage['lineage'] )
 
-					if SPEC_lookup('multilineage', 'color_by_branch'):
-						for depth, level in levels.items():
+						if SPEC_lookup('multilineage', 'color_by_branch'):
+							for depth, level in levels.items():
+								try:
+									sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
+									print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
+								except Exception as e:
+									print2('(!) unable to save color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) + '\n'+str(e) )
+								#endtry
+							#endfor
+						#endif
+						if SPEC_lookup('multilineage', 'save_all'):
 							try:
-								sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
-								print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
+								lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
+								print2('saved overall lineage for '+str(i+1))
 							except Exception as e:
-								print2('(!) unable to save color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) + '\n'+str(e) )
-
-					if SPEC_lookup('multilineage', 'save_all'):
-						try:
-							lineage['lineage'].draw( width=20, save_fig = current_dir + '/basic.png' )
-							print2('saved overall lineage for '+str(i+1))
-						except Exception as e:
-							print2('(!) unable to save overall lineage for '+str(i+1) +'\n'+str(e))
-
+								print2('(!) unable to save overall lineage for '+str(i+1) +'\n'+str(e))
+							#endtry
+						#endif
+					except Exception as e:
+						print2('Unable to do lineage_bfs at depth'+str(i+1)+'\n'+str(e))
+						continue
+					#endtry
+				#endfor	
 			except Exception as e:
 				print2('(!) Unable to do multilineage analysis: \n'+str(e))
+			#endtry
 	except Exception as e:
 		print2('(!) Unable to do multilineage analysis due to failture in loading Lineage files into \
 		 cc3dtools.MultiLineage \n'+str(e))
+	#endtry
+#endif
 
 """
 	Sampling
