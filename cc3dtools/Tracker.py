@@ -38,7 +38,7 @@ class Tracker:
     		newickFileName = self.fileName.split('csv')[0].join('newick')
 
 class Tracker2( object ):
-    def __init__ ( self , file_name = None , template = None ):
+    def __init__ ( self , file_name = None , template = None , preprocessor = None):
         """ 
             Allows us to store and track various events and properties
             @params:
@@ -64,6 +64,8 @@ class Tracker2( object ):
                     self.internal_stash.append( row )
 
         self.file_name = file_name
+
+        self.preprocessor = preprocessor
         
 
     def save_now( self , to_save ):
@@ -87,7 +89,14 @@ class Tracker2( object ):
                     list of entries to stash
         """
         assert type( to_stash ) is list , 'to_stash must be a list'
-        self.internal_stash.append( to_stash )
+        if self.preprocessor:
+            to_stash = self.preprocessor.preprocess(to_stash)
+
+        # preprocess.preprocess returns FALSE if we should skip this stash object!
+        if to_stash:
+            self.internal_stash.append( to_stash )
+        else:
+            pass
 
     def save_stash( self , flag = 'wb' ):
         """
@@ -111,4 +120,56 @@ class Tracker2( object ):
             print 'EXCEPTION OCCURED WHEN TRYING TO SAVE TO ',self.file_name
             print 'The state of the stash is: \n',self.internal_stash
             print '\n Exception was: ',str(e)
+
+
+# Generic TrackerPreprocessor
+class TrackerPreprocessor(object):
+    def __init__(self, fn):
+        """
+            A preprocessor class that has a function (TrackerPreprocessor.preprocess()) to be called before each Tracker.stash() event
+            @params:
+                fn / function [mandatory]
+                    A function that takes in a list of data, does preprocessing on it.
+                    If the data is valid, it returns the processed data
+                    If the data in invalid, it returns false so that Tracker will skip it
+        """
+        self.fn = fn
+
+    def preprocess(self, data):
+        """
+            calls the preprocessor
+            @params:
+                data / list
+                    data that must be preproessed
+        """
+        return self.fn(data)
+
+
+# this function creates a division preprocessor function according to our variables needed
+# this might be an overly complicated way of doing it but maybe not?
+def generate_divison_preprocessor( start_time = 0 , remove_roots = False ):
+    """
+        A generator function that returns a function based on a time shift in MCS
+        @params:
+            start_time / int / 0
+                a timeshift to shift data[0] by
+            remove_roots / bool / False
+                will skip new roots i.e data[0] == 'R'
+        @return:
+            generated_function
+                a function that takes in data and preprocesses it.
+    """
+    def generated_function(data):
+        this = {
+            'start_time' : start_time,
+            'remove_roots' : remove_roots
+        }
+
+        if data[0] == 'R' and remove_roots:
+            return False
+        else:
+            data[0] = data[0] + start_time
+            return data
+    return generated_function
+#end generator
 

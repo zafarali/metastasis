@@ -62,7 +62,7 @@ with open(GLOBAL_PATH+'outs.txt', 'a') as f:
 import os
 save_dir = sys.argv[-2]
 
-from cc3dtools.Tracker import Tracker2
+from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 
 genomes = {}
@@ -219,7 +219,8 @@ class MitosisSteppable(MitosisSteppableBase):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
         if save_flag:
             if template_flag:
-                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' , template=TEMPLATES['mitosis_tracker'] )
+                preprocessor = TrackerPreprocessor( generate_divison_preprocessor(start_time=49999, remove_roots=True) )
+                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' , template=TEMPLATES['mitosis_tracker'] , preprocessor=preprocessor )
                 print 'loaded mitosis_tracker'
             else:
                 self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' )

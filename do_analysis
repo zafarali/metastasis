@@ -3,4 +3,4 @@ echo ${1}
 ./pipeline init ${1}
 dt=$(date '+%A_%d%m%Y_%H%M%S')
 mkdir ${1}/pipe_out_$dt
-./pipeline ${1} ${1}pipe_out_$dt/ > ${1}pipe_out_$dt/out_log.txt
+./pipeline ${1} ${1}/pipe_out_$dt > ${1}pipe_out_$dt/out_log.txt
