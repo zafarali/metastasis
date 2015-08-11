@@ -73,16 +73,17 @@ from cc3dtools.Phenotype import Phenotype
 
 genomes = {}
 phenotypes = {}
+trackers = {}
 
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
             if template_flag:
-                self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv' , template = TEMPLATES['start_tracker'] )
+                trackers['start_tracker'] = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv' , template = TEMPLATES['start_tracker'] )
                 print 'loaded start template'
             else:
-                self.start_tracker = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv')
+                trackers['start_tracker'] = Tracker2( file_name = save_dir+'/start_cells_'+time_info+'.csv')
 
     def start(self):
         
@@ -121,7 +122,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                     genomes[cell.id].ploidy_probability = 0.002
 
             if save_flag:
-                self.start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
+                trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
             # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ) }
 
 
@@ -151,7 +152,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                 tracker.stash( [ cell.id , cell.type , x , y , z ] )
 
             tracker.save_stash() # save final cell data
-            self.start_tracker.save_stash() # save initial cell data
+            trackers['start_tracker'].save_stash() # save initial cell data
             save_genomes2( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
 
         
@@ -247,17 +248,18 @@ class MitosisSteppable(MitosisSteppableBase):
         MitosisSteppableBase.__init__(self,_simulator, _frequency)
         if save_flag:
             if template_flag:
-                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' , template=TEMPLATES['mitosis_tracker'] )
+                preprocessor = TrackerPreprocessor( generate_divison_preprocessor(start_time=49999, remove_roots=True) )
+                trackers['mitosis_tracker'] = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' , template=TEMPLATES['mitosis_tracker'] , preprocessor=preprocessor )
                 print 'loaded mitosis_tracker'
             else:
-                self.mitosis_tracker = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' )
+                trackers['mitosis_tracker'] = Tracker2( file_name=save_dir+'/division_events_'+time_info+'.csv' )
 
     def start(self):
         # we initialize the stash function
         if save_flag:
             for cell in self.cellList:
                                         # R for 'root'
-                self.mitosis_tracker.stash( [ 'R' , cell.id, cell.id, cell.id ] )
+                trackers['mitosis_tracker'].stash( [ 'R' , cell.id, cell.id, cell.id ] )
 
 
     def step(self,mcs):
@@ -345,11 +347,11 @@ class MitosisSteppable(MitosisSteppableBase):
         # #endelse
 
         if save_flag:
-            self.mitosis_tracker.stash( [ divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id ] )
+            trackers['mitosis_tracker'].stash( [ divide_times['last_division'] , parentCell.id, childCell.id, parentCell.id ] )
 
     def finish(self):
         if save_flag:
-            self.mitosis_tracker.save_stash()
+            trackers['mitosis_tracker'].save_stash()
         pass
 
 
@@ -358,12 +360,12 @@ class SuperTracker(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
             if template_flag:
-                self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
-                self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
+                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
+                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
                 print 'cell and volume trackers'
             else:
-                self.cell_tracker = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
-                self.volume_tracker = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
+                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
+                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )
 
     def step(self,mcs):
         if stop_simulation:
@@ -407,21 +409,21 @@ class SuperTracker(SteppableBasePy):
             print 'MCS@',mcs,' cancer2 cells',cancer2
             print 'MCS@',mcs,' all_cells',all_cells
 
-            self.cell_tracker.stash( [ mcs , 0 , normal ] )
-            self.cell_tracker.stash( [ mcs , 1 , cancer1 ] )
-            self.cell_tracker.stash( [ mcs , 2 , cancer2 ] )
-            self.cell_tracker.stash( [ mcs , -1 , all_cells ] )
+            trackers['cell_tracker'].stash( [ mcs , 0 , normal ] )
+            trackers['cell_tracker'].stash( [ mcs , 1 , cancer1 ] )
+            trackers['cell_tracker'].stash( [ mcs , 2 , cancer2 ] )
+            trackers['cell_tracker'].stash( [ mcs , -1 , all_cells ] )
 
 
-            self.volume_tracker.stash( [ mcs , 0 , mean_normal_volume ] )
-            self.volume_tracker.stash( [ mcs , 1 , mean_cancer1_volume ] )
-            self.volume_tracker.stash( [ mcs , 2 , mean_cancer2_volume ] )
-            self.volume_tracker.stash( [ mcs , -1 , mean_overall_volume ] )
+            trackers['volume_tracker'].stash( [ mcs , 0 , mean_normal_volume ] )
+            trackers['volume_tracker'].stash( [ mcs , 1 , mean_cancer1_volume ] )
+            trackers['volume_tracker'].stash( [ mcs , 2 , mean_cancer2_volume ] )
+            trackers['volume_tracker'].stash( [ mcs , -1 , mean_overall_volume ] )
         #endif
         
     def finish(self):
-        self.cell_tracker.save_stash()
-        self.volume_tracker.save_stash()
+        trackers['cell_tracker'].save_stash()
+        trackers['volume_tracker'].save_stash()
         
 
 
