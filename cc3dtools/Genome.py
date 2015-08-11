@@ -282,7 +282,7 @@ class Genome(object):
 		assert mutation_rate >= 0 , 'mutation_rate must be >= 0'
 		assert ploidy_probability >= 0 , 'ploidy_probability must be >= 0'
 		assert genome_order >= 0 , 'genome_order must be >= 0 '
-		to_return = Genome( mutation_rate = mutation_rate , ploidy_probability = ploidy_probability, genome_order = genome_order )
+		to_return = Genome( name = name, mutation_rate = mutation_rate , ploidy_probability = ploidy_probability, genome_order = genome_order )
 		chromosomes = []
 		for chromosome in chromosome_data:
 			chromosomes.append( Chromosome.from_mutated_loci( chromosome['loci'] , mutation_rate = chromosome['mutation_rate'], name= chromosome['name']) )
@@ -467,7 +467,7 @@ def csv_to_gen2( file_name ):
 		#endwith
 	#endwith
 
-def gen2_to_dict( file_name , force_loci = False ):
+def gen2_to_dict( file_name , force_loci = False , key_as_int = False ):
 	import csv
 	genomes = {}
 
@@ -489,7 +489,8 @@ def gen2_to_dict( file_name , force_loci = False ):
 						ploidy_probability = ploidy_probability, genome_order = genome_order , force_loci = force_loci  )
 				#endif
 
-				current_G = str( row[1] )
+				current_G = int( row[1] ) if key_as_int else str( row[1] )
+
 				genome_details['mutation_rate'] = int( row[2] )
 				genome_details['ploidy_probability'] = float( row[3] )
 				genome_details['genome_order'] = int( row[4] )
@@ -505,6 +506,7 @@ def gen2_to_dict( file_name , force_loci = False ):
 		mutation_rate = genome_details['mutation_rate']
 		ploidy_probability = genome_details['ploidy_probability']
 		genome_order = genome_details['genome_order']
+
 		genomes[ current_G ] = Genome.from_chromosome_data( chromosome_data , mutation_rate = mutation_rate, name = current_G , \
 			ploidy_probability = ploidy_probability, genome_order = genome_order  )
  	#endwith
@@ -523,13 +525,8 @@ def load_genomes_into_dict( file_name , force_loci = False ):
 			dict of cc3dtools.Genome objects
 	"""	
 	# THIS NEEDS TO BE REPLACED
-	genomes = gen2_to_dict(file_name, force_loci = force_loci)
+	genomes = gen2_to_dict(file_name, force_loci = force_loci , key_as_int = True )
 
-	to_be_returned = {}
-
-	for cellid,genome in genomes.items():
-		to_be_returned[ int( cellid ) ] = genome
-
-	return to_be_returned
+	return genomes
 
 
