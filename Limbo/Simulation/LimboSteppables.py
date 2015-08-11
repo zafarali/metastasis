@@ -61,7 +61,7 @@ import os
 save_dir = sys.argv[-2]
 
 
-from cc3dtools.Tracker import Tracker2
+from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 from cc3dtools.Phenotype import Phenotype
 
