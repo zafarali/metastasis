@@ -107,7 +107,11 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
                 if simulate_flag and not template_flag:
                     genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
-
+                else:
+                    # this is template flag, therefore we must just update this genomes' attribute.
+                    genomes[cell.id].mutation_rate = 120
+                    genomes[cell.id].ploidy_probability = 0.002
+                    
             if save_flag:
                 self.start_tracker.stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
             # holder[cell.id] = { 'g': Genome( mutation_rate = 20 , genome_order = 10 ) }
