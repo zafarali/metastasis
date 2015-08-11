@@ -8,7 +8,9 @@ import numpy as np
 from PySteppablesExamples import MitosisSteppableBase
 
 ## FIXED PATHS
-sys.path.append('/home/zahmed/summer15/metastasis/')
+GLOBAL_PATH = sys.argv[-2].split('simulation_out/')[0]
+# GLOBAL_PATH = '/Users/zahmed/summer15/metastasis/'
+sys.path.append( GLOBAL_PATH )
 
 save_flag = True
 simulate_flag = True
