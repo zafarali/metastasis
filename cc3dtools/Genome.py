@@ -191,7 +191,7 @@ class Genome(object):
 		#endfor
 
 
-		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name )
+		replicated_genome = Genome( mutation_rate = self.mutation_rate , genome_order = self.genome_order , name = name , ploidy_probability = self.ploidy_probability )
 		
 		replicated_genome.chromosomes = replicated_chromosomes
 
