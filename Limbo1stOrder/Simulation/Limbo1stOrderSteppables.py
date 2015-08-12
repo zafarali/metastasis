@@ -404,10 +404,30 @@ class DeathCheckSteppable(SteppableBasePy):
 
             if not ( ( x >= LATTICE['x_min'] and x <= LATTICE['x_max'] ) and ( y >= LATTICE['y_min'] and y <=LATTICE['y_max'] ) ) :
                 if cell.type == self.CANCER1 or cell.type == self.CANCER2:
-                    for tracker_name, tracker in trackers.items():
-                        tracker.save_stash()
-                    self.stopSimulation()
-                    pass
+                    if save_flag:
+
+                        # save the final positions of all cells.
+                        tracker = Tracker2( file_name = save_dir+'/finish_cells_'+time_info+'.csv' )
+
+                        for cell in self.cellList:
+                            z = cell.zCOM
+                            y = cell.yCOM
+                            x = cell.xCOM
+                            tracker.stash( [ cell.id , cell.type , x , y , z ] )
+
+                        tracker.save_stash() # save final cell data
+
+                        # save all the genomes
+                        save_genomes2( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
+
+                        #save all the trackers
+                        for tracker_name, tracker in trackers.items():
+                            tracker.save_stash()
+                        # stop the simulation
+                        self.stopSimulation()
+                    #endif save flag
+                #endif celltype check
+
                 # cell.lambdaVolume = 5
                 cell.type = self.DEAD
                 self.lambdaVolume = 1
