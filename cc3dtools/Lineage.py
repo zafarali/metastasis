@@ -379,7 +379,7 @@ class MultiLineage(object):
         if len(cancer_cell_ids):
             cancer_cell_ids = set( cancer_cell_ids ) # for efficiency
             cancer_lineages = []
-            print 'cancer_cells:',cancer_cell_ids
+            # print 'cancer_cells:',cancer_cell_ids
             for k, lineage in enumerate(lineages):
                 members = set( lineage['members'] )
                 # print 'members of lineage',k
