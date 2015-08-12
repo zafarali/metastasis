@@ -3,14 +3,28 @@
 		{
 			"method": "circle",
 			"method_parameters":{
-				"x":250,
+				"x":500,
+				"y":50,
+				"z":0,
+				"theta":1.57079632679,
+				"step_size":100,
+				"steps":10,
+				"cluster_radius":50
+			},
+			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
+			"2D_methodology": ["shells", "adjacent"]
+		},
+		{
+			"method": "circle",
+			"method_parameters":{
+				"x":500,
 				"y":25,
 				"z":0,
 				"theta":1.57079632679,
 				"step_size":50,
-				"steps":10,
+				"steps":20,
 				"cluster_radius":25
-				},
+			},
 			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
 			"2D_methodology": ["shells", "adjacent"]
 		},
@@ -18,13 +32,27 @@
 			"method": "circle",
 			"method_parameters":{
 				"x":25,
-				"y":250,
+				"y":500,
 				"z":0,
 				"theta":0,
 				"step_size":50,
-				"steps":10,
+				"steps":20,
 				"cluster_radius":25
-				},
+			},
+			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
+			"2D_methodology": ["shells", "adjacent"]
+		},
+		{
+			"method": "circle",
+			"method_parameters":{
+				"x":25,
+				"y":500,
+				"z":0,
+				"theta":0,
+				"step_size":100,
+				"steps":10,
+				"cluster_radius":50
+			},
 			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
 			"2D_methodology": ["shells", "adjacent"]
 		},
@@ -36,9 +64,23 @@
 				"z":0,
 				"theta":0.78539816339,
 				"step_size":50,
-				"steps":15,
+				"steps":30,
 				"cluster_radius":25
-				},
+			},
+			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
+			"2D_methodology": ["shells", "adjacent"]
+		},
+		{
+			"method": "circle",
+			"method_parameters":{
+				"x":0,
+				"y":50,
+				"z":0,
+				"theta":0.78539816339,
+				"step_size":100,
+				"steps":15,
+				"cluster_radius":50
+			},
 			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
 			"2D_methodology": ["shells", "adjacent"]
 		},
@@ -49,9 +91,9 @@
 				"y":0,
 				"z":0,
 				"theta":0,
-				"step_size":25,
+				"step_size":50,
 				"steps":20,
-				"edge_lengths": [500, 25]
+				"edge_lengths": [1000, 50]
 			},
 			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
 			"2D_methodology": ["shells", "adjacent"]
@@ -63,9 +105,9 @@
 				"y":0,
 				"z":0,
 				"theta":1.57079632679,
-				"step_size":25,
+				"step_size":50,
 				"steps":20,
-				"edge_lengths": [25, 500]
+				"edge_lengths": [50, 1000]
 			},
 			"save":["tumor_plot", "1D_plots", "1D_plots_scaled", "2D_plots", "sample_pickle", "2D_pickles", "1D_pickles", "pi"],
 			"2D_methodology": ["shells", "adjacent"]
