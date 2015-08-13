@@ -357,7 +357,7 @@ class SuperTracker(SteppableBasePy):
                 preprocessor = TrackerPreprocessor( generate_logger_preprocessor( start_time = 49999 ) )
                 trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] , preprocessor=preprocessor)
                 trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] , preprocessor=preprocessor)
-               print 'cell and volume trackers'
+                print 'cell and volume trackers'
             else:
                 trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
                 trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )

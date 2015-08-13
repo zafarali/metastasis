@@ -177,7 +177,7 @@ class GrowthSteppable(SteppableBasePy):
         print "INSIDE GROWTH STEPPABLE"
         #                   print '----->Global targetVolume',GLOBAL['targetVolume']
 
-        y_intercept = np.log( 1 / float( GLOBAL['_dV']-1 ) )
+        y_intercept = np.log( 1 / float( GLOBAL['_dV'] ) -1 )
         # y_intercept = 0 # no 
 
         for cell in self.cellList:
