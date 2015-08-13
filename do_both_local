@@ -1,0 +1,27 @@
+#!/bin/bash
+echo ${1}
+CURRENT=$(pwd)
+GRAVELHOME=$(echo ~)
+q=$(echo $GRAVELHOME)
+SIM_TYPE=${1#$q/'summer15/metastasis/'} 
+# echo 'Q: '$q'summer15/metastasis/'
+
+echo 'SIM_TYPE':$SIM_TYPE
+SAVEDIR=$GRAVELHOME/summer15/metastasis/simulation_out/${SIM_TYPE:0:$[${#SIM_TYPE}/2-3]}_$(date '+%A_%d%m%Y_%H%M%S')
+echo 'SAVEDIR:'$SAVEDIR
+# echo 'q:'$q
+
+mkdir $SAVEDIR
+echo 'simulation saving to '$SAVEDIR
+# cd /sb/programs/itgenome/compucell3d/3.7.4/
+cd ~/CC3D_3.7.3*
+./runScript.command -i ${1} -f 250000 $SAVEDIR > $SAVEDIR/sim_$(date '+%A_%d%m%Y_%H%M%S')_log.txt 
+cd $CURRENT
+echo 'DONE SIMULATIONS! :)'
+
+
+./pipeline init $SAVEDIR
+dt=$(date '+%A_%d%m%Y_%H%M%S')
+mkdir $SAVEDIR/pipe_out_$dt
+echo 'Analysis saving to: '$SAVEDIR/pipe_out_$dt
+./pipeline $SAVEDIR $SAVEDIR/pipe_out_$dt > $SAVEDIR/pipe_out_$dt/out_log.txt
