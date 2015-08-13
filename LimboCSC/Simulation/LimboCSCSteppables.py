@@ -38,7 +38,9 @@ GLOBAL = {
     'cancer2_additional_dV':0.1,
     'cancer1_additional_dV':0.1,
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
-    '_dV':0.2
+    '_dV':0.2,
+    'p_csc_end':0.05,
+    'p_csc':0.4
 }
 
 LATTICE = {
@@ -68,6 +70,7 @@ from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 
 genomes = {}
 trackers = {}
+divisions_left = {}
 
 class ConstraintInitializerSteppable(SteppableBasePy):
     def __init__(self,_simulator,_frequency=1):
@@ -256,6 +259,7 @@ class MitosisSteppable(MitosisSteppableBase):
                 
         for cell in cells_to_divide:
             # to change mitosis mode leave one of the below lines uncommented
+            divisions_left[cell.id] -= 1
             self.divideCellRandomOrientation(cell)
             divide_times['last_division'] = mcs
             # self.divideCellOrientationVectorBased(cell,1,0,0)                 # this is a valid option
@@ -294,8 +298,32 @@ class MitosisSteppable(MitosisSteppableBase):
         # else:
         #     childCell.type = parentCell.type
 
-        childCell.type = parentCell.type
+        if parentCell.type == self.NORMAL:
+            divisions_left[childCell.id] = divisions_left[parentCell.id]
+            childCell.type = parentCell.type
+        else:
+            # logic for CSCs
+            if parentCell.type == self.CANCER2:
+                r = np.random.rand()
+                if r < GLOBAL['p_csc_end']:
+                    # CSC spontaneously looses its capability..
+                    parentCell.type = self.CANCER1
+                    divisions_left[childCell.id] = 10 # 10 more divisions only.
+                    divisions_left[parentCell.id] = 10
+                    childCell.type = parentCell.type
+                else:
+                    childCell.type = self.CANCER1
+                    divisions_left[childCell.id] = 10
 
+                if r < GLOBAL['p_csc']:
+                    # the child cell will be a CSC!
+                    childCell.type = self.CANCER2
+                    divisions_left[childCell.id] = -1
+
+            else:
+                divisions_left[childCell.id] = 10
+                childCell.type = self.CANCER1
+  
         # # attempt to obtain the proliferating front
         # if parentCell.type != self.NORMAL:
         #     for cell in [ childCell , parentCell ]:
