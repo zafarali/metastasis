@@ -65,7 +65,7 @@ import os
 save_dir = sys.argv[-2]
 
 
-from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor
+from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor, generate_logger_preprocessor
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 
 genomes = {}
@@ -354,9 +354,10 @@ class SuperTracker(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
             if template_flag:
-                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
-                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
-                print 'cell and volume trackers'
+                preprocessor = TrackerPreprocessor( generate_logger_preprocessor( start_time = 49999 ) )
+                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] , preprocessor=preprocessor)
+                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] , preprocessor=preprocessor)
+               print 'cell and volume trackers'
             else:
                 trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
                 trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' )

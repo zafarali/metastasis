@@ -67,7 +67,7 @@ import os
 save_dir = sys.argv[-2]
 
 
-from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor
+from cc3dtools.Tracker import Tracker2, TrackerPreprocessor, generate_divison_preprocessor, generate_logger_preprocessor
 from cc3dtools.Genome import Genome, save_genomes2, load_genomes_into_dict
 from cc3dtools.Phenotype import Phenotype
 
@@ -136,10 +136,6 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             print 'FAILED TO INITIALZE A CANCER CELL.'
             sys.exit(0)
 
-    def step(self, mcs):
-        if stop_simulation:
-            print 'running finishsssss'
-            self.finish()
 
     def finish(self):
         if save_flag:
@@ -167,11 +163,6 @@ class UtillitySteppable(SteppableBasePy):
         # if mcs == 10:            
             # self.changeNumberOfWorkNodes(2)
             # print "NUMBER OF WORK NODES INCREASED"
-        global stop_simulation
-        if stop_simulation:
-            save_genomes2( [ genome[1] for genome in genomes.items() ] , file_name = save_dir+'/genomes_'+time_info+'.csv' ) #save genomes
-            self.stopSimulation()
-        #endif
 
     def finish(self):
         print 'THIS IS OVEA!'
@@ -190,10 +181,6 @@ class GrowthSteppable(SteppableBasePy):
         # y_intercept = 0 # no 
 
         for cell in self.cellList:
-            z = cell.zCOM
-            y = cell.yCOM
-            x = cell.xCOM
-
 
             if cell.type == self.DEAD:
                 # do not grow if dead
@@ -360,8 +347,9 @@ class SuperTracker(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
             if template_flag:
-                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
-                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
+                preprocessor = TrackerPreprocessor( generate_logger_preprocessor( start_time = 49999 ) )
+                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] , preprocessor=preprocessor)
+                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] , preprocessor=preprocessor)
                 print 'cell and volume trackers'
             else:
                 trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )

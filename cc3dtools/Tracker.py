@@ -173,3 +173,19 @@ def generate_divison_preprocessor( start_time = 0 , remove_roots = False ):
     return generated_function
 #end generator
 
+def generate_logger_preprocessor( start_time = 0 ):
+    """
+        A generator function that returns a function based on a time shift in MCS
+        @params:
+            start_time / int / 0
+        @returns:
+            a generated function
+    """
+    def generated_function( data ):
+        this = {
+            'start_time' : start_time
+        }
+
+        data[0] = data[0] + start_time
+        return data
+    return generated_function
