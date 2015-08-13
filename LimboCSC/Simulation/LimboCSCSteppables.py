@@ -93,7 +93,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             pass
 
         for cell in self.cellList:
-            
+            divisions_left[cell.id] = 0
             divide_times[cell.id] = 0
             
             cell.targetVolume=GLOBAL['targetVolume']
@@ -104,10 +104,10 @@ class ConstraintInitializerSteppable(SteppableBasePy):
 
             # create a cancer cell in the middle
             if not cancer_cell_created and ( cell.xCOM <= LATTICE['center_x_max'] and cell.xCOM >= LATTICE['center_x_min'] ) and ( cell.yCOM <= LATTICE['center_y_max'] and cell.yCOM >= LATTICE['center_y_min'] ):
-                cell.type = self.CANCER1
+                cell.type = self.CANCER2
                 cancer_cell_created = True
 
-            if cell.type == self.CANCER1:
+            if cell.type == self.CANCER2:
 
                 if simulate_flag and not template_flag:
                     genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
@@ -115,6 +115,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                     # this is template flag, therefore we must just update this genomes' attribute.
                     genomes[cell.id].mutation_rate = 120
                     genomes[cell.id].ploidy_probability = 0.002
+                    divisions_left[cell.id] = -1
                     
             if save_flag:
                 trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
@@ -124,7 +125,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
         ## check if we successfully initiated a cancer cell.
         count = 0
         for cell in self.cellList:
-            if cell.type == self.CANCER1:
+            if cell.type == self.CANCER2:
                 count += 1
 
         if count != 1:
@@ -259,6 +260,7 @@ class MitosisSteppable(MitosisSteppableBase):
                 
         for cell in cells_to_divide:
             # to change mitosis mode leave one of the below lines uncommented
+
             divisions_left[cell.id] -= 1
             self.divideCellRandomOrientation(cell)
             divide_times['last_division'] = mcs
