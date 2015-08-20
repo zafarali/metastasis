@@ -74,7 +74,8 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 			data['initial'] = 1 if data['id'] in starter_cells else 0
 
-			marker = 'x' if data['initial'] else 'o'
+			# marker = 'x' if data['initial'] else 'o'
+			marker = 'o'
 			if projection == '3d':
 				ax.scatter( data['x'] , data['y'] , data['z'] , marker = marker , color = type_colors[ data['type'] - 1 ] )
 
@@ -145,7 +146,8 @@ class SpacePlot ( object ):
 
 				data['initial'] = 1 if data['id'] in starter_cells else 0
 
-				marker = 'x' if data['initial'] else 'o'
+				# marker = 'x' if data['initial'] else 'o'
+				marker = 'o'
 
 				# cells[ data['id'] ] = {
 				# 	'id': data['id'] ,
@@ -274,7 +276,8 @@ class SpacePlot ( object ):
 				# add the id of the cell to the plotted_ids so we plot everything else in grey
 				plotted_ids.append( cell.id )
 
-				marker = 'x' if cell.initial else 'o'
+				# marker = 'x' if cell.initial else 'o'
+				marker = 'o'
 
 				if projection == '3d':
 					ax.scatter( cell.x , cell.y , cell.z , marker = marker , color = selected_color )
@@ -301,7 +304,7 @@ class SpacePlot ( object ):
 			selected_color = (.5,.5,.5,1.0)
 
 
-			marker = 'x' if cell.initial else 'o'
+			marker = 'o'
 			if projection == '3d':
 				ax.scatter( cell.x , cell.y , cell.z , marker = marker , color = selected_color )
 
