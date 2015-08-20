@@ -1057,7 +1057,8 @@ def proportion_pairwise_differences ( allele_frequencies ):
 						differences 
 		@params:
 			allele_frequencies:
-				the output from PostProcess.sample_analyze()
+				the output from PostProcess.sample_analyze(sample)[:][1]
+				(i.e not the distances, loop over each sample analyzed.)
 		@return:
 			E_of_pi : calculated according to the equation:
 						## E(pi) = sum_{l=1}^M 2 * X_l ( 1 - X_l)
