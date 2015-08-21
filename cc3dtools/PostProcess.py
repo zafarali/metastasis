@@ -6,6 +6,7 @@ from matplotlib.path import Path
 from mpl_toolkits.mplot3d import Axes3D
 from collections import Counter
 from Cell import Cell
+from Util import Ellipse
 import numpy as np
 import csv
 import math
@@ -586,7 +587,9 @@ class PostProcess( object ):
 		r_vectors = filtered_list
 		# first map the cell_locations into a new dict
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: ( ( r.x - x ) / radii[0] )**2 + ( (  r.y - y  )/radii[1] )**2 + ( ( r.z - z )/radii[2])**2 <= 1, r_vectors )
+
+		this_ellipse = Ellipse(radii[0], b=radii[1])
+		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
