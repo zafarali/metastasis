@@ -591,7 +591,7 @@ class PostProcess( object ):
 		# first map the cell_locations into a new dict
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
-		this_ellipse = Ellipse(radii[0], b=radii[1])
+		this_ellipse = Ellipse(radii[0], b=radii[1], x_0=x, y_0=y)
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
 	def cluster_return( self , *args, **kwargs ):
