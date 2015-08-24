@@ -581,6 +581,22 @@ class PostProcess( object ):
 		return filter( lambda r: r.x - x **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors ) 
 
 	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None , rotate_by = 0 , ecc = None ):
+		"""
+		returns the cellids and tge x,y,z, coordinates of the cells within the ellipsoid defined by:
+		@params:
+			x,y,z / float,float,float
+				coordinates of the center of the ellipse
+			radii / list or float
+				a list of length two, first element has the minor radius, and second element has the major radius.
+				if a float is supplied then @param:ecc must be supplied to infer the minor radius.
+			type_restrictions / list / None
+				restrictions on the types of cell types that must be sampled
+			rotate_by / int / 0
+				the angle of rotation of the ellipse
+			ecc / float / None
+				the eccentricity that should be used for the minor axis.
+		"""
+
 		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
@@ -592,10 +608,13 @@ class PostProcess( object ):
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
 		if not ecc:
+			assert len(radii) == 2, 'no ecc supplied, thus you must supply a list of radii'
+			assert type(radii) == list, 'no ecc supplied, thus you must supply a list of radii'
 			this_ellipse = Ellipse( radii[0], b = radii[1] , x_0 = x , y_0 = y , rotate_by = rotate_by )
 		else:
+			assert type(radii) == float or type(radii) == int, 'ecc was supplied, your radius must be an int or float'
 			this_ellipse = Ellipse( radii , ecc = ecc , x_0 = x , y_0 = y , rotate_by = rotate_by )
-		
+
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
 	def cluster_return( self , *args, **kwargs ):
