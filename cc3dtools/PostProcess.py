@@ -553,6 +553,32 @@ class PostProcess( object ):
 
 		return ( R_CM[0] , R_CM[1] , R_CM[2] )
 
+	def COM( self, cells ):
+		"""
+			calculates the center of mass of a group of cells.
+			@params:
+				cells
+			@returns:
+				tuple containing the COM
+				( x , y , z )
+		"""
+		r_vectors = map( lambda cell: np.array([ cell.x, cell.y, cell.z ]) , cells )
+
+		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
+
+		return ( R_CM[0] , R_CM[1] , R_CM[2] )
+
+	def order_cells_by_distance_to(self, sample , targetx , targety ):
+		distances = []
+		for idx, cell in enumerate(sample):
+			x,y,z = cell.x, cell.y, cell.z
+			distance = np.sqrt( (x-targetx)**2 + (y-targety)**2 )
+
+			distances.append( ( distance , cell , idx ) )
+
+		return map( lambda element: element[1]  , sorted( distances, key=lambda element: element[0] ) )
+
+
 	def nearest( self , x , y , z , radius = 5 , type_restrictions = None ):
 		"""
 			returns the cellids and the x,y,z coordinates of the cells within radius
@@ -616,6 +642,68 @@ class PostProcess( object ):
 			this_ellipse = Ellipse( radii , ecc = ecc , x_0 = x , y_0 = y , rotate_by = rotate_by )
 
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
+
+	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000):
+		"""
+			samples according to the eccentricity strategy, WARN: this doesn't return a tuple of distance, cellids
+			@params:
+				N_points / int :
+					number of points to select to calculate pi over.
+				max_cells / int :
+					the maximum number of cells that we use from each sample
+				radius / float : 
+					the major radius
+				min_cells / int / 20:
+					the minimum number of cells that we use from each sample
+				ecc_steps / float / 0.1 
+					a number less that 1, which defines the step size between eccentricity selections
+				cell_steps / int / 5
+					number of cells to increase our selection of the sample from
+				lattice_size / int / 1000
+					size of the lattice
+
+		"""
+		
+		assert min_cells < max_cells, 'min cells must be less than max_cells'
+		assert ecc_steps < 1 and ecc_steps > 0 , 'ecc_steps must be greater than 0 and less than 1'
+		assert cell_steps < max_cells and cell_steps > 0 , 'cell_steps must be less than the max and greater than 0'
+		assert N_points > 0 , 'N_points must be greater than zero'
+
+		xs = np.random.random( size = N_points ) * lattice_size
+		ys = np.random.random( size = N_points ) * lattice_size 
+
+		eccentiricies = np.arange( 0 , 1 , ecc_steps )
+		number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
+
+		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
+		angles = np.random.shuffle( RANDOM_ANGLES ) 
+		
+		for eccentricity in eccentiricies:
+
+			for number_of_cells in number_of_cells_list:
+
+				for i in range( len( xs ) ):
+					x, y, angle = xs[i], ys[i], angles[i]
+					# sample ellipse using x, y, angle, eccentricity, radius
+					sample = []
+
+					while len(sample) < number_of_cells:
+						sample = self.cells_in_ellipse_at( x , y , 0 , radius , ecc = eccentricity , rotate_by = angle )
+						# order the sample by distance of each cell in the sample to the center of x,y
+						sample = order_cells_by_distance_to( sample , x , y )
+
+						radius += 5
+					#endwhile
+
+					selected_cells = sample[:number_of_cells]
+					
+					# process the selected_cells
+
+				#endfor
+			#endfor
+		#endfor
+
+		pass
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
