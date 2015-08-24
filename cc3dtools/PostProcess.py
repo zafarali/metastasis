@@ -678,32 +678,47 @@ class PostProcess( object ):
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		angles = np.random.shuffle( RANDOM_ANGLES ) 
 		
+		results = []
 		for eccentricity in eccentiricies:
-
+			# results.append(  )
+			current_object = { 'eccentricity' : eccentricity , 'samples' : [] }
 			for number_of_cells in number_of_cells_list:
+				
+				E_of_pis = []
 
 				for i in range( len( xs ) ):
-					x, y, angle = xs[i], ys[i], angles[i]
-					# sample ellipse using x, y, angle, eccentricity, radius
+
+					x, y, angle, radius_new = xs[i], ys[i], angles[i], radius
 					sample = []
 
 					while len(sample) < number_of_cells:
-						sample = self.cells_in_ellipse_at( x , y , 0 , radius , ecc = eccentricity , rotate_by = angle )
+						# sample ellipse using x, y, angle, eccentricity, radius
+						sample = self.cells_in_ellipse_at( x , y , 0 , radius_new , ecc = eccentricity , rotate_by = angle )
 						# order the sample by distance of each cell in the sample to the center of x,y
 						sample = order_cells_by_distance_to( sample , x , y )
 
-						radius += 5
+						radius_new += 5
 					#endwhile
 
-					selected_cells = sample[:number_of_cells]
-					
+					selected_cells = sample[:number_of_cells-1]
+					# selected_cells = map( lambda cells: ( 0 , cells), selected_cells )
+
 					# process the selected_cells
 
-				#endfor
+					analyzed = self.frequency_analyze( selected_cells )
+
+					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
+					# @TODO: is this the right function argument?
+				#endfor	
+
+				E_of_pi = np.mean( E_of_pis )
+
+				current_object['samples'].append( { 'sample_size' : number_of_cells , 'E_of_pi' : E_of_pi } )
 			#endfor
+			results.append( current_object )
 		#endfor
 
-		pass
+		return results
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	

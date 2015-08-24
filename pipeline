@@ -307,6 +307,29 @@ if SPEC_lookup( 'global' , 'sample' ):
 					sample, plot_stack = pp.sample_square( return_plot_stack = True, **sampling[u'method_parameters'] )
 				elif sampling[u'method'] == u'rectangle':
 					sample, plot_stack = pp.sample_rectangle( return_plot_stack = True, **sampling[u'method_parameters'] )
+				elif sampling[u'method'] == u'eccentric':
+					eccentric_loaded = False
+					try:
+						results = pp.eccentric_sampling_strategy( **sampling[u'method_parameters'] )
+						eccentric_loaded = True
+					except Exception as e:
+						print2('(!) Unknown exception occured during eccentric sampling: '+str(e) )
+
+					if eccentric_loaded:
+						if u'pi_file' in sampling[u'save']:
+							with open( current_dir + '/eccentric_results.json', 'w') as f:
+								json.dump( results , f )
+						if u'pickle' in sampling[u'save']:
+							with open( current_dir + '/eccentric_results.picke' , 'w' ) as f:
+								pickle.dump( results , f )
+						if u'pi_plot' in sampling[u'save']:
+							# need to do some plotting here
+							pass
+
+					continue # skip this round.
+				#endif
+			#endtry
+
 			except Exception as e:
 				print2('(!) Unable to conduct a sample: '+str(e))
 				continue #skip to the next iteration
