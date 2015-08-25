@@ -633,7 +633,7 @@ class PostProcess( object ):
 		# first map the cell_locations into a new dict
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 
-		if not ecc:
+		if ecc is None:
 			assert len(radii) == 2, 'no ecc supplied, thus you must supply a list of radii'
 			assert type(radii) == list, 'no ecc supplied, thus you must supply a list of radii'
 			this_ellipse = Ellipse( radii[0], b = radii[1] , x_0 = x , y_0 = y , rotate_by = rotate_by )
@@ -676,41 +676,55 @@ class PostProcess( object ):
 		number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
 
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
-		angles = np.random.shuffle( RANDOM_ANGLES ) 
+		
 		
 		results = []
+
 		for eccentricity in eccentiricies:
 			# results.append(  )
+			# print '->eccentricity:',eccentricity
+
 			current_object = { 'eccentricity' : eccentricity , 'samples' : [] }
 			for number_of_cells in number_of_cells_list:
-				
+				# print '-->number of cells:',number_of_cells
 				E_of_pis = []
 
 				for i in range( len( xs ) ):
 
-					x, y, angle, radius_new = xs[i], ys[i], angles[i], radius
+					x, y, angle, radius_new = xs[i], ys[i], RANDOM_ANGLES[i], radius
+					
+					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radius_new
+
 					sample = []
 
+					q = 0
 					while len(sample) < number_of_cells:
+						# print 'inwhile loop'
 						# sample ellipse using x, y, angle, eccentricity, radius
 						sample = self.cells_in_ellipse_at( x , y , 0 , radius_new , ecc = eccentricity , rotate_by = angle )
 						# order the sample by distance of each cell in the sample to the center of x,y
-						sample = order_cells_by_distance_to( sample , x , y )
+						sample = self.order_cells_by_distance_to( sample , x , y )
 
 						radius_new += 5
+						q+=1
+						if q > 100: break
 					#endwhile
+					# print '--->sample length:',len(sample)
+					# print '--->out of while loop: ',q
 
-					selected_cells = sample[:number_of_cells-1]
+					selected_cells = [ cell.id for cell in sample[:number_of_cells-1] ]
+					# print '--->sample:', sample
+					# print '--->selected cells ids:', selected_cells
 					# selected_cells = map( lambda cells: ( 0 , cells), selected_cells )
 
 					# process the selected_cells
 
 					analyzed = self.frequency_analyze( selected_cells )
-
+					# print '--->analyzed:',analyzed
 					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
 					# @TODO: is this the right function argument?
 				#endfor	
-
+				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
 
 				current_object['samples'].append( { 'sample_size' : number_of_cells , 'E_of_pi' : E_of_pi } )
@@ -718,7 +732,7 @@ class PostProcess( object ):
 			results.append( current_object )
 		#endfor
 
-		return results
+		return { 'results' : results }
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
@@ -1215,6 +1229,7 @@ def proportion_pairwise_differences ( allele_frequencies ):
 
 		return E_of_pi 
 
+	return 0
 	
 
 

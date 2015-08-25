@@ -314,7 +314,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 						eccentric_loaded = True
 					except Exception as e:
 						print2('(!) Unknown exception occured during eccentric sampling: '+str(e) )
-
+						raise e
 					if eccentric_loaded:
 						if u'pi_file' in sampling[u'save']:
 							with open( current_dir + '/eccentric_results.json', 'w') as f:
@@ -459,6 +459,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 		#endfor
 	except Exception as e:
 		print2('(!) Unable to load PostProcess and Genomes to allow sampling: \n'+str(e))
+		raise e
 #endif
 
 
