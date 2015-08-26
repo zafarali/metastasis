@@ -673,10 +673,14 @@ class PostProcess( object ):
 		ys = np.random.random( size = N_points ) * lattice_size 
 
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
-		number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
+		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
+		
+		number_of_cells_list = [ 20 , 50 , 100 , 200 , 500 ] # magic numbers
 
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
+		a = lambda N, ecc: np.sqrt( ( 70.0 * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
+		b = lambda N : np.sqrt( ( 70.0 * N ) / np.pi )
 		
 		results = []
 
@@ -685,49 +689,44 @@ class PostProcess( object ):
 			# print '->eccentricity:',eccentricity
 
 			current_object = { 'eccentricity' : eccentricity , 'samples' : [] }
-			for number_of_cells in number_of_cells_list:
+			for N in number_of_cells_list:
 				# print '-->number of cells:',number_of_cells
 				E_of_pis = []
 
+				n_skips = 0
+
 				for i in range( len( xs ) ):
 
-					x, y, angle, radius_new = xs[i], ys[i], RANDOM_ANGLES[i], radius
+					x, y, angle = xs[i], ys[i], RANDOM_ANGLES[i]
+
+					radii_new = [
+						a( N , eccentricity ) ,
+						b( N )
+					]
 					
-					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radius_new
+					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radii_new
 
 					sample = []
+	
+					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = [ 1 , 2 , 3 ])
+					# order the sample by distance of each cell in the sample to the center of x,y
+					sample = self.order_cells_by_distance_to( sample , x , y )
 
-					q = 0
-					while len(sample) < number_of_cells:
-						# print 'inwhile loop'
-						# sample ellipse using x, y, angle, eccentricity, radius
-						sample = self.cells_in_ellipse_at( x , y , 0 , radius_new , ecc = eccentricity , rotate_by = angle )
-						# order the sample by distance of each cell in the sample to the center of x,y
-						sample = self.order_cells_by_distance_to( sample , x , y )
+					selected_cells = [ cell.id for cell in sample[:N-1] ]
 
-						radius_new += 5
-						q+=1
-						if q > 100: break
-					#endwhile
-					# print '--->sample length:',len(sample)
-					# print '--->out of while loop: ',q
-
-					selected_cells = [ cell.id for cell in sample[:number_of_cells-1] ]
-					# print '--->sample:', sample
-					# print '--->selected cells ids:', selected_cells
-					# selected_cells = map( lambda cells: ( 0 , cells), selected_cells )
-
-					# process the selected_cells
+					if selected_cells < N:
+						n_skips += 1
+						continue
 
 					analyzed = self.frequency_analyze( selected_cells )
-					# print '--->analyzed:',analyzed
+					
 					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
-					# @TODO: is this the right function argument?
+					
 				#endfor	
 				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
 
-				current_object['samples'].append( { 'sample_size' : number_of_cells , 'E_of_pi' : E_of_pi } )
+				current_object['samples'].append( { 'sample_size' : N , 'E_of_pi' : E_of_pi, 'skips': n_skips } )
 			#endfor
 			results.append( current_object )
 		#endfor
