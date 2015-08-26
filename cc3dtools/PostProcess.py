@@ -1076,6 +1076,46 @@ class PostProcess( object ):
 			else:
 				plt.show()
 
+	@staticmethod
+	def plot_eccentricity(results, fit = None, save_fig = None):
+		
+		ms = 10 if fit else 6
+
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(results)))
+
+		for i, result in enumerate(results):
+		    ecc = result['eccentricity']   
+		    x = []
+		    y = []
+		#     labels.append('e='+str(ecc))
+
+		    for sample in result['samples']:
+		        x.append(sample['sample_size'])
+		        y.append(sample['E_of_pi'])
+
+		    plt.plot(x, y, 'x', color=color[i], label='e='+str(ecc), ms=ms)
+
+		    if fit:
+			    z = np.polyfit(x,y,fit)
+	    		f = np.poly1d(z)
+	    		x2 = np.linspace(0,500)
+		        plt.plot(x2, f(x2), color=color[i], label='e='+str(ecc)+'(fitted)')
+
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+		plt.xlabel('Sample Size')
+		plt.ylabel('E(pi)')
+
+		if save_fig:
+			plt.savefig( save_fig , format='png')
+			plt.clf()
+			plt.cla()
+		else:
+			plt.show()
+
 
 class TimeSeriesPlotters( object ):
 	"""

@@ -294,6 +294,10 @@ if SPEC_lookup( 'global' , 'sample' ):
 		for i, sampling in enumerate(sampling_strategies):
 
 			print2('Saving sample ' + str(i + 1) + ', method: '+ str( sampling[u'method'] ))
+			
+			# create a save directory
+			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
+			os.makedirs( current_dir )
 
 			try:
 				# sampling circles
@@ -323,7 +327,15 @@ if SPEC_lookup( 'global' , 'sample' ):
 							with open( current_dir + '/eccentric_results.picke' , 'w' ) as f:
 								pickle.dump( results , f )
 						if u'pi_plot' in sampling[u'save']:
-							# need to do some plotting here
+							results = results['results']
+							PostProcess.plot_eccentricity( results , save_fig = current_dir + '/eccentric_plot.png' )
+							PostProcess.plot_eccentricity( results , fit=1, save_fig = current_dir + '/eccentric_plot_fit_1.png' )
+							PostProcess.plot_eccentricity( results , fit=2, save_fig = current_dir + '/eccentric_plot_fit_2.png' )
+							PostProcess.plot_eccentricity( results , fit=3, save_fig = current_dir + '/eccentric_plot_fit_3.png' )
+							PostProcess.plot_eccentricity( results , fit=4, save_fig = current_dir + '/eccentric_plot_fit_4.png' )
+							PostProcess.plot_eccentricity( results , fit=5, save_fig = current_dir + '/eccentric_plot_fit_5.png' )
+							PostProcess.plot_eccentricity( results , fit=6, save_fig = current_dir + '/eccentric_plot_fit_6.png' )
+
 							pass
 
 					continue # skip this round.
@@ -333,10 +345,6 @@ if SPEC_lookup( 'global' , 'sample' ):
 			except Exception as e:
 				print2('(!) Unable to conduct a sample: '+str(e))
 				continue #skip to the next iteration
-
-			# create a save directory
-			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
-			os.makedirs( current_dir )
 
 			try:
 				analyzed = pp.sample_analyze(sample)
