@@ -7,6 +7,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from collections import Counter
 from Cell import Cell
 from Util import Ellipse
+import itertools
+import random
 import numpy as np
 import csv
 import math
@@ -675,7 +677,7 @@ class PostProcess( object ):
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
 		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
 		
-		number_of_cells_list = [ 20 , 50 , 100 , 200 , 500 ] # magic numbers
+		number_of_cells_list = [ 20 , 50 , 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
 
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
@@ -692,7 +694,8 @@ class PostProcess( object ):
 			for N in number_of_cells_list:
 				# print '-->number of cells:',number_of_cells
 				E_of_pis = []
-
+				segregating_sites = []
+				mean_distances = []
 				n_skips = 0
 
 				for i in range( len( xs ) ):
@@ -719,14 +722,25 @@ class PostProcess( object ):
 						continue
 
 					analyzed = self.frequency_analyze( selected_cells )
-					
 					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
+					
+					m_distance = mean_distances_between_cells( sample[:N-1] )
+					
+					mean_distances.append( m_distance )
+
+
+					mutation_counts = self.frequency_analyze( selected_cells , return_loci = True )
+					segregating_sites.append( len( mutation_counts.keys() ) )	
 					
 				#endfor	
 				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
+				d_0 = np.mean( mean_distances ) # mean distances between cells in a sample
+				
 
-				current_object['samples'].append( { 'sample_size' : N , 'E_of_pi' : E_of_pi, 'skips': n_skips } )
+				S = np.mean( segregating_sites ) # S = number of segregating sites
+
+				current_object['samples'].append( { 'sample_size' : N , 'E_of_pi' : E_of_pi, 'skips': n_skips , 'S': S , 'd_0': d_0 } )
 			#endfor
 			results.append( current_object )
 		#endfor
@@ -1078,7 +1092,13 @@ class PostProcess( object ):
 
 	@staticmethod
 	def plot_eccentricity(results, fit = None, save_fig = None):
-		
+		"""
+			plots results from eccentric_sampling_strategy
+			@params:
+				results = results['results'] of PostProcess.eccentric_sampling_strategy
+				fit = the order of the polynomial to fit
+				save_fig = figure to save
+		"""
 		ms = 10 if fit else 6
 
 		plt.figure()
@@ -1098,10 +1118,10 @@ class PostProcess( object ):
 		    plt.plot(x, y, 'x', color=color[i], label='e='+str(ecc), ms=ms)
 
 		    if fit:
-			    z = np.polyfit(x,y,fit)
-	    		f = np.poly1d(z)
-	    		x2 = np.linspace(0,500)
-		        plt.plot(x2, f(x2), color=color[i], label='e='+str(ecc)+'(fitted)')
+				z = np.polyfit(x,y,fit)
+				f = np.poly1d(z)
+				x2 = np.linspace(0,500)
+				plt.plot(x2, f(x2), color=color[i], label='e='+str(ecc)+'(fitted)')
 
 
 		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
@@ -1270,14 +1290,37 @@ def proportion_pairwise_differences ( allele_frequencies ):
 
 	return 0
 	
-
-
 def distance_between ( a , b ):
 	q = b[0] - a[0] 
 	p = b[1] - a[1] 
 	r = b[2] - a[2]
 	return math.sqrt( (p * p) + (q * q) + (r * r) )
 
+def distance_between_cells( Cell1, Cell2 ):
+	a = np.array( [ Cell1.x, Cell1.y, Cell1.z ] )
+	b = np.array( [ Cell2.x, Cell2.y, Cell2.z ] )
+
+	return np.sqrt( np.sum( ( a - b )**2 ) )
 
 
+def mean_distances_between_cells( sample, subsample_size=500 ):
+	"""
+		Calculates the mean distane between any two cells of a sample
+		@params:
+			sample : a list of cells which need to be analyzed
+			subsample_size : the size of a random subsample to take if the sample is very large
+	"""
+	if len(sample) < 2:
+		return 0
 
+	if len(sample) > subsample_size:
+		sample = random.sample(sample, subsample_size)
+
+	cell_combinations = list( itertools.combinations( sample , 2 ) )
+
+	distances = []
+
+	for combination in cell_combinations:
+		distances.append( distance_between_cells( combination[0] , combination[1] ) )
+
+	return np.mean(distances)
