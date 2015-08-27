@@ -677,7 +677,7 @@ class PostProcess( object ):
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
 		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
 		
-		number_of_cells_list = [ 20 , 50 , 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
+		number_of_cells_list = [ 50, 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
 
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
@@ -686,17 +686,30 @@ class PostProcess( object ):
 		
 		results = []
 
+		largeA_N = {}
+
 		for eccentricity in eccentiricies:
 			# results.append(  )
 			# print '->eccentricity:',eccentricity
 
-			current_object = { 'eccentricity' : eccentricity , 'samples' : [] }
+			current_object = { 'eccentricity' : eccentricity , 'samples' : [], 'areas': [] }
+
 			for N in number_of_cells_list:
 				# print '-->number of cells:',number_of_cells
 				E_of_pis = []
 				segregating_sites = []
 				mean_distances = []
+
+				areas_E_of_pis_100 = []
+				areas_E_of_pis_50 = []
+
+				areas_segregating_sites_100 = []
+				areas_segregating_sites_50 = []
+				areas_mean_distances = []
 				n_skips = 0
+				areas = []
+
+				# large_sample = set()
 
 				for i in range( len( xs ) ):
 
@@ -715,6 +728,8 @@ class PostProcess( object ):
 					# order the sample by distance of each cell in the sample to the center of x,y
 					sample = self.order_cells_by_distance_to( sample , x , y )
 
+
+					# if 
 					selected_cells = [ cell.id for cell in sample[:N-1] ]
 
 					if selected_cells < N:
@@ -731,8 +746,49 @@ class PostProcess( object ):
 
 					mutation_counts = self.frequency_analyze( selected_cells , return_loci = True )
 					segregating_sites.append( len( mutation_counts.keys() ) )	
+
+
+					###################### NEW STATISTIC #########################
+
+					A = np.pi * radii_new[0] * radii_new[1] # area to be plotted
+
+					areas.append(A)
+
+					cells_in_area = sample[:N-1]
+					# if N == 2000:
+					# 	large_sample = large_sample.union( set(cells_in_area) )
+					# select 100 random cells
+					random_subsample_100 = random.sample( cells_in_area , 100 ) if len(cells_in_area) > 100 else cells_in_area
+					random_subsample_50 = random.sample( cells_in_area , 50 ) if len(cells_in_area) > 50 else cells_in_area
+
+					analyzed_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] )
+					analyzed_50 = self.frequency_analyze( [ cell.id for cell in random_subsample_50 ] )
+
+					areas_E_of_pis_50.append( proportion_pairwise_differences( analyzed_50 ) )
+					areas_E_of_pis_100.append( proportion_pairwise_differences( analyzed_100 ) )
+
+					m_distance = mean_distances_between_cells( random_subsample_50 )
 					
+					areas_mean_distances.append( m_distance )
+
+					mutation_counts_50 = self.frequency_analyze(  [ cell.id for cell in random_subsample_50 ] , return_loci = True )
+					areas_segregating_sites_50.append( len( mutation_counts_50.keys() ) )
+
+					mutation_counts_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] , return_loci = True )
+					areas_segregating_sites_100.append( len( mutation_counts_100.keys() ) )
+
 				#endfor	
+
+				##################### MODIFIED TAJIMAS D ####################
+
+				# if N == 2000:
+				# 	### LARGEST POSSIBLE AREA OBTAINABLE, now let's do subsampling
+
+				# 	for k in xrange(2, 200, 10):
+				# 		if k < 20:
+				# 			sub_sample = random.sample(large_sample, k)
+
+
 				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
 				d_0 = np.mean( mean_distances ) # mean distances between cells in a sample
@@ -741,6 +797,34 @@ class PostProcess( object ):
 				S = np.mean( segregating_sites ) # S = number of segregating sites
 
 				current_object['samples'].append( { 'sample_size' : N , 'E_of_pi' : E_of_pi, 'skips': n_skips , 'S': S , 'd_0': d_0 } )
+
+
+				######### NEW STATISTIC ##########
+
+				mean_areas_E_of_pi_100 = np.mean( areas_E_of_pis_100 )
+				mean_areas_E_of_pi_50 = np.mean( areas_E_of_pis_50 )
+
+				mean_areas_segregating_sites_100 = np.mean( areas_segregating_sites_100 )
+				mean_areas_segregating_sites_50 = np.mean( areas_segregating_sites_50 )
+				mean_areas_mean_distances = np.mean( areas_mean_distances )
+				mean_A = np.mean( areas )
+
+
+				current_object['areas'].append( {
+					'area': mean_A ,
+					'N' : N, 
+					'subsample_100': {
+						'd': mean_areas_mean_distances,
+						'E_of_pi': mean_areas_E_of_pi_100,
+						'S': mean_areas_segregating_sites_100
+						},
+					'subsample_50': {
+						'd': mean_areas_mean_distances,
+						'E_of_pi': mean_areas_E_of_pi_50,
+						'S': mean_areas_segregating_sites_50
+						}
+					})
+
 			#endfor
 			results.append( current_object )
 		#endfor
