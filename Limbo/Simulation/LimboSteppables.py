@@ -95,12 +95,12 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.lambdaVolume=1.5
 
             if simulate_flag and not template_flag:
-                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0001 , ploidy=2 )
+                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             if cell.type == self.CANCER1:
 
                 if simulate_flag and not template_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
+                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             if save_flag:
                 trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
