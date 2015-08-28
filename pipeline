@@ -153,7 +153,7 @@ print2('saving to:' + FILES['out'])
 
 
 
-from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters, proportion_pairwise_differences
+from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters, proportion_pairwise_differences, EccentricityProcessing
 from cc3dtools.GenomeCompare import GenomeCompare
 from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
@@ -327,15 +327,35 @@ if SPEC_lookup( 'global' , 'sample' ):
 							with open( current_dir + '/eccentric_results.picke' , 'w' ) as f:
 								pickle.dump( results , f )
 						if u'pi_plot' in sampling[u'save']:
-							results = results['results']
-							PostProcess.plot_eccentricity( results , save_fig = current_dir + '/eccentric_plot.png' )
-							PostProcess.plot_eccentricity( results , fit=1, save_fig = current_dir + '/eccentric_plot_fit_1.png' )
-							PostProcess.plot_eccentricity( results , fit=2, save_fig = current_dir + '/eccentric_plot_fit_2.png' )
-							PostProcess.plot_eccentricity( results , fit=3, save_fig = current_dir + '/eccentric_plot_fit_3.png' )
-							PostProcess.plot_eccentricity( results , fit=4, save_fig = current_dir + '/eccentric_plot_fit_4.png' )
-							PostProcess.plot_eccentricity( results , fit=5, save_fig = current_dir + '/eccentric_plot_fit_5.png' )
-							PostProcess.plot_eccentricity( results , fit=6, save_fig = current_dir + '/eccentric_plot_fit_6.png' )
+							try:
+								parsed = EccentricityProcessing.parse_results(results)
 
+								## S VS A
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_loglog.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_marker.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_marker_loglog.png', marker=True, loglog=True)
+
+
+								## S vs A (scaled)
+
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_scaled.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_loglog_scaled.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_marker_scaled.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_marker_loglog_scaled.png', marker=True, loglog=True)
+
+
+								## E vs A
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_loglog.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_marker.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_marker_loglog.png', marker=True, loglog=True)
+
+								## S (scaled) and EPi vs A
+								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A.png', loglog=False)
+								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A_loglog.png', loglog=True)
+							except Exception as e:
+								print2('(!) Something hapened in EccentricityProcessing:' +str(e))							
 							pass
 
 					continue # skip this round.

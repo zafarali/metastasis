@@ -18,14 +18,14 @@ import pickle
 
 
 def random_color_map(N, base_cmap='prism'):
-    """ generate a shuffled discrete color map of size N based on @param base_cmap"""
- 	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
-    base = plt.cm.get_cmap(base_cmap) # get the base
-    color_raw = np.linspace(0, 1, N) # generate some random colors
-    np.random.shuffle(color_raw) # shuffle it
-    color_list = base(color_raw) # turn them into colors
-    cmap_name = base.name + str(N) # give it a random name
-    return base.from_list(cmap_name, color_list, N) #return it!
+	""" generate a shuffled discrete color map of size N based on @param base_cmap"""
+	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
+	base = plt.cm.get_cmap(base_cmap) # get the base
+	color_raw = np.linspace(0, 1, N) # generate some random colors
+	np.random.shuffle(color_raw) # shuffle it
+	color_list = base(color_raw) # turn them into colors
+	cmap_name = base.name + str(N) # give it a random name
+	return base.from_list(cmap_name, color_list, N) #return it!
 
 def discrete_cmap(N, base_cmap='prism'):
 	""" generate a discrete color map of size N based on @param base_cmap"""
@@ -1018,9 +1018,9 @@ class PostProcess( object ):
 			if return_plot_stack:
 				# save the plot_stack:
 				for i in range( len( current_polygon_points ) - 1 ):
-				    vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
-				    plt_x, plt_y = zip(*vertex_set)
-				    plot_stack.append([plt_x, plt_y, 'g'])
+					vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
+					plt_x, plt_y = zip(*vertex_set)
+					plot_stack.append([plt_x, plt_y, 'g'])
 
 				vertex_set = [ current_polygon_points[0] ] + [ current_polygon_points[-1] ]
 				plt_x, plt_y = zip(*vertex_set)
@@ -1212,18 +1212,18 @@ class PostProcess( object ):
 		color = plt.cm.rainbow(np.linspace(0,1,len(results)))
 
 		for i, result in enumerate(results):
-		    ecc = result['eccentricity']   
-		    x = []
-		    y = []
+			ecc = result['eccentricity']   
+			x = []
+			y = []
 		#     labels.append('e='+str(ecc))
 
-		    for sample in result['samples']:
-		        x.append(sample['sample_size'])
-		        y.append(sample['E_of_pi'])
+			for sample in result['samples']:
+				x.append(sample['sample_size'])
+				y.append(sample['E_of_pi'])
 
-		    plt.plot(x, y, 'x', color=color[i], label='e='+str(ecc), ms=ms)
+			plt.plot(x, y, 'x', color=color[i], label='e='+str(ecc), ms=ms)
 
-		    if fit:
+			if fit:
 				z = np.polyfit(x,y,fit)
 				f = np.poly1d(z)
 				x2 = np.linspace(0,500)
@@ -1471,9 +1471,19 @@ def mean_distances_between_cells( sample, subsample_size=500 ):
 
 	return np.mean(distances)
 
+from math import log
+
+def H(n):
+	"""Returns an approximate value of n-th harmonic number.
+
+	   http://en.wikipedia.org/wiki/Harmonic_number
+	"""
+	# Euler-Mascheroni constant
+	gamma = 0.57721566490153286060651209008240243104215933593992
+	return gamma + log(n) + 0.5/n - 1./(12*n**2) + 1./(120*n**4)
 
 class EccentricityProcessing(object):
-	def __init__(self):
+	def __init__(self, results):
 		pass
 
 	@staticmethod
@@ -1481,12 +1491,171 @@ class EccentricityProcessing(object):
 		results = results['results']
 		parsed = {}
 		for result in results:
-		    ecc = result['eccentricity']
-		    parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': []}
-		    for area in result['areas']:
-		        parsed[ecc]['N'].append(area['N'])
-		        parsed[ecc]['areas'].append(area['area'])
-		        parsed[ecc]['S'].append(area['subsample_100']['S'])
-		        parsed[ecc]['E_of_pi'].append(area['subsample_100']['E_of_pi'])
+			ecc = result['eccentricity']
+			parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': []}
+			for area in result['areas']:
+				parsed[ecc]['N'].append(area['N'])
+				parsed[ecc]['areas'].append(area['area'])
+				parsed[ecc]['S'].append(area['subsample_100']['S'])
+				parsed[ecc]['E_of_pi'].append(area['subsample_100']['E_of_pi'])
+
+		return parsed
+
+	@staticmethod
+	def plot_S_vs_A(parsed, file_name, marker=False, loglog=False):
+		
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = obj['S']
+			labels.append('e='+str(ecc))
+
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Segregating Sites, S')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Segregating Sites vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+	
+	@staticmethod
+	def plot_Epi_vs_A(parsed, file_name, marker=False, loglog=False):
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = obj['E_of_pi']
+			labels.append('e='+str(ecc))
 
 
+
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Proportion of pairwise differences, E(pi)')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Proportion of pairwise differences vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+
+	@staticmethod
+	def plot_S_vs_A_scaled(parsed, file_name, marker=False, loglog=False):
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = np.array(obj['S'])
+			scaling_factors = np.array(map(H, obj['N']))
+			y = y/scaling_factors
+			labels.append('e='+str(ecc))
+
+
+
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Scaled Segregated sites, S/H')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Scaled Segregating Sites vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+
+	@staticmethod
+	def plot_S_scaled_and_Epi_vs_A(parsed, file_name, loglog=False):
+
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = np.array(obj['S'])
+			y2 = obj['E_of_pi']
+			scaling_factors = np.array(map(H, obj['N']))
+			y = y/scaling_factors
+			labels.append('e='+str(ecc))
+
+
+			plt.plot(x, y2, 'x', color=color[index], label='Pi for e='+str(ecc), ms=6)
+			plt.plot(x, y, 'o', color=color[index], label='S/H for e='+str(ecc), ms=6)
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Units')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'E(pi) and S vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
