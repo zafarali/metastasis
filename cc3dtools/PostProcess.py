@@ -671,8 +671,8 @@ class PostProcess( object ):
 		assert cell_steps < max_cells and cell_steps > 0 , 'cell_steps must be less than the max and greater than 0'
 		assert N_points > 0 , 'N_points must be greater than zero'
 
-		xs = np.random.random( size = N_points ) * lattice_size
-		ys = np.random.random( size = N_points ) * lattice_size 
+		xs = ( np.random.random( size = N_points ) * 500 ) + 250
+		ys = ( np.random.random( size = N_points ) * 500 ) + 250
 
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
 		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
@@ -1470,3 +1470,23 @@ def mean_distances_between_cells( sample, subsample_size=500 ):
 		distances.append( distance_between_cells( combination[0] , combination[1] ) )
 
 	return np.mean(distances)
+
+
+class EccentricityProcessing(object):
+	def __init__(self):
+		pass
+
+	@staticmethod
+	def parse_results(results):
+		results = results['results']
+		parsed = {}
+		for result in results:
+		    ecc = result['eccentricity']
+		    parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': []}
+		    for area in result['areas']:
+		        parsed[ecc]['N'].append(area['N'])
+		        parsed[ecc]['areas'].append(area['area'])
+		        parsed[ecc]['S'].append(area['subsample_100']['S'])
+		        parsed[ecc]['E_of_pi'].append(area['subsample_100']['E_of_pi'])
+
+
