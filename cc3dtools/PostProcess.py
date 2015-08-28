@@ -645,7 +645,7 @@ class PostProcess( object ):
 
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
-	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000):
+	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False):
 		"""
 			samples according to the eccentricity strategy, WARN: this doesn't return a tuple of distance, cellids
 			@params:
@@ -679,6 +679,9 @@ class PostProcess( object ):
 		
 		number_of_cells_list = [ 50, 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
 
+		if simple:
+			number_of_cells = [ 2000 ]
+
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
 		a = lambda N, ecc: np.sqrt( ( 70.0 * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
@@ -686,7 +689,7 @@ class PostProcess( object ):
 		
 		results = []
 
-		largeA_N = {}
+		largeA_N = []
 
 		for eccentricity in eccentiricies:
 			# results.append(  )
@@ -709,7 +712,7 @@ class PostProcess( object ):
 				n_skips = 0
 				areas = []
 
-				# large_sample = set()
+				large_sample = set()
 
 				for i in range( len( xs ) ):
 
@@ -729,7 +732,9 @@ class PostProcess( object ):
 					sample = self.order_cells_by_distance_to( sample , x , y )
 
 
-					# if 
+					if N == 2000:
+						large_sample = large_sample.union( set( sample[:N-1] ) )
+
 					selected_cells = [ cell.id for cell in sample[:N-1] ]
 
 					if selected_cells < N:
@@ -781,13 +786,30 @@ class PostProcess( object ):
 
 				##################### MODIFIED TAJIMAS D ####################
 
-				# if N == 2000:
-				# 	### LARGEST POSSIBLE AREA OBTAINABLE, now let's do subsampling
+				if N == 2000:
+					### LARGEST POSSIBLE AREA OBTAINABLE, now let's do subsampling
+					large_sample = list( large_sample )
+					
+					k_S_sampling_k = [] # holds k values for this calculation
+					k_S_sampling_S = [] # holds S values for this calculation
 
-				# 	for k in xrange(2, 200, 10):
-				# 		if k < 20:
-				# 			sub_sample = random.sample(large_sample, k)
+					for k in xrange(2, 200, 10):
+						if k < 20:
+							to_be_averaged = []
+							for i in range(0,100):
+								sub_sample = random.sample(large_sample, k)
+								to_be_averaged.append(len(self.frequency_analyze( [ cell.id for cell in sub_sample ] , return_loci = True ).keys()))
 
+							S_k = np.mean(to_be_averaged)
+
+						else:
+							sub_sample = random.sample(large_sample, k)
+							S_k = len(self.frequency_analyze( [ cell.id for cell in sub_sample ] , return_loci = True ).keys())
+
+						k_S_sampling_S.append(S_k)
+						k_S_sampling_k.append(k)
+					
+					largeA_N.append( {'eccentricity':eccentricity, 'k':k_S_sampling_k, 'S':k_S_sampling_S } )
 
 				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
@@ -829,7 +851,7 @@ class PostProcess( object ):
 			results.append( current_object )
 		#endfor
 
-		return { 'results' : results }
+		return { 'results' : results, 'largeA_N':largeA_N }
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
@@ -1359,20 +1381,60 @@ def proportion_pairwise_differences ( allele_frequencies ):
 
 	if len( frequency_results ):
 		# 
-		x, _ = zip( *frequency_results.items() )
-		x = np.array(x) 
-		x = x / float(number_of_cells) # proportion of cells in cluster mutated.
-		
+		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
+		# print 'frequency_of_mutations=',frequency_of_mutations
+		number_of_mutations = np.array(number_of_mutations)  
+
+		x = number_of_mutations / (2 * float(number_of_cells) ) # proportion of cells in cluster mutated.
+		# multiply by 2 to account for diploidy
+
+		y = ( 2 * float(number_of_cells) - number_of_mutations ) / ( 2 * float(number_of_cells) - 1 )
+
+
+		# multiply denominator by tw
+		# print 'x=',x
+		# print 'y=',y
 		##
 		## E(pi) = sum_{l=1}^M 2 * X_l ( 1 - X_l)
 		## l = locus , M = number of loci
 		## X_l = pairwise proportional difference at site l
-		
-		E_of_pi = np.sum( 2 * x * ( 1 - x ) ) 
+		individual_pis = 2 * x * y * np.array(frequency_of_mutations)
+		# print 'individual pis=', individual_pis
+		E_of_pi = np.sum( individual_pis ) 
 
 		return E_of_pi 
 
 	return 0
+
+def number_of_segregating_sites ( allele_frequencies ):
+	"""
+		Calculates S = number of segregating sites
+		@params:
+			allele_frequencies:
+				the output from PostProcess.sample_analyze(sample)[:][1]
+				(i.e not the distances, loop over each sample analyzed.)
+		@return:
+			S : number of segregating sites
+
+	"""
+	frequency_results , number_of_cells = allele_frequencies
+
+	if len( frequency_results ):
+		# 
+		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
+		# print 'frequency_of_mutations=',frequency_of_mutations
+		# print 'number_of_mutations=',number_of_mutations
+		# print '',f
+		number_of_mutations = np.array(number_of_mutations)  
+
+		# multiply by 2 to account for diploidy
+
+		S = np.sum( np.ones( len(number_of_mutations) - 1 ) * np.array(frequency_of_mutations[:-1]) ) 
+
+		return S
+
+	return 0
+	
 	
 def distance_between ( a , b ):
 	q = b[0] - a[0] 
