@@ -105,7 +105,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             phenotypes[cell.id] = Phenotype( phenotype_template ) # simulate phenotypes
 
             if simulate_flag and not template_flag:
-                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0001 , ploidy=2 )
+                genomes[cell.id] = Genome( mutation_rate = 50 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             # create a cancer cell in the middle
             if not cancer_cell_created and ( cell.xCOM <= LATTICE['center_x_max'] and cell.xCOM >= LATTICE['center_x_min'] ) and ( cell.yCOM <= LATTICE['center_y_max'] and cell.yCOM >= LATTICE['center_y_min'] ):
@@ -115,11 +115,11 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             if cell.type == self.CANCER1:
 
                 if simulate_flag and not template_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.002 , ploidy=2 )
+                    genomes[cell.id] = Genome( mutation_rate = 120 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
                 else:
                     # this is template flag, therefore we must just update this genomes' attribute.
                     genomes[cell.id].mutation_rate = 120
-                    genomes[cell.id].ploidy_probability = 0.002
+                    genomes[cell.id].ploidy_probability = 0.0
 
             if save_flag:
                 trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    

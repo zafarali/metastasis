@@ -6,6 +6,9 @@ from matplotlib.path import Path
 from mpl_toolkits.mplot3d import Axes3D
 from collections import Counter
 from Cell import Cell
+from Util import Ellipse
+import itertools
+import random
 import numpy as np
 import csv
 import math
@@ -15,14 +18,14 @@ import pickle
 
 
 def random_color_map(N, base_cmap='prism'):
-    """ generate a shuffled discrete color map of size N based on @param base_cmap"""
- 	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
-    base = plt.cm.get_cmap(base_cmap) # get the base
-    color_raw = np.linspace(0, 1, N) # generate some random colors
-    np.random.shuffle(color_raw) # shuffle it
-    color_list = base(color_raw) # turn them into colors
-    cmap_name = base.name + str(N) # give it a random name
-    return base.from_list(cmap_name, color_list, N) #return it!
+	""" generate a shuffled discrete color map of size N based on @param base_cmap"""
+	# from: https://gist.github.com/jakevdp/91077b0cae40f8f8244a
+	base = plt.cm.get_cmap(base_cmap) # get the base
+	color_raw = np.linspace(0, 1, N) # generate some random colors
+	np.random.shuffle(color_raw) # shuffle it
+	color_list = base(color_raw) # turn them into colors
+	cmap_name = base.name + str(N) # give it a random name
+	return base.from_list(cmap_name, color_list, N) #return it!
 
 def discrete_cmap(N, base_cmap='prism'):
 	""" generate a discrete color map of size N based on @param base_cmap"""
@@ -552,6 +555,32 @@ class PostProcess( object ):
 
 		return ( R_CM[0] , R_CM[1] , R_CM[2] )
 
+	def COM( self, cells ):
+		"""
+			calculates the center of mass of a group of cells.
+			@params:
+				cells
+			@returns:
+				tuple containing the COM
+				( x , y , z )
+		"""
+		r_vectors = map( lambda cell: np.array([ cell.x, cell.y, cell.z ]) , cells )
+
+		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
+
+		return ( R_CM[0] , R_CM[1] , R_CM[2] )
+
+	def order_cells_by_distance_to(self, sample , targetx , targety ):
+		distances = []
+		for idx, cell in enumerate(sample):
+			x,y,z = cell.x, cell.y, cell.z
+			distance = np.sqrt( (x-targetx)**2 + (y-targety)**2 )
+
+			distances.append( ( distance , cell , idx ) )
+
+		return map( lambda element: element[1]  , sorted( distances, key=lambda element: element[0] ) )
+
+
 	def nearest( self , x , y , z , radius = 5 , type_restrictions = None ):
 		"""
 			returns the cellids and the x,y,z coordinates of the cells within radius
@@ -579,7 +608,23 @@ class PostProcess( object ):
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
 		return filter( lambda r: r.x - x **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors ) 
 
-	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None ):
+	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None , rotate_by = 0 , ecc = None ):
+		"""
+		returns the cellids and tge x,y,z, coordinates of the cells within the ellipsoid defined by:
+		@params:
+			x,y,z / float,float,float
+				coordinates of the center of the ellipse
+			radii / list or float
+				a list of length two, first element has the minor radius, and second element has the major radius.
+				if a float is supplied then @param:ecc must be supplied to infer the minor radius.
+			type_restrictions / list / None
+				restrictions on the types of cell types that must be sampled
+			rotate_by / int / 0
+				the angle of rotation of the ellipse
+			ecc / float / None
+				the eccentricity that should be used for the minor axis.
+		"""
+
 		filtered_list = self.cell_locations.values()
 
 		if type_restrictions:
@@ -589,7 +634,224 @@ class PostProcess( object ):
 		r_vectors = filtered_list
 		# first map the cell_locations into a new dict
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: ( ( r.x - x ) / radii[0] )**2 + ( (  r.y - y  )/radii[1] )**2 + ( ( r.z - z )/radii[2])**2 <= 1, r_vectors )
+
+		if ecc is None:
+			assert len(radii) == 2, 'no ecc supplied, thus you must supply a list of radii'
+			assert type(radii) == list, 'no ecc supplied, thus you must supply a list of radii'
+			this_ellipse = Ellipse( radii[0], b = radii[1] , x_0 = x , y_0 = y , rotate_by = rotate_by )
+		else:
+			assert type(radii) == float or type(radii) == int, 'ecc was supplied, your radius must be an int or float'
+			this_ellipse = Ellipse( radii , ecc = ecc , x_0 = x , y_0 = y , rotate_by = rotate_by )
+
+		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
+
+	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False):
+		"""
+			samples according to the eccentricity strategy, WARN: this doesn't return a tuple of distance, cellids
+			@params:
+				N_points / int :
+					number of points to select to calculate pi over.
+				max_cells / int :
+					the maximum number of cells that we use from each sample
+				radius / float : 
+					the major radius
+				min_cells / int / 20:
+					the minimum number of cells that we use from each sample
+				ecc_steps / float / 0.1 
+					a number less that 1, which defines the step size between eccentricity selections
+				cell_steps / int / 5
+					number of cells to increase our selection of the sample from
+				lattice_size / int / 1000
+					size of the lattice
+
+		"""
+		
+		assert min_cells < max_cells, 'min cells must be less than max_cells'
+		assert ecc_steps < 1 and ecc_steps > 0 , 'ecc_steps must be greater than 0 and less than 1'
+		assert cell_steps < max_cells and cell_steps > 0 , 'cell_steps must be less than the max and greater than 0'
+		assert N_points > 0 , 'N_points must be greater than zero'
+
+		xs = ( np.random.random( size = N_points ) * 500 ) + 250
+		ys = ( np.random.random( size = N_points ) * 500 ) + 250
+
+		eccentiricies = np.arange( 0 , 1 , ecc_steps )
+		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
+		
+		number_of_cells_list = [ 50, 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
+
+		if simple:
+			number_of_cells = [ 2000 ]
+
+		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
+		
+		a = lambda N, ecc: np.sqrt( ( 70.0 * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
+		b = lambda N : np.sqrt( ( 70.0 * N ) / np.pi )
+		
+		results = []
+
+		largeA_N = []
+
+		for eccentricity in eccentiricies:
+			# results.append(  )
+			# print '->eccentricity:',eccentricity
+
+			current_object = { 'eccentricity' : eccentricity , 'samples' : [], 'areas': [] }
+
+			for N in number_of_cells_list:
+				# print '-->number of cells:',number_of_cells
+				E_of_pis = []
+				segregating_sites = []
+				mean_distances = []
+
+				areas_E_of_pis_100 = []
+				areas_E_of_pis_50 = []
+
+				areas_segregating_sites_100 = []
+				areas_segregating_sites_50 = []
+				areas_mean_distances = []
+				n_skips = 0
+				areas = []
+
+				large_sample = set()
+
+				for i in range( len( xs ) ):
+
+					x, y, angle = xs[i], ys[i], RANDOM_ANGLES[i]
+
+					radii_new = [
+						a( N , eccentricity ) ,
+						b( N )
+					]
+					
+					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radii_new
+
+					sample = []
+	
+					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = [ 1 , 2 , 3 ])
+					# order the sample by distance of each cell in the sample to the center of x,y
+					sample = self.order_cells_by_distance_to( sample , x , y )
+
+
+					if N == 2000:
+						large_sample = large_sample.union( set( sample[:N-1] ) )
+
+					selected_cells = [ cell.id for cell in sample[:N-1] ]
+
+					if selected_cells < N:
+						n_skips += 1
+						continue
+
+					analyzed = self.frequency_analyze( selected_cells )
+					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
+					
+					m_distance = mean_distances_between_cells( sample[:N-1] )
+					
+					mean_distances.append( m_distance )
+
+
+					mutation_counts = self.frequency_analyze( selected_cells , return_loci = True )
+					segregating_sites.append( len( mutation_counts.keys() ) )	
+
+
+					###################### NEW STATISTIC #########################
+
+					A = np.pi * radii_new[0] * radii_new[1] # area to be plotted
+
+					areas.append(A)
+
+					cells_in_area = sample[:N-1]
+					# if N == 2000:
+					# 	large_sample = large_sample.union( set(cells_in_area) )
+					# select 100 random cells
+					random_subsample_100 = random.sample( cells_in_area , 100 ) if len(cells_in_area) > 100 else cells_in_area
+					random_subsample_50 = random.sample( cells_in_area , 50 ) if len(cells_in_area) > 50 else cells_in_area
+
+					analyzed_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] )
+					analyzed_50 = self.frequency_analyze( [ cell.id for cell in random_subsample_50 ] )
+
+					areas_E_of_pis_50.append( proportion_pairwise_differences( analyzed_50 ) )
+					areas_E_of_pis_100.append( proportion_pairwise_differences( analyzed_100 ) )
+
+					m_distance = mean_distances_between_cells( random_subsample_50 )
+					
+					areas_mean_distances.append( m_distance )
+
+					mutation_counts_50 = self.frequency_analyze(  [ cell.id for cell in random_subsample_50 ] , return_loci = True )
+					areas_segregating_sites_50.append( len( mutation_counts_50.keys() ) )
+
+					mutation_counts_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] , return_loci = True )
+					areas_segregating_sites_100.append( len( mutation_counts_100.keys() ) )
+
+				#endfor	
+
+				##################### MODIFIED TAJIMAS D ####################
+
+				if N == 2000:
+					### LARGEST POSSIBLE AREA OBTAINABLE, now let's do subsampling
+					large_sample = list( large_sample )
+					
+					k_S_sampling_k = [] # holds k values for this calculation
+					k_S_sampling_S = [] # holds S values for this calculation
+
+					for k in xrange(2, 200, 10):
+						if k < 20:
+							to_be_averaged = []
+							for i in range(0,100):
+								sub_sample = random.sample(large_sample, k)
+								to_be_averaged.append(len(self.frequency_analyze( [ cell.id for cell in sub_sample ] , return_loci = True ).keys()))
+
+							S_k = np.mean(to_be_averaged)
+
+						else:
+							sub_sample = random.sample(large_sample, k)
+							S_k = len(self.frequency_analyze( [ cell.id for cell in sub_sample ] , return_loci = True ).keys())
+
+						k_S_sampling_S.append(S_k)
+						k_S_sampling_k.append(k)
+					
+					largeA_N.append( {'eccentricity':eccentricity, 'k':k_S_sampling_k, 'S':k_S_sampling_S } )
+
+				# print '-->E_of_pis',E_of_pis
+				E_of_pi = np.mean( E_of_pis )
+				d_0 = np.mean( mean_distances ) # mean distances between cells in a sample
+				
+
+				S = np.mean( segregating_sites ) # S = number of segregating sites
+
+				current_object['samples'].append( { 'sample_size' : N , 'E_of_pi' : E_of_pi, 'skips': n_skips , 'S': S , 'd_0': d_0 } )
+
+
+				######### NEW STATISTIC ##########
+
+				mean_areas_E_of_pi_100 = np.mean( areas_E_of_pis_100 )
+				mean_areas_E_of_pi_50 = np.mean( areas_E_of_pis_50 )
+
+				mean_areas_segregating_sites_100 = np.mean( areas_segregating_sites_100 )
+				mean_areas_segregating_sites_50 = np.mean( areas_segregating_sites_50 )
+				mean_areas_mean_distances = np.mean( areas_mean_distances )
+				mean_A = np.mean( areas )
+
+
+				current_object['areas'].append( {
+					'area': mean_A ,
+					'N' : N, 
+					'subsample_100': {
+						'd': mean_areas_mean_distances,
+						'E_of_pi': mean_areas_E_of_pi_100,
+						'S': mean_areas_segregating_sites_100
+						},
+					'subsample_50': {
+						'd': mean_areas_mean_distances,
+						'E_of_pi': mean_areas_E_of_pi_50,
+						'S': mean_areas_segregating_sites_50
+						}
+					})
+
+			#endfor
+			results.append( current_object )
+		#endfor
+
+		return { 'results' : results, 'largeA_N':largeA_N }
 
 	def cluster_return( self , *args, **kwargs ):
 		"""	
@@ -756,9 +1018,9 @@ class PostProcess( object ):
 			if return_plot_stack:
 				# save the plot_stack:
 				for i in range( len( current_polygon_points ) - 1 ):
-				    vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
-				    plt_x, plt_y = zip(*vertex_set)
-				    plot_stack.append([plt_x, plt_y, 'g'])
+					vertex_set = [ current_polygon_points[i] ] + [ current_polygon_points[i+1] ]
+					plt_x, plt_y = zip(*vertex_set)
+					plot_stack.append([plt_x, plt_y, 'g'])
 
 				vertex_set = [ current_polygon_points[0] ] + [ current_polygon_points[-1] ]
 				plt_x, plt_y = zip(*vertex_set)
@@ -934,6 +1196,52 @@ class PostProcess( object ):
 			else:
 				plt.show()
 
+	@staticmethod
+	def plot_eccentricity(results, fit = None, save_fig = None):
+		"""
+			plots results from eccentric_sampling_strategy
+			@params:
+				results = results['results'] of PostProcess.eccentric_sampling_strategy
+				fit = the order of the polynomial to fit
+				save_fig = figure to save
+		"""
+		ms = 10 if fit else 6
+
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(results)))
+
+		for i, result in enumerate(results):
+			ecc = result['eccentricity']   
+			x = []
+			y = []
+		#     labels.append('e='+str(ecc))
+
+			for sample in result['samples']:
+				x.append(sample['sample_size'])
+				y.append(sample['E_of_pi'])
+
+			plt.plot(x, y, 'x', color=color[i], label='e='+str(ecc), ms=ms)
+
+			if fit:
+				z = np.polyfit(x,y,fit)
+				f = np.poly1d(z)
+				x2 = np.linspace(0,500)
+				plt.plot(x2, f(x2), color=color[i], label='e='+str(ecc)+'(fitted)')
+
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+		plt.xlabel('Sample Size')
+		plt.ylabel('E(pi)')
+
+		if save_fig:
+			plt.savefig( save_fig , format='png')
+			plt.clf()
+			plt.cla()
+		else:
+			plt.show()
+
 
 class TimeSeriesPlotters( object ):
 	"""
@@ -1073,28 +1381,281 @@ def proportion_pairwise_differences ( allele_frequencies ):
 
 	if len( frequency_results ):
 		# 
-		x, _ = zip( *frequency_results.items() )
-		x = np.array(x) 
-		x = x / float(number_of_cells) # proportion of cells in cluster mutated.
-		
+		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
+		# print 'frequency_of_mutations=',frequency_of_mutations
+		number_of_mutations = np.array(number_of_mutations)  
+
+		x = number_of_mutations / (2 * float(number_of_cells) ) # proportion of cells in cluster mutated.
+		# multiply by 2 to account for diploidy
+
+		y = ( 2 * float(number_of_cells) - number_of_mutations ) / ( 2 * float(number_of_cells) - 1 )
+
+
+		# multiply denominator by tw
+		# print 'x=',x
+		# print 'y=',y
 		##
 		## E(pi) = sum_{l=1}^M 2 * X_l ( 1 - X_l)
 		## l = locus , M = number of loci
 		## X_l = pairwise proportional difference at site l
-		
-		E_of_pi = np.sum( 2 * x * ( 1 - x ) ) 
+		individual_pis = 2 * x * y * np.array(frequency_of_mutations)
+		# print 'individual pis=', individual_pis
+		E_of_pi = np.sum( individual_pis ) 
 
 		return E_of_pi 
 
+	return 0
+
+def number_of_segregating_sites ( allele_frequencies ):
+	"""
+		Calculates S = number of segregating sites
+		@params:
+			allele_frequencies:
+				the output from PostProcess.sample_analyze(sample)[:][1]
+				(i.e not the distances, loop over each sample analyzed.)
+		@return:
+			S : number of segregating sites
+
+	"""
+	frequency_results , number_of_cells = allele_frequencies
+
+	if len( frequency_results ):
+		# 
+		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
+		# print 'frequency_of_mutations=',frequency_of_mutations
+		# print 'number_of_mutations=',number_of_mutations
+		# print '',f
+		number_of_mutations = np.array(number_of_mutations)  
+
+		# multiply by 2 to account for diploidy
+
+		S = np.sum( np.ones( len(number_of_mutations) - 1 ) * np.array(frequency_of_mutations[:-1]) ) 
+
+		return S
+
+	return 0
 	
-
-
+	
 def distance_between ( a , b ):
 	q = b[0] - a[0] 
 	p = b[1] - a[1] 
 	r = b[2] - a[2]
 	return math.sqrt( (p * p) + (q * q) + (r * r) )
 
+def distance_between_cells( Cell1, Cell2 ):
+	a = np.array( [ Cell1.x, Cell1.y, Cell1.z ] )
+	b = np.array( [ Cell2.x, Cell2.y, Cell2.z ] )
+
+	return np.sqrt( np.sum( ( a - b )**2 ) )
+
+
+def mean_distances_between_cells( sample, subsample_size=500 ):
+	"""
+		Calculates the mean distane between any two cells of a sample
+		@params:
+			sample : a list of cells which need to be analyzed
+			subsample_size : the size of a random subsample to take if the sample is very large
+	"""
+	if len(sample) < 2:
+		return 0
+
+	if len(sample) > subsample_size:
+		sample = random.sample(sample, subsample_size)
+
+	cell_combinations = list( itertools.combinations( sample , 2 ) )
+
+	distances = []
+
+	for combination in cell_combinations:
+		distances.append( distance_between_cells( combination[0] , combination[1] ) )
+
+	return np.mean(distances)
+
+from math import log
+
+def H(n):
+	"""Returns an approximate value of n-th harmonic number.
+
+	   http://en.wikipedia.org/wiki/Harmonic_number
+	"""
+	# Euler-Mascheroni constant
+	gamma = 0.57721566490153286060651209008240243104215933593992
+	return gamma + log(n) + 0.5/n - 1./(12*n**2) + 1./(120*n**4)
+
+class EccentricityProcessing(object):
+	def __init__(self, results):
+		pass
+
+	@staticmethod
+	def parse_results(results):
+		results = results['results']
+		parsed = {}
+		for result in results:
+			ecc = result['eccentricity']
+			parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': []}
+			for area in result['areas']:
+				parsed[ecc]['N'].append(area['N'])
+				parsed[ecc]['areas'].append(area['area'])
+				parsed[ecc]['S'].append(area['subsample_100']['S'])
+				parsed[ecc]['E_of_pi'].append(area['subsample_100']['E_of_pi'])
+
+		return parsed
+
+	@staticmethod
+	def plot_S_vs_A(parsed, file_name, marker=False, loglog=False):
+		
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = obj['S']
+			labels.append('e='+str(ecc))
+
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Segregating Sites, S')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Segregating Sites vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+	
+	@staticmethod
+	def plot_Epi_vs_A(parsed, file_name, marker=False, loglog=False):
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = obj['E_of_pi']
+			labels.append('e='+str(ecc))
 
 
 
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Proportion of pairwise differences, E(pi)')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Proportion of pairwise differences vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+
+	@staticmethod
+	def plot_S_vs_A_scaled(parsed, file_name, marker=False, loglog=False):
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = np.array(obj['S'])
+			scaling_factors = np.array(map(H, obj['N']))
+			y = y/scaling_factors
+			labels.append('e='+str(ecc))
+
+
+
+			if marker:
+				plt.plot(x, y, 'x', color=color[index], label='e='+str(ecc), ms=6)
+			else:
+				plt.plot(x, y, color=color[index], label='e='+str(ecc))
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Scaled Segregated sites, S/H')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'Scaled Segregating Sites vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()
+
+	@staticmethod
+	def plot_S_scaled_and_Epi_vs_A(parsed, file_name, loglog=False):
+
+		plt.figure()
+
+		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		labels = []
+		for index,item in enumerate(parsed.items()):
+			ecc, obj = item
+			x = obj['areas']
+			y = np.array(obj['S'])
+			y2 = obj['E_of_pi']
+			scaling_factors = np.array(map(H, obj['N']))
+			y = y/scaling_factors
+			labels.append('e='+str(ecc))
+
+
+			plt.plot(x, y2, 'x', color=color[index], label='Pi for e='+str(ecc), ms=6)
+			plt.plot(x, y, 'o', color=color[index], label='S/H for e='+str(ecc), ms=6)
+
+		plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.5), fancybox=True, ncol=5)
+		#         print sample['sample_size'], sample['E_of_pi']
+
+		ax = plt.gca()
+
+		if loglog:
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
+		box = ax.get_position()
+		ax.set_position([box.x0, box.y0 + box.height * 1,
+		                 box.width, box.height * 1])
+
+		plt.xlabel('Area')
+		plt.ylabel('Units')
+		ll = 'Log-Log of ' if loglog else ''
+		plt.title( ll + 'E(pi) and S vs Area')
+		plt.savefig( file_name , format='png',  bbox_inches='tight')
+		plt.clf()
+		plt.cla()

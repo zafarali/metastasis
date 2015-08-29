@@ -153,7 +153,7 @@ print2('saving to:' + FILES['out'])
 
 
 
-from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters, proportion_pairwise_differences
+from cc3dtools.PostProcess import SpacePlot, PostProcess, TimeSeriesPlotters, proportion_pairwise_differences, EccentricityProcessing
 from cc3dtools.GenomeCompare import GenomeCompare
 from cc3dtools.Lineage import MultiLineage, lineage_bfs
 
@@ -294,6 +294,10 @@ if SPEC_lookup( 'global' , 'sample' ):
 		for i, sampling in enumerate(sampling_strategies):
 
 			print2('Saving sample ' + str(i + 1) + ', method: '+ str( sampling[u'method'] ))
+			
+			# create a save directory
+			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
+			os.makedirs( current_dir )
 
 			try:
 				# sampling circles
@@ -307,13 +311,60 @@ if SPEC_lookup( 'global' , 'sample' ):
 					sample, plot_stack = pp.sample_square( return_plot_stack = True, **sampling[u'method_parameters'] )
 				elif sampling[u'method'] == u'rectangle':
 					sample, plot_stack = pp.sample_rectangle( return_plot_stack = True, **sampling[u'method_parameters'] )
+				elif sampling[u'method'] == u'eccentric':
+					eccentric_loaded = False
+					try:
+						results = pp.eccentric_sampling_strategy( **sampling[u'method_parameters'] )
+						eccentric_loaded = True
+					except Exception as e:
+						print2('(!) Unknown exception occured during eccentric sampling: '+str(e) )
+						raise e
+					if eccentric_loaded:
+						if u'pi_file' in sampling[u'save']:
+							with open( current_dir + '/eccentric_results.json', 'w') as f:
+								json.dump( results , f )
+						if u'pickle' in sampling[u'save']:
+							with open( current_dir + '/eccentric_results.picke' , 'w' ) as f:
+								pickle.dump( results , f )
+						if u'pi_plot' in sampling[u'save']:
+							try:
+								parsed = EccentricityProcessing.parse_results(results)
+
+								## S VS A
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_loglog.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_marker.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_S_vs_A(parsed, current_dir + '/S_vs_A_marker_loglog.png', marker=True, loglog=True)
+
+
+								## S vs A (scaled)
+
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_scaled.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_loglog_scaled.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_marker_scaled.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_S_vs_A_scaled(parsed, current_dir + '/S_vs_A_marker_loglog_scaled.png', marker=True, loglog=True)
+
+
+								## E vs A
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A.png', marker=False, loglog=False)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_loglog.png', marker=False, loglog=True)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_marker.png', marker=True, loglog=False)
+								EccentricityProcessing.plot_Epi_vs_A(parsed, current_dir + '/Epi_vs_A_marker_loglog.png', marker=True, loglog=True)
+
+								## S (scaled) and EPi vs A
+								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A.png', loglog=False)
+								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A_loglog.png', loglog=True)
+							except Exception as e:
+								print2('(!) Something hapened in EccentricityProcessing:' +str(e))							
+							pass
+
+					continue # skip this round.
+				#endif
+			#endtry
+
 			except Exception as e:
 				print2('(!) Unable to conduct a sample: '+str(e))
 				continue #skip to the next iteration
-
-			# create a save directory
-			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
-			os.makedirs( current_dir )
 
 			try:
 				analyzed = pp.sample_analyze(sample)
@@ -436,6 +487,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 		#endfor
 	except Exception as e:
 		print2('(!) Unable to load PostProcess and Genomes to allow sampling: \n'+str(e))
+		raise e
 #endif
 
 
