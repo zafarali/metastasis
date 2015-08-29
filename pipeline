@@ -369,7 +369,8 @@ if SPEC_lookup( 'global' , 'sample' ):
 			try:
 				analyzed = pp.sample_analyze(sample)
 			except Exception as e:
-				print2('(!) Unable to sample \n'+str(e))
+				print2('(!) Unable to analyze sample \n'+str(e))
+				continue #skip this round
 
 			if sampling[u'save']:
 				if u'tumor_plot' in sampling[u'save']:
