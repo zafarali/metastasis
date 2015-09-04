@@ -685,7 +685,7 @@ class PostProcess( object ):
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
 		a = lambda N, ecc: np.sqrt( ( 70.0 * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
-		b = lambda N : np.sqrt( ( 70.0 * N ) / np.pi )
+		b = lambda N, ecc: np.sqrt( ( ( 70.0 * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
 		
 		results = []
 
@@ -720,7 +720,7 @@ class PostProcess( object ):
 
 					radii_new = [
 						a( N , eccentricity ) ,
-						b( N )
+						b( N , eccentricity )
 					]
 					
 					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radii_new
@@ -1506,9 +1506,9 @@ class EccentricityProcessing(object):
 		
 		plt.figure()
 
-		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
 		labels = []
-		for index,item in enumerate(parsed.items()):
+		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
 			x = obj['areas']
 			y = obj['S']
@@ -1542,9 +1542,9 @@ class EccentricityProcessing(object):
 	
 	@staticmethod
 	def plot_Epi_vs_A(parsed, file_name, marker=False, loglog=False):
-		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
 		labels = []
-		for index,item in enumerate(parsed.items()):
+		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
 			x = obj['areas']
 			y = obj['E_of_pi']
@@ -1581,9 +1581,9 @@ class EccentricityProcessing(object):
 	def plot_S_vs_A_scaled(parsed, file_name, marker=False, loglog=False):
 		plt.figure()
 
-		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
 		labels = []
-		for index,item in enumerate(parsed.items()):
+		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
 			x = obj['areas']
 			y = np.array(obj['S'])
@@ -1624,9 +1624,9 @@ class EccentricityProcessing(object):
 
 		plt.figure()
 
-		color = plt.cm.rainbow(np.linspace(0,1,len(parsed)))
+		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
 		labels = []
-		for index,item in enumerate(parsed.items()):
+		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
 			x = obj['areas']
 			y = np.array(obj['S'])
