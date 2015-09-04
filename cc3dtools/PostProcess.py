@@ -645,7 +645,7 @@ class PostProcess( object ):
 
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
-	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False):
+	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False , cancer_only=False, percentage_cancer=False):
 		"""
 			samples according to the eccentricity strategy, WARN: this doesn't return a tuple of distance, cellids
 			@params:
@@ -671,8 +671,8 @@ class PostProcess( object ):
 		assert cell_steps < max_cells and cell_steps > 0 , 'cell_steps must be less than the max and greater than 0'
 		assert N_points > 0 , 'N_points must be greater than zero'
 
-		xs = ( np.random.random( size = N_points ) * 500 ) + 250
-		ys = ( np.random.random( size = N_points ) * 500 ) + 250
+		xs = ( np.random.random( size = N_points * 2 ) * 500 ) + 250
+		ys = ( np.random.random( size = N_points * 2 ) * 500 ) + 250
 
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
 		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
@@ -684,12 +684,19 @@ class PostProcess( object ):
 
 		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
 		
-		a = lambda N, ecc: np.sqrt( ( 70.0 * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
-		b = lambda N, ecc: np.sqrt( ( ( 70.0 * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
+
+		average_area = 70.0 #average area of a cell
+		a = lambda N, ecc: np.sqrt( ( average_area * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
+		b = lambda N, ecc: np.sqrt( ( ( average_area * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
 		
 		results = []
 
 		largeA_N = []
+
+		if cancer_only:
+			type_restrictions = type_restrictions[ 2 , 3 ]
+		else:
+			type_restrictions = type_restrictions[ 1 , 2 , 3 ]
 
 		for eccentricity in eccentiricies:
 			# results.append(  )
@@ -714,8 +721,14 @@ class PostProcess( object ):
 
 				large_sample = set()
 
-				for i in range( len( xs ) ):
+				selected_points = 0
 
+				for i in range( len( xs ) ):
+					# @TODO: think of a smarter way of doing this loop
+					if selected_points >= N_points:
+						break
+
+					
 					x, y, angle = xs[i], ys[i], RANDOM_ANGLES[i]
 
 					radii_new = [
@@ -727,10 +740,21 @@ class PostProcess( object ):
 
 					sample = []
 	
-					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = [ 1 , 2 , 3 ])
+					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = type_restrictions)
 					# order the sample by distance of each cell in the sample to the center of x,y
 					sample = self.order_cells_by_distance_to( sample , x , y )
 
+					if percentage_cancer:
+						## calculate percentage of cancer cells.
+
+						if self.calculate_percentage_of_cancer(sample) >= percentage_cancer:
+							selected_points += 1
+						else:
+							xs[i], ys[i] = ( np.random.random() * 500 ) + 250, ( np.random.random() * 500 ) + 250
+							#regenerate and skip
+							continue 
+
+					selected_points += 1
 
 					if N == 2000:
 						large_sample = large_sample.union( set( sample[:N-1] ) )
@@ -1041,6 +1065,27 @@ class PostProcess( object ):
 			return results, plot_stack
 		else:
 			return results
+
+
+	def calculate_percentage_of_cancer( self , sample , cancer_types = [ 2 , 3 ] , normal_types = [ 1 ]):
+		""" calculates the percentage of cancer cells in the sample """
+		
+		if len(sample) == 0:
+			return 0
+
+		cancer_count = 0
+		normal_count = 0
+		other_count = 0
+
+		for cell in sample:
+			if cell.type in cancer_types:
+				cancer_count += 1
+			elif cell.type in normal_types:
+				normal_count += 1
+			else:
+				other_count += 1
+
+		return cancer_count / float( normal_count + other_count + cancer_count )
 
 
 	def cluster_search( self , *args, **kwargs):
