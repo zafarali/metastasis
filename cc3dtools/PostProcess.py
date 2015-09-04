@@ -728,7 +728,7 @@ class PostProcess( object ):
 					if selected_points >= N_points:
 						break
 
-					
+
 					x, y, angle = xs[i], ys[i], RANDOM_ANGLES[i]
 
 					radii_new = [
@@ -1551,7 +1551,7 @@ class EccentricityProcessing(object):
 		
 		plt.figure()
 
-		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
+		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
 		labels = []
 		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
@@ -1587,7 +1587,7 @@ class EccentricityProcessing(object):
 	
 	@staticmethod
 	def plot_Epi_vs_A(parsed, file_name, marker=False, loglog=False):
-		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
+		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
 		labels = []
 		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
@@ -1626,7 +1626,7 @@ class EccentricityProcessing(object):
 	def plot_S_vs_A_scaled(parsed, file_name, marker=False, loglog=False):
 		plt.figure()
 
-		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
+		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
 		labels = []
 		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
@@ -1669,7 +1669,7 @@ class EccentricityProcessing(object):
 
 		plt.figure()
 
-		color = plt.cm.cool(np.linspace(0,1,len(parsed)))
+		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
 		labels = []
 		for index,item in enumerate( sorted( parsed.items() , key=lambda x: x[0] ) ):
 			ecc, obj = item
