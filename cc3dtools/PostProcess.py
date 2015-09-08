@@ -682,7 +682,7 @@ class PostProcess( object ):
 		if simple:
 			number_of_cells = [ 2000 ]
 
-		RANDOM_ANGLES = np.random.random( size = N_points ) * 2 * np.pi 
+		RANDOM_ANGLES = np.random.random( size = N_points * 2 ) * 2 * np.pi 
 		
 
 		average_area = 70.0 #average area of a cell
@@ -694,9 +694,9 @@ class PostProcess( object ):
 		largeA_N = []
 
 		if cancer_only:
-			type_restrictions = type_restrictions[ 2 , 3 ]
+			type_restrictions = [ 2 , 3 ]
 		else:
-			type_restrictions = type_restrictions[ 1 , 2 , 3 ]
+			type_restrictions = [ 1 , 2 , 3 ]
 
 		for eccentricity in eccentiricies:
 			# results.append(  )
@@ -715,6 +715,7 @@ class PostProcess( object ):
 
 				areas_segregating_sites_100 = []
 				areas_segregating_sites_50 = []
+				percentage_cancers = []
 				areas_mean_distances = []
 				n_skips = 0
 				areas = []
@@ -743,17 +744,20 @@ class PostProcess( object ):
 					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = type_restrictions)
 					# order the sample by distance of each cell in the sample to the center of x,y
 					sample = self.order_cells_by_distance_to( sample , x , y )
+					
+					this_percentage_cancer = self.calculate_percentage_of_cancer(sample)
 
 					if percentage_cancer:
 						## calculate percentage of cancer cells.
-
-						if self.calculate_percentage_of_cancer(sample) >= percentage_cancer:
-							selected_points += 1
+						if this_percentage_cancer >= percentage_cancer:
+							pass #meets condition, allow us to move through
 						else:
 							xs[i], ys[i] = ( np.random.random() * 500 ) + 250, ( np.random.random() * 500 ) + 250
 							#regenerate and skip
 							continue 
 
+
+					percentage_cancers.append(this_percentage_cancer)
 					selected_points += 1
 
 					if N == 2000:
@@ -806,6 +810,8 @@ class PostProcess( object ):
 					mutation_counts_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] , return_loci = True )
 					areas_segregating_sites_100.append( len( mutation_counts_100.keys() ) )
 
+
+
 				#endfor	
 
 				##################### MODIFIED TAJIMAS D ####################
@@ -855,10 +861,13 @@ class PostProcess( object ):
 				mean_areas_mean_distances = np.mean( areas_mean_distances )
 				mean_A = np.mean( areas )
 
+				mean_percentage_cancers = np.mean(percentage_cancers)
 
 				current_object['areas'].append( {
 					'area': mean_A ,
 					'N' : N, 
+					'N_points_selected:':selected_points,
+					'percentage_cancer':mean_percentage_cancers,
 					'subsample_100': {
 						'd': mean_areas_mean_distances,
 						'E_of_pi': mean_areas_E_of_pi_100,
@@ -1537,9 +1546,11 @@ class EccentricityProcessing(object):
 		parsed = {}
 		for result in results:
 			ecc = result['eccentricity']
-			parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': []}
+			parsed[ecc] = {'areas':[], 'S': [], 'E_of_pi':[], 'N': [], 'N_points_selected': [], 'percentage_cancer': []}
 			for area in result['areas']:
 				parsed[ecc]['N'].append(area['N'])
+				parsed[ecc]['percentage_cancer'].append(area['percentage_cancer'])
+				parsed[ecc]['N_points_selected'].append(area['N_points_selected'])
 				parsed[ecc]['areas'].append(area['area'])
 				parsed[ecc]['S'].append(area['subsample_100']['S'])
 				parsed[ecc]['E_of_pi'].append(area['subsample_100']['E_of_pi'])
