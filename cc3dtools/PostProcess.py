@@ -866,7 +866,7 @@ class PostProcess( object ):
 				current_object['areas'].append( {
 					'area': mean_A ,
 					'N' : N, 
-					'N_points_selected:':selected_points,
+					'N_points_selected':selected_points,
 					'percentage_cancer':mean_percentage_cancers,
 					'subsample_100': {
 						'd': mean_areas_mean_distances,
