@@ -1,7 +1,8 @@
 {
 	"sampling_strategies":[
 		{
-			"method": "eccentric0",
+			"method": "eccentric",
+			"name":"eccentric0",
 			"method_parameters":{
 				"N_points": 20,
 				"max_cells":500,
@@ -14,7 +15,8 @@
 			"save": ["pi_file", "pi_plot", "pickle"]
 		},
 		{
-			"method": "eccentric_only_cancer",
+			"method": "eccentric",
+			"name":"eccentric_cancer_only",
 			"method_parameters":{
 				"N_points": 20,
 				"max_cells":500,
@@ -28,7 +30,8 @@
 			"save": ["pi_file", "pi_plot", "pickle"]
 		},
 		{
-			"method": "eccentric_80_cancer",
+			"method": "eccentric",
+			"name":"eccentric_80",
 			"method_parameters":{
 				"N_points": 20,
 				"max_cells":500,
@@ -40,9 +43,10 @@
 				"lattice_size": 1000
 			},
 			"save": ["pi_file", "pi_plot", "pickle"]
-		}
+		},
 		{
-			"method": "eccentric_90_cancer",
+			"method": "eccentric",
+			"name":"eccentric_90",
 			"method_parameters":{
 				"N_points": 20,
 				"max_cells":500,

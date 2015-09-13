@@ -296,7 +296,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 			print2('Saving sample ' + str(i + 1) + ', method: '+ str( sampling[u'method'] ))
 			
 			# create a save directory
-			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'method'] )
+			current_dir = FILES['out'] + '/sample_' + str( i + 1 ) + '_' + str( sampling[u'name'] )
 			os.makedirs( current_dir )
 
 			try:
@@ -355,7 +355,8 @@ if SPEC_lookup( 'global' , 'sample' ):
 								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A.png', loglog=False)
 								EccentricityProcessing.plot_S_scaled_and_Epi_vs_A(parsed, current_dir + '/both_vs_A_loglog.png', loglog=True)
 							except Exception as e:
-								print2('(!) Something hapened in EccentricityProcessing:' +str(e))							
+								print2('(!) Something hapened in EccentricityProcessing:' +str(e))
+								continue							
 							pass
 
 					continue # skip this round.
