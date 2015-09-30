@@ -185,7 +185,7 @@ S P A C E P L O T
 if SPEC_lookup('global', 'spatial_plot'):
 	try:
 		sp.plot_all( hide_numbers = SPEC_lookup( 'spatial_plot', 'hide_numbers', False ) , \
-			save_fig = FILES['out']+'/spatial_plot.png' \
+			save_fig = FILES['out']+'/spatial_plot' \
 			)
 		print2('saved spatial_plot')
 	except Exception as e:
@@ -216,7 +216,7 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 				# cancer lineages only
 				print2('Number of cancer lineages: ' + str( len( ml.get_cancer_lineages() ) ) )
 				try:
-					sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial.png' )
+					sp.plot_selected( *member_lists, depth=1, save_fig = FILES['out'] + '/space_plot_by_initial' )
 					print2('saved space_plot_by_initial')
 				except Exception as e:
 					print2('(!) unable to save space_plot_by_initial \n'+str(e))
@@ -242,7 +242,7 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 						if SPEC_lookup('multilineage', 'color_by_branch'):
 							for depth, level in levels.items():
 								try:
-									sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth)+'.png' )
+									sp.plot_selected( *level , depth = depth , save_fig= current_dir + '/depth'+str(depth) )
 									print2('saved color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) )
 								except Exception as e:
 									print2('(!) unable to save color_by_branch for lineage: ' + str(i+1) + 'depth:' + str(depth) + '\n'+str(e) )
@@ -377,7 +377,7 @@ if SPEC_lookup( 'global' , 'sample' ):
 				if u'tumor_plot' in sampling[u'save']:
 					try:
 						sp.plot_all(plot_stack = plot_stack, hide_numbers=('spatial_plot', 'hide_numbers', False ), \
-							save_fig = current_dir+'/tumor_plot.png' )
+							save_fig = current_dir+'/tumor_plot' )
 						print2('Saved global tumor_plot')
 					except Exception as e:
 						print2('(!) Saving global tumor_plot failed: \n' + str(e) )
