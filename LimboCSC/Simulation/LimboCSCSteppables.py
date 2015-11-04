@@ -252,9 +252,10 @@ class MitosisSteppable(MitosisSteppableBase):
                 continue
 
 
-            if ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
+            if ( ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
             ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
-            cell.volume > GLOBAL['divideThreshold'] :
+            cell.volume > GLOBAL['divideThreshold'] and \
+            divisions_left[cell.id] != 0 ):
             # if cell.volume > 100:
                 cells_to_divide.append(cell)
                 
