@@ -55,6 +55,11 @@ LATTICE = {
     'center_y_min':545
 }
 
+
+phenotype_template = {
+    'advantageous': (0, 0.1 * 10**15 )
+}
+
 import time 
 time_info = '_'.join(time.asctime().split(' '))
 
