@@ -68,12 +68,40 @@ class Chromosome(object):
 		return new_mutated_loci
 		
 
-	def replicate(self, name):
+	def replicate(self, name = ''):
 		"""
 			Replicates the chromosome and returns a new Chromosome object
 			that is identical to the current one.
+			@params:
+				name: name of the new chromoesome, defaults to ''
+			@return:
+				returns a new Chromosome() that is identical to this.
 		"""
-		pass
+
+		replicated_chromosome = Chromosome ( mean_mutations = self.mean_mutations , chromosome_order = self.chromosome_order , name = name)
+
+		replicated_chromosome.mutated_loci = replicated_chromosome.mutated_loci.union( self.mutated_loci )
+
+		return replicated_chromosome
+
+	def get_mutated_loci(self):
+		"""
+			Returns a set() of loci that have been mutated
+		"""
+
+		return self.mutated_loci
+
+	def is_mutated(self, locus):
+		"""
+			Checks if a locus is mutated
+			@params:
+				locus: the position of the gene
+		"""
+
+		if isinstance( locus, Mutation):
+			return locus in self.mutated_loci
+
+		return Mutation(locus) in self.mutated_loci
 
 
 class Genome(object):
