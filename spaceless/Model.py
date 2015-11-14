@@ -105,28 +105,49 @@ class Chromosome(object):
 
 
 class Genome(object):
-	def __init__(self):
+	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericGenome'):
+		self.chromosomes = [ Chromosome(mean_mutations=mean_mutations, chromosome_order=chromosome_order,name=name+'_'+str(i)) for i in xrange(ploidy) ]
 		pass
 
 class Phenotype(object):
-	def __init__(self):
+	def __init__(self, phenotype_template):
 		pass
 
+class pDivisionFunction(object):
+	@staticmethod
+	def constant(p):
+		def const_fn(*args,**kwargs):
+			return p
+		return const_fn
+
 class Cell(object):
-	def __init__(self):
-		pass
+	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericCell', cell_type=1, phenotype_specs=False, p_division_function=pDivisionFunction.constant(0.5)):
+		self.cell_type = 1
+		self.genome = Genome(mean_mutations=mean_mutations, chromosome_order=chromosome_order, name=name+'_g', ploidy=ploidy)
+		self.phenotype = Phenotype( {} if not phenotype_specs else phenotype_specs )
+		self.p_division_function = p_division_function
+		self.attributes = {}
+
+	def p_division(self, **kwargs):
+		"""
+			Returns the probability of this cell dividing
+		"""
+		return self.p_division_function(self.attributes, **kwargs)
+		# pass
+
+class SelectionDistribution(object):
+	@staticmethod
+	def equal(cell_array):
+		raw_dist = np.array([ cell.p_division() for cell in cell_array ])
+		return raw_dist / float(np.sum(raw_dist))
+	@staticmethod
+	def cancer_only(cell_array):
+		raw_dist = np.array( [ cell.p_division() if cell.is_cancer() else 0 for cell in cell_array ] )
+		return raw_dist / float( np.sum(raw_dist) )
 
 class Simulator(object):
 	def __init__(self):
-
-		# create the first cell
-		self.cell_ids = [ Cell() ]
-		self.genomes = { 
-			0: Genome() 
-		}
-		self.phenotypes = { 
-			0: Phenotype() 
-		}
+		pass
 
 	def run(self, time_steps = 100):
 		"""
