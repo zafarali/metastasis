@@ -73,7 +73,7 @@ class Chromosome(object):
 			Replicates the chromosome and returns a new Chromosome object
 			that is identical to the current one.
 			@params:
-				name: name of the new chromoesome, defaults to ''
+				name: name of the new chromosome, defaults to ''
 			@return:
 				returns a new Chromosome() that is identical to this.
 		"""
@@ -108,6 +108,26 @@ class Genome(object):
 	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericGenome'):
 		self.chromosomes = [ Chromosome(mean_mutations=mean_mutations, chromosome_order=chromosome_order,name=name+'_'+str(i)) for i in xrange(ploidy) ]
 		pass
+	def mutate(self):
+		"""
+			Mutates all chromosomes in this genome
+		"""
+		for chromosome in self.chromosomes:
+			chromosome.mutate()
+
+	def replicate(self):
+
+		replicated_genome = Genome(mean_mutations=self.mean_mutations, chromosome_order=self.chromosome_order, ploidy=self.ploidy, name=self.name+'r' )
+
+		replicated_chromosomes = []
+
+		for chromosome in self.chromosomes:
+			replicated_chromosomes.append( chromosome.replicate() )
+
+		replicated_genome.chromosomes = replicated_chromosomes
+
+		return replicated_genome
+
 
 class Phenotype(object):
 	def __init__(self, phenotype_template):
