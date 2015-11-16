@@ -51,6 +51,10 @@ class Chromosome(object):
 		self.mean_mutations = mean_mutations
 		self.chromosome_order = chromosome_order
 		self.name = name
+	
+	@property
+	def mutation_rate(self):
+		return self.mean_mutations
 
 	def mutate(self, number_of_new_mutations = False):
 		"""
@@ -115,7 +119,7 @@ class Genome(object):
 		self.mean_mutations = mean_mutations
 		self.genome_order = chromosome_order
 		self.ploidy = ploidy
-		self.ploidy_porbability = 0 # for compatibility with save_genomes2
+		self.ploidy_probability = 0 # for compatibility with save_genomes2
 		self.name = name
 		pass
     
@@ -143,8 +147,8 @@ class Genome(object):
 
 		replicated_chromosomes = []
 
-		for chromosome in self.chromosomes:
-			replicated_chromosomes.append( chromosome.replicate() )
+		for cid, chromosome in enumerate(self.chromosomes):
+			replicated_chromosomes.append( chromosome.replicate(name=name+str(cid)) )
 
 		replicated_genome.chromosomes = replicated_chromosomes
 

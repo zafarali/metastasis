@@ -18,7 +18,7 @@ cancer_id = sim.create_cancer(update_mean_mutations=5)
 print 'cancer created: ',sim.cells[cancer_id].is_cancer()
 print 'cancer id: ',cancer_id
 
-sim.run(time_steps=100, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.75)
+# sim.run(time_steps=100, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.75)
 
 # print sim.cells
 # print sim.cells.items()[-1][1].cell_type
@@ -39,3 +39,8 @@ print sim.cells.values()[cancer_id].p_division()
 # print map()
 
 # print selected_cell.genome.get_mutated_loci()
+print selected_cell.genome.mutation_rate
+
+from cc3dtools.Genome import save_genomes2
+
+save_genomes2(map(lambda cell: cell.genome, sim.cells.values()))
