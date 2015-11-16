@@ -113,10 +113,16 @@ class Genome(object):
 	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericGenome'):
 		self.chromosomes = [ Chromosome(mean_mutations=mean_mutations, chromosome_order=chromosome_order,name=name+'_'+str(i)) for i in xrange(ploidy) ]
 		self.mean_mutations = mean_mutations
-		self.chromosome_order = chromosome_order
+		self.genome_order = chromosome_order
 		self.ploidy = ploidy
+		self.ploidy_porbability = 0 # for compatibility with save_genomes2
 		self.name = name
 		pass
+    
+	@property
+	def mutation_rate(self):
+		return self.mean_mutations
+
 	def mutate(self, number_of_new_mutations=False):
 		"""
 			Mutates all chromosomes in this genome
@@ -133,7 +139,7 @@ class Genome(object):
 		"""
 		if not name:
 			name = self.name
-		replicated_genome = Genome(mean_mutations=self.mean_mutations, chromosome_order=self.chromosome_order, ploidy=self.ploidy, name=name )
+		replicated_genome = Genome(mean_mutations=self.mean_mutations, chromosome_order=self.genome_order, ploidy=self.ploidy, name=name )
 
 		replicated_chromosomes = []
 
