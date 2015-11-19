@@ -236,11 +236,27 @@ class pDivisionFunction(object):
 		"""
 		def sig_fn(*args, **kwargs):
 			# let x = number of advantageous mutations 
-			x = float(args[1].get_counts()['advantageous'])
+			phenotype = kwargs.get('phenotype', {'advantageous':0})
+			x = float(args[2].get_counts()['advantageous'])
 			return 1. / ( 1 + np.exp( -( a*x - c ) ) )
 
 		return sig_fn
 
+	@staticmethod
+	def maturity(age, func=lambda: 0.5):
+		"""
+			Returns some division function iff the age of maturity has been reached.
+		"""
+		def to_return(*args, **kwargs):
+			current_time = kwargs.get('time', 0)
+			# dob = kwargs.get('dob', 0)
+			if current_time - args[0].dob() > age:
+				return func(*args, **kwargs)
+			else:
+				return 0
+				
+		return to_return
+		# raise NotImplementedError('This hasn\'t been implemented yet')
 
 # y_intercept = np.log( 1 / float( GLOBAL['_dV'] ) -1 )
 
@@ -260,15 +276,16 @@ class Cell(object):
 		self.name = name
 		self.parent_name = parent_name
 		self.generation = 0
+		self.date_of_birth = 0
 
 	def p_division(self, **kwargs):
 		"""
 			Returns the probability of this cell dividing
 		"""
-		return self.p_division_function(self.attributes, self.phenotype, **kwargs)
+		return self.p_division_function(self, self.attributes, phenotype=self.phenotype, **kwargs)
 		# pass
 
-	def mitosis(self, name=False):
+	def mitosis(self, name=False, dob=0):
 		"""
 			Conducts a mitosis event and returns a new child cell
 		"""
@@ -291,6 +308,7 @@ class Cell(object):
 		new_cell.parent_name = self.name
 		new_cell.generation = self.generation + 1
 		new_cell.cell_type = self.cell_type
+		new_cell.date_of_birth = dob
 		
 		return new_cell
 
@@ -300,19 +318,41 @@ class Cell(object):
 		"""
 		return self.cell_type in cancer_types
 
+	def dob(self):
+		"""	
+			Returns the date of birth of this cell.
+		"""
+		return self.date_of_birth
+
+	
 
 class SelectionDistribution(object):
 	@staticmethod
-	def equal(cell_array):
-		raw_dist = np.array([ cell.p_division() for cell in cell_array ])
+	def equal(cell_array, **kwargs):
+		"""
+			Returns probabilities of division for each cell normalized among 
+			the population
+		"""
+		raw_dist = np.array([ cell.p_division(**kwargs) for cell in cell_array ])
 		return raw_dist / float(np.sum(raw_dist))
 	@staticmethod
-	def cancer_only(cell_array):
-		raw_dist = np.array( [ cell.p_division() if cell.is_cancer() else 0 for cell in cell_array ] )
+	def cancer_only(cell_array, **kwargs):
+		"""
+			Returns normalized probabilities for cancer cells only
+		"""
+		raw_dist = np.array( [ cell.p_division(**kwargs) if cell.is_cancer() else 0 for cell in cell_array ] )
 		return raw_dist / float( np.sum(raw_dist) )
+	@staticmethod
+	def aged(cell_array, age=1, **kwargs):
+		"""
+			Returns a p_division() of choice if and only if the age is large enough.
+		"""
+		current_time = kwargs.get('time', 0)
+		raw_dist = np.array( [ cell.p_division(**kwargs) if time - cell.dob() > age else 0 for cell in cell_array ] )
+		return raw_dist / float( np.sum( raw_dist ) )
 
 
-DEFAULT_CELL_ATTRIBUTES = { 'mean_mutations':150, 'chromosome_order':15, 'ploidy':2 }
+DEFAULT_CELL_ATTRIBUTES = { 'mean_mutations':1, 'chromosome_order':2, 'ploidy':2 }
 class Simulator(object):
 	def __init__(self, n_cells=1, cell_attributes=DEFAULT_CELL_ATTRIBUTES, phenotypes=False ):
 		"""
@@ -347,7 +387,7 @@ class Simulator(object):
 			self.time += 1
 			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions )
 	
-	def create_cancer(self, update_mean_mutations=120):
+	def create_cancer(self, update_mean_mutations=2):
 		"""
 			Creates a cancerous cell
 		"""
@@ -360,6 +400,8 @@ class Simulator(object):
 
 		# introduce one mutation that caused it
 		selected_cancer_cell.genome.mutate(number_of_new_mutations=1)
+
+		# update the phenotype of the cell with a new mutation and a division function
 		selected_cancer_cell.genome.mean_mutations = update_mean_mutations
 		selected_cancer_cell.p_division_function = pDivisionFunction.sigmoid()
 
@@ -378,11 +420,14 @@ class Simulator(object):
 		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
+		# index of the biggest cell so far
 		biggest_index = max(idx)
 
+		# go over all cells that need to divide and then ask them to mitosis.
 		for cell in cellids_to_divide:
 			biggest_index = biggest_index+1
-			self.cells[biggest_index] = self.cells[cell].mitosis(name=str(biggest_index))
+			self.cells[biggest_index] = self.cells[cell].mitosis(name=str(biggest_index), dob=self.time)
 
 		# print('Took Step')
 		pass
+
