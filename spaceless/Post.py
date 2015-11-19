@@ -80,7 +80,6 @@ def number_of_segregating_sites ( allele_frequencies, *args, **kwargs ):
 			S : number of segregating sites
 
 	"""
-	# frequency_results , number_of_cells = allele_frequencies
 
 	if len( allele_frequencies ):
 		# 
@@ -109,3 +108,25 @@ def H(n):
 	# Euler-Mascheroni constant
 	gamma = 0.57721566490153286060651209008240243104215933593992
 	return gamma + np.log(n) + 0.5/n - 1./(12*n**2) + 1./(120*n**4)
+
+def get_stats(allele_frequencies, number_of_genomes):
+	"""
+		calculates statistics using allele_frequency distribution
+		@returns:
+			tuple containing:
+				Epi
+				S
+				SH
+				D
+	"""
+	S = number_of_segregating_sites(allele_frequencies, number_of_genomes, normalized=False)
+	SH = S / H(number_of_genomes-1)
+	Epi = proportion_of_pairwise_differences(allele_frequencies, number_of_genomes)
+	D = Epi-SH
+	return dict(Epi = Epi, S=S, SH=SH, D=D)
+
+	
+
+
+
+
