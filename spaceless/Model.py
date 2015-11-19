@@ -254,8 +254,21 @@ class pDivisionFunction(object):
 				return func(*args, **kwargs)
 			else:
 				return 0
-				
+
 		return to_return
+
+	def finite_divisions(number_of_divisions, func=lambda: 0.5):
+		"""	
+			Returns the finite division function, which returns zero
+			after cell.number_of_divisions() > number_of_divisions
+		"""
+		def to_return(*args, **kwargs):
+
+			if args[0].number_of_divisions() > number_of_divisions:
+				return 0
+			else:
+				return func(*args, **kwargs)
+
 		# raise NotImplementedError('This hasn\'t been implemented yet')
 
 # y_intercept = np.log( 1 / float( GLOBAL['_dV'] ) -1 )
@@ -267,7 +280,7 @@ class pDivisionFunction(object):
 
 
 class Cell(object):
-	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericCell', cell_type=1, phenotypes=False, p_division_function=pDivisionFunction.constant(0.5), parent_name=None):
+	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericCell', cell_type=1, phenotypes=False, p_division_function=pDivisionFunction.constant(0.5), parent_name=None, max_divisions=-1):
 		self.cell_type = cell_type
 		self.genome = Genome(mean_mutations=mean_mutations, chromosome_order=chromosome_order, name=name+'_g', ploidy=ploidy)
 		self.phenotype = Phenotype( {} if not phenotypes else phenotypes )
@@ -277,6 +290,8 @@ class Cell(object):
 		self.parent_name = parent_name
 		self.generation = 0
 		self.date_of_birth = 0
+		self.number_of_divisions = 0
+		self.max_divisions = max_divisions
 
 	def p_division(self, **kwargs):
 		"""
@@ -289,11 +304,37 @@ class Cell(object):
 		"""
 			Conducts a mitosis event and returns a new child cell
 		"""
+		if self.cell_type != 3 and self.max_divisions != -1 and self.number_of_divisions > self.max_divisions:
+			# we are not a CSC
+			# we do not have inifite division potential
+			# and the number of divisions this cell has taken is far more than
+			# the maximum number of divisions it can take.
+			return None
+
 		if not name:
 			name = self.name+'child'
 
+		self.number_of_divisions += 1
+
 		# create new cell
-		new_cell = Cell(name=name, cell_type =self.cell_type, p_division_function=self.p_division_function)
+		# first check if this is a CSC and :
+		if cell.cell_type == 3 and np.random.rand() > self.p_regeneration:
+			# we are a CSC and 
+			# since self.p_regeneration is small, we did not draw to create another
+			# CSC cell thus we create a regular cancer cell.
+			# Create a cancer cell cell that has a finite division potential.
+			# with some probability it creates another one of itself.
+			new_cell = Cell(name=name, cell_type = 2, p_division_function=pDivisionFunction.finite_divisions( self.max_divisions, func=self.p_division_function))
+		else:
+			# in all other cases, whether CSC or not
+			# we just replicate ourselves
+			new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
+
+
+		# pass down all traits from parent
+		# in the event of CSC, we do have a max divisions
+		# but since we are CSC it is bypassed in this code.
+		new_cell.max_divisions = self.max_divisions
 
 		# mutate and replicate the genome
 		new_mutations = self.genome.mutate()
@@ -324,7 +365,13 @@ class Cell(object):
 		"""
 		return self.date_of_birth
 
-	
+	def number_of_divisions(self):
+		"""
+			Returns the number of divisions from birth
+		"""
+		return self.number_of_divisions
+
+
 
 class SelectionDistribution(object):
 	@staticmethod
@@ -408,6 +455,11 @@ class Simulator(object):
 		self.attributes['cancer_created'] = True
 		return selected_cell_id
 
+	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.02, max_divisions=4):
+		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations)
+		self.cells[cancer_id].p_regeneration = p_regeneration
+		self.cells[cancer_id].max_divisions = max_divisions
+
 	def step(self, proportion_divide=0.5, stop_normal_divisions = False):
 
 		idx, celllist = zip(*self.cells.items())
@@ -425,9 +477,9 @@ class Simulator(object):
 
 		# go over all cells that need to divide and then ask them to mitosis.
 		for cell in cellids_to_divide:
-			biggest_index = biggest_index+1
-			self.cells[biggest_index] = self.cells[cell].mitosis(name=str(biggest_index), dob=self.time)
-
-		# print('Took Step')
-		pass
+			new_cell = self.cells[cell].mitosis(name=str(biggest_index), dob=self.time)
+			if new_cell is not None:
+				biggest_index = biggest_index+1
+				self.cells[biggest_index] = new_cell
+				
 
