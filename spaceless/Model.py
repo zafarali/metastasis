@@ -401,14 +401,13 @@ class SelectionDistribution(object):
 		"""
 			Returns a p_division() of choice if and only if the age is large enough.
 		"""
-		current_time = kwargs.get('time', 0)
-		raw_dist = np.array( [ cell.p_division(**kwargs) if cell.max_divisions != 0 and cell.number_of_divisions <= cell.max_divisions else 0 for cell in cell_array ] )
+		raw_dist = np.array( [ cell.p_division(**kwargs) if cell.max_divisions != 0 and ( cell.number_of_divisions <= cell.max_divisions or cell.max_divisions == -1) else 0 for cell in cell_array ] )
 		return raw_dist / float( np.sum( raw_dist ) )
 
 
-DEFAULT_CELL_ATTRIBUTES = { 'mean_mutations':1, 'chromosome_order':2, 'ploidy':2 }
+# DEFAULT_CELL_ATTRIBUTES = { 'mean_mutations':1, 'chromosome_order':2, 'ploidy':2 }
 class Simulator(object):
-	def __init__(self, n_cells=1, cell_attributes=DEFAULT_CELL_ATTRIBUTES, phenotypes=False ):
+	def __init__(self, n_cells=1, phenotypes=False, mean_mutations=1, chromosome_order=2, ploidy=2):
 		"""
 			Creates a simulation that can be scaled
 			@params:
@@ -418,7 +417,7 @@ class Simulator(object):
 
 		phenotypes = {} if not phenotypes else phenotypes
 
-		self.cells = dict( zip( cellindicies, [ Cell( name=str(i), phenotypes=phenotypes, **cell_attributes ) for i in cellindicies ]) )
+		self.cells = dict( zip( cellindicies, [ Cell( name=str(i), phenotypes=phenotypes, mean_mutations=mean_mutations, chromosome_order=chromosome_order, ploidy=ploidy) for i in cellindicies ]) )
 		self.attributes = {
 			'cancer_created': False
 		}
@@ -515,8 +514,22 @@ class Simulator(object):
 			returns the genomes of cells
 		"""
 
-		return map( lambda cell: cell.genome, self.cells.values())
+		return map( lambda cell: cell.genome, self.cells.values() )
+
+	def get_types(self):
+		"""
+			returns the types of cells
+		"""
+
+		return map( lambda cell: cell.cell_type, self.cells.values() )
 
 
+	def sort_genomes(self):
+		# for now use a hacky way of keeping strack of genomes.
+		genomes_splits = { 'normal':[], 'cancer':[] }
+		for cell in self.cells.values():
+			 genomes_splits[ 'normal' if cell.cell_type == 1 else 'cancer' ].append( cell.genome )
+			
+		self.sorted_genomes = genomes_splits
 
 

@@ -1,8 +1,8 @@
 from collections import Counter
 import numpy as np
+import random
 
-
-def frequency_analyze( genomes, subsample=0 ):
+def frequency_analyze( genomes, subsample = 0, threshold=0, cell_types=[] ):
 	"""
 		Returns the frequency distribution of mutations in the genomes
 		@params:
@@ -14,11 +14,29 @@ def frequency_analyze( genomes, subsample=0 ):
 	
 	subsample = min( len( genomes ), subsample ) if subsample > 0 else len( genomes )
 
-	idx = range( len( genomes ) )
 
-	selected_idx = np.random.choice( idx, size=subsample, replace=False )
+	iteration = 0
+	while True:
+		idx = range( len( genomes ) )
+		selected_idx = np.random.choice( idx, size=subsample, replace=False )
+		# assert threshold !=0 and cell_types
 
-	
+		if threshold == 0: break
+		if iteration > 10: 
+			print('Thresholding could not be met')
+			break
+
+		cell_types = np.array(cell_types)
+		selected_cell_types = cell_types[selected_idx]
+		cell_counts = Counter( selected_cell_types.tolist() )
+
+		normal = cell_counts[1]
+		cancer = cell_counts[2]
+
+		proportion_cancer = float(cancer) / float(normal + cancer)
+		iteration += 1
+		if proportion_cancer > threshold: break
+
 
 	for index in selected_idx:
 		mutated_loci = genomes[ index ].get_mutated_loci()
@@ -26,6 +44,7 @@ def frequency_analyze( genomes, subsample=0 ):
 
 	return Counter( [ v for _, v in counter.most_common() ] ), subsample
 
+# def types_
 
 def proportion_of_pairwise_differences ( allele_frequencies, number_of_genomes ):
 	"""
@@ -127,6 +146,32 @@ def get_stats(allele_frequencies, number_of_genomes):
 
 	
 
+def split_genomes(genomes, N, t=0):
+	"""
+		Generates a subsample of the genomes to 
+		@params:
+			genomes: genomes to shufffle and pick from:
+				format: {1: [genome1, genome2, ...], 2: [genome3, genome4, ...] }
 
+			N: the total number of genomes to return
+			t: the thresholding level (% of cancer genomes in the sample)
+	"""
+
+	# number of cancer cells wanted in the final sample
+	num_cancer_cells = int(N*t)
+
+
+	# pick the final subsample size based on the minimum
+	subsample_cancer = min( len(genomes['cancer']), num_cancer_cells )
+	cancer_genomes = random.sample(genomes['cancer'],  subsample_cancer)
+
+	# the number of normal cells need to make up the remaining cells
+	num_normal_cells = N-subsample_cancer
+
+	# pick the final subsample size based on the minimum.
+	subsample_normal = min(len(genomes['normal']), num_normal_cells)
+	normal_genomes = random.sample(genomes['normal'], subsample_normal)
+
+	return normal_genomes + cancer_genomes
 
 
