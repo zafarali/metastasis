@@ -295,8 +295,10 @@ class Cell(object):
 		self.generation = 0
 		self.date_of_birth = 0
 		self.number_of_divisions = 0
+		self.p_regeneration = 0.02
 		# self.ORIGINAL_DIVISON_FUNCTION = p_division_function
 		self.max_divisions = max_divisions
+		self.child_max_divisions = -1
 
 	def p_division(self, **kwargs):
 		"""
@@ -316,6 +318,7 @@ class Cell(object):
 			# we do not have inifite division potential
 			# and the number of divisions this cell has taken is far more than
 			# the maximum number of divisions it can take.
+			print('Max divisions reached')
 			return None
 
 		if not name:
@@ -323,25 +326,36 @@ class Cell(object):
 
 		self.number_of_divisions += 1
 
-		# create new cell
-		# first check if this is a CSC and :
-		if self.cell_type == 3 and np.random.rand() > self.p_regeneration:
-			# we are a CSC and 
-			# since self.p_regeneration is small, we did not draw to create another
-			# CSC cell thus we create a regular cancer cell.
-			# Create a cancer cell cell that has a finite division potential.
-			# with some probability it creates another one of itself.
-			new_cell = Cell(name=name, cell_type = 2, p_division_function=pDivisionFunction.finite_divisions( self.max_divisions, func=self.p_division_function))
-		else:
-			# in all other cases, whether CSC or not
-			# we just replicate ourselves
-			new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
 
+
+		if self.cell_type == 3:
+			r = np.random.rand()
+			print(r)
+			print(self.p_regeneration)
+			if r < self.p_regeneration:
+				# create CSC
+				print self.p_regeneration
+
+				print('---->>CREATING CSC')
+				# raw_input()
+				new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
+				new_cell.max_divisions = -1
+				new_cell.child_max_divisions = self.child_max_divisions
+				new_cell.p_regeneration = self.p_regeneration
+			else:
+				print('---->>CREATING REGULAR CANCER')
+				new_cell = Cell(name=name, cell_type = 2, p_division_function=self.p_division_function)
+				new_cell.max_divisions = self.child_max_divisions
+				# new_cell.p_regeneration = 0
+
+		else:
+			print('--->REPLICATING SELF')
+			new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
 
 		# pass down all traits from parent
 		# in the event of CSC, we do have a max divisions
 		# but since we are CSC it is bypassed in this code.
-		new_cell.max_divisions = self.max_divisions
+		
 
 		# mutate and replicate the genome
 		new_mutations = self.genome.mutate()
@@ -401,7 +415,13 @@ class SelectionDistribution(object):
 		"""
 			Returns a p_division() of choice if and only if the age is large enough.
 		"""
-		raw_dist = np.array( [ cell.p_division(**kwargs) if cell.max_divisions != 0 and ( cell.number_of_divisions <= cell.max_divisions or cell.max_divisions == -1) else 0 for cell in cell_array ] )
+
+		# only return a pribability if:
+		# (1) you have non-zero max divisions 
+		# (2) the number of divisions you have taken is less than the max divisions
+		# (3) OR you have inifite max divisions
+		raw_dist = np.array( [ cell.p_division(**kwargs) if (cell.number_of_divisions <= cell.max_divisions \
+			or cell.max_divisions == -1) and cell.is_cancer() else 0 for cell in cell_array ] )
 		return raw_dist / float( np.sum( raw_dist ) )
 
 
@@ -439,7 +459,7 @@ class Simulator(object):
 			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
 				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
 			self.time += 1
-			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions )
+			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , **kwargs)
 		end_time = time.time()
 
 		print('Simulation ended at '+str(time.ctime()))
@@ -466,23 +486,40 @@ class Simulator(object):
 		self.attributes['cancer_created'] = True
 		return selected_cell_id
 
-	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.02, max_divisions=4):
-		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations)
+	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.02, max_divisions=4, p_division_function=pDivisionFunction.sigmoid()):
+
+		"""
+			Creates a CSC in the simulation
+		"""
+		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 		self.cells[cancer_id].cell_type = 3
-		self.cells[cancer_id].p_regeneration = p_regeneration
-		self.cells[cancer_id].max_divisions = max_divisions
+		# print(str(self.cells[cancer_id].p_regeneration))
+		self.cells[cancer_id].p_regeneration = 0.02
+
+		# print(str(self.cells[cancer_id].p_regeneration))
+		# raw_input()
+		self.cells[cancer_id].max_divisions = -1
+		self.cells[cancer_id].child_max_divisions = 4
 
 		return cancer_id
 
-	def step(self, proportion_divide=0.5, stop_normal_divisions = False):
+	def step(self, proportion_divide=0.5, stop_normal_divisions = False, selection_distribution=None, age_mode=False, **kwargs):
 
 		idx, celllist = zip(*self.cells.items())
 
 		if stop_normal_divisions:
-			p_dist = SelectionDistribution.cancer_only(celllist)
-		else:	
-			p_dist = SelectionDistribution.equal(celllist)
+			if age_mode:
+				# print('AGE MODE ON')
+				selection_distribution = SelectionDistribution.aged
+			else:
+				selection_distribution = SelectionDistribution.cancer_only
 
+		else:	
+			selection_distribution = SelectionDistribution.equal
+
+		p_dist = selection_distribution(celllist)
+		if age_mode:
+			print np.unique(p_dist)
 		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
