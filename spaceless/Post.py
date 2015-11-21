@@ -142,7 +142,7 @@ def get_stats(allele_frequencies, number_of_genomes):
 	SH = S / H(number_of_genomes-1)
 	Epi = proportion_of_pairwise_differences(allele_frequencies, number_of_genomes)
 	D = Epi-SH
-	return dict(Epi = Epi, S=S, SH=SH, D=D)
+	return (S, SH, Epi, D)
 
 	
 
