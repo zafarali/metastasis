@@ -40,18 +40,18 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 	return sim
 
 def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120):
+	update_mean_mutations=120, p_division_function=pDivisionFunction.constant(0.5)):
 	
 
-	# phenotype_template = {
-	#     'advantageous': (0, 0.5 * 100 )
-	# }
+	phenotype_template = {
+	    'advantageous': (0, 0.5 * 100 )
+	}
 
-	sim = Simulator(mean_mutations=mean_mutations)
+	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template)
 
 	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
 
-	sim.create_CSC(update_mean_mutations=update_mean_mutations, p_division_function=pDivisionFunction.constant(0.5))
+	sim.create_CSC(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 
 	sim.run(time_steps=500, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6, age_mode=True)
 

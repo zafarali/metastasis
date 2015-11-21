@@ -295,10 +295,10 @@ class Cell(object):
 		self.generation = 0
 		self.date_of_birth = 0
 		self.number_of_divisions = 0
-		self.p_regeneration = 0.02
+		self.p_regeneration = 0.4
 		# self.ORIGINAL_DIVISON_FUNCTION = p_division_function
 		self.max_divisions = max_divisions
-		self.child_max_divisions = -1
+		self.child_max_divisions = 10
 
 	def p_division(self, **kwargs):
 		"""
@@ -312,17 +312,26 @@ class Cell(object):
 			Conducts a mitosis event and returns a new child cell
 		"""
 
+		# if not self.p_division_function.__name__ == 'const_fn':
+		# 	raw_input('not constant function')
+		# print('----')
+		# print self.number_of_divisions
+		# print self.max_divisions
+
+
 		# print 'Mitosis of cell_type:'+str(self.cell_type)
 		if self.cell_type != 3 and self.max_divisions != -1 and self.number_of_divisions > self.max_divisions:
 			# we are not a CSC
 			# we do not have inifite division potential
 			# and the number of divisions this cell has taken is far more than
 			# the maximum number of divisions it can take.
-			print('Max divisions reached')
+			# print('Max divisions reached')
 			return None
 
 		if not name:
 			name = self.name+'child'
+
+
 
 		self.number_of_divisions += 1
 
@@ -330,27 +339,28 @@ class Cell(object):
 
 		if self.cell_type == 3:
 			r = np.random.rand()
-			print(r)
-			print(self.p_regeneration)
+			# print(r)
+			# print(self.p_regeneration)
 			if r < self.p_regeneration:
 				# create CSC
-				print self.p_regeneration
+				# print self.p_regeneration
 
-				print('---->>CREATING CSC')
+				# print('---->>CREATING CSC')
 				# raw_input()
 				new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
 				new_cell.max_divisions = -1
 				new_cell.child_max_divisions = self.child_max_divisions
 				new_cell.p_regeneration = self.p_regeneration
 			else:
-				print('---->>CREATING REGULAR CANCER')
+				# print('---->>CREATING REGULAR CANCER')
 				new_cell = Cell(name=name, cell_type = 2, p_division_function=self.p_division_function)
 				new_cell.max_divisions = self.child_max_divisions
 				# new_cell.p_regeneration = 0
 
 		else:
-			print('--->REPLICATING SELF')
+			# print('--->REPLICATING SELF')
 			new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
+			new_cell.max_divisions = self.max_divisions
 
 		# pass down all traits from parent
 		# in the event of CSC, we do have a max divisions
@@ -369,7 +379,7 @@ class Cell(object):
 		new_cell.attributes = dict( self.attributes.items() )
 		new_cell.parent_name = self.name
 		new_cell.generation = self.generation + 1
-		new_cell.cell_type = self.cell_type
+		# new_cell.cell_type = self.cell_type
 		new_cell.date_of_birth = dob
 		
 		return new_cell
@@ -420,7 +430,7 @@ class SelectionDistribution(object):
 		# (1) you have non-zero max divisions 
 		# (2) the number of divisions you have taken is less than the max divisions
 		# (3) OR you have inifite max divisions
-		raw_dist = np.array( [ cell.p_division(**kwargs) if (cell.number_of_divisions <= cell.max_divisions \
+		raw_dist = np.array( [ cell.p_division(**kwargs) if (cell.number_of_divisions < cell.max_divisions \
 			or cell.max_divisions == -1) and cell.is_cancer() else 0 for cell in cell_array ] )
 		return raw_dist / float( np.sum( raw_dist ) )
 
@@ -499,7 +509,7 @@ class Simulator(object):
 		# print(str(self.cells[cancer_id].p_regeneration))
 		# raw_input()
 		self.cells[cancer_id].max_divisions = -1
-		self.cells[cancer_id].child_max_divisions = 4
+		self.cells[cancer_id].child_max_divisions = 10
 
 		return cancer_id
 
@@ -518,8 +528,7 @@ class Simulator(object):
 			selection_distribution = SelectionDistribution.equal
 
 		p_dist = selection_distribution(celllist)
-		if age_mode:
-			print np.unique(p_dist)
+
 		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
