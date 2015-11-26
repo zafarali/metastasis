@@ -4,7 +4,6 @@ import numpy as np
 
 def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 	update_mean_mutations=120, auto_reduce_magnitude=0.6):
-
 	
 	sim = Simulator(mean_mutations=mean_mutations)
 
@@ -12,7 +11,7 @@ def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim.create_cancer(update_mean_mutations=update_mean_mutations, p_division_function=pDivisionFunction.constant(0.5))
 
-	sim.run(time_steps=500, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
 
 	sim.sort_genomes()
 
@@ -33,7 +32,7 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim.create_cancer(update_mean_mutations=update_mean_mutations)
 
-	sim.run(time_steps=500, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
 
 	sim.sort_genomes()
 
@@ -54,7 +53,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim.create_CSC(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 
-	sim.run(time_steps=500, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6, age_mode=True)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6, age_mode=True)
 
 	sim.sort_genomes()
 
@@ -75,13 +74,13 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 			# repeated estimation
 			to_be_averaged = []
 			for r in range(0,20):
-				to_be_processed = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
+				to_be_processed, N_real = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
 				fa = Post.frequency_analyze(to_be_processed, subsample=subsample)
 				to_be_averaged.append(Post.get_stats(*fa))
 
 			avgd = tuple(np.mean(np.array(to_be_averaged), axis=0))
 
-			this_iteration = (iteration_magnitude*i, t) + avgd
+			this_iteration = (N_real, t) + avgd
 			stats.append(this_iteration)
 
 	return stats

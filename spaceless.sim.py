@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from spaceless import Toys
 from spaceless.Model import pDivisionFunction
 from spaceless import Post
@@ -49,10 +51,10 @@ else:
 	sim = builder(**arguments)
 	sim.sort_genomes()
 
-	file_name = './spaceless_data/'+MODEL_TYPE+'.'+INIT_STEPS+'.'+POST_STEPS+'.'+AUTO_REDUCE_MAGNITUDE+'.'+time.ctime()
+	file_name = './spaceless_data/'+MODEL_TYPE+'.'+str(INIT_STEPS)+'.'+str(POST_STEPS)+'.'+str(AUTO_REDUCE_MAGNITUDE)+'.'+time.ctime()
 
-	vals = regular_processor(sim, subsample=100, thresholds=[0.7,0.8,0.9,1])
-	print sim.sorted_genomes
+	vals = Toys.regular_processor(sim, subsample=100, thresholds=[0.1,0.5,0.8,0.9,1])
+	# print sim.sorted_genomes
 	print 'total cells:',len(sim.cells)
 	print vals
 
