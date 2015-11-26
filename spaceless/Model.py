@@ -402,7 +402,10 @@ class Cell(object):
 		"""
 		return self.number_of_divisions
 
+	def get_genome_stats(self):
 
+		number_of_mutated_loci = len(self.genome.get_mutated_loci())
+		return number_of_mutated_loci
 
 class SelectionDistribution(object):
 	@staticmethod

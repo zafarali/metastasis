@@ -157,6 +157,9 @@ def split_genomes(genomes, N, t=0):
 			t: the thresholding level (% of cancer genomes in the sample)
 	"""
 
+	if N > len(genomes['cancer']) + len(genomes['normal']):
+		return random.sample(genomes['cancer'] + gneomes['normal'], N)
+
 	# number of cancer cells wanted in the final sample
 	num_cancer_cells = int(N*t)
 

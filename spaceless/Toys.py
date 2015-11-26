@@ -3,7 +3,7 @@ from Model import Simulator, pDivisionFunction
 import numpy as np
 
 def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120):
+	update_mean_mutations=120, auto_reduce_magnitude=0.6):
 
 	
 	sim = Simulator(mean_mutations=mean_mutations)
@@ -20,7 +20,7 @@ def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120):
+	update_mean_mutations=120, auto_reduce_magnitude=0.6):
 
 
 	phenotype_template = {
@@ -29,7 +29,7 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template)
 
-	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.create_cancer(update_mean_mutations=update_mean_mutations)
 
@@ -40,7 +40,8 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 	return sim
 
 def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120, p_division_function=pDivisionFunction.constant(0.5)):
+	update_mean_mutations=120, p_division_function=pDivisionFunction.constant(0.5), \
+	auto_reduce_magnitude=0.6):
 	
 
 	phenotype_template = {
@@ -49,7 +50,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template)
 
-	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.create_CSC(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 
@@ -61,7 +62,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 
-def regular_processor(sorted_sim, max_iteration = 10, iteration_magnitude=10, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
+def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
 	stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D') ]
 
 	# sort genomes
