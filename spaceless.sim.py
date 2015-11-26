@@ -29,7 +29,7 @@ else:
 		'update_mean_mutations':25,
 		'init_steps': INIT_STEPS,
 		'post_steps': POST_STEPS,
-		'auto_reduce_mangitude': AUTO_REDUCE_MAGNITUDE
+		'auto_reduce_magnitude': AUTO_REDUCE_MAGNITUDE
 	}
 	print 'MODEL_TYPE',MODEL_TYPE
 	print 'ARGUMENTS',arguments
