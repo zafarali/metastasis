@@ -467,7 +467,7 @@ class Simulator(object):
 			if proportion_divide == 'auto_reduce' or auto_reduce:
 				magnitude = kwargs.get('auto_reduce_magnitude', 0.75)
 				auto_reduce = True
-				proportion_divide = 1./float(2 + magnitude*self.time)
+				proportion_divide = 1./float(2 + magnitude*self.time) + 0.02
 			num_cells_to_divide = int(proportion_divide*len(self.cells.values())+1)
 			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
 				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
