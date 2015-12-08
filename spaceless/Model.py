@@ -317,11 +317,15 @@ class Cell(object):
 		"""
 
 
-		if (self.cell_type != 3 or self.max_divisions != -1) and self.number_of_divisions > self.max_divisions:
+		if (self.cell_type != 3 and self.max_divisions != -1) \
+			and self.number_of_divisions > self.max_divisions:
 			# we are not a CSC
 			# NOR do we have inifite division potential
 			# and the number of divisions this cell has taken is more than
 			# the maximum number of divisions it can take.
+			print self.number_of_divisions
+			print self.max_divisions
+			print self.max_divisions != -1
 			return None
 
 		# we have paseed the initial conditions required for division, let's now divide!
