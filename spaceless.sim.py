@@ -27,8 +27,8 @@ else:
 	SAVE_DIR = str(sys.argv[5])
 
 	arguments = {
-		'mean_mutations': 1,
-		'update_mean_mutations':25,
+		'mean_mutations': 50,
+		'update_mean_mutations':120,
 		'init_steps': INIT_STEPS,
 		'post_steps': POST_STEPS,
 		'auto_reduce_magnitude': AUTO_REDUCE_MAGNITUDE
