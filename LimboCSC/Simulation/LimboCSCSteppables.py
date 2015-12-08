@@ -40,7 +40,7 @@ GLOBAL = {
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
     '_dV':0.2,
     'p_csc_csc': 0.95, #probability that a CSC remains a CSC
-    'p_tum_csc':  0.4 # probability that a tumor (child of CSC) becomes CSC
+    'p_tum_csc':  0.4, # probability that a tumor (child of CSC) becomes CSC
     'CSC_progeny_max_divisions':10 #maximum number of divisons the progeny of CSCs will have.
 }
 
