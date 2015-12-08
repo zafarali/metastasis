@@ -133,10 +133,7 @@ def get_stats(allele_frequencies, number_of_genomes):
 		calculates statistics using allele_frequency distribution
 		@returns:
 			tuple containing:
-				Epi
-				S
-				SH
-				D
+				S, SH, Epi, D
 	"""
 	S = number_of_segregating_sites(allele_frequencies, number_of_genomes, normalized=False)
 	SH = S / H(number_of_genomes-1)

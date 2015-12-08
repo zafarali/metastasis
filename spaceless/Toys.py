@@ -3,9 +3,9 @@ from Model import Simulator, pDivisionFunction
 import numpy as np
 
 def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120, auto_reduce_magnitude=0.6):
+	update_mean_mutations=120, auto_reduce_magnitude=0.6, chromosome_order=15):
 	
-	sim = Simulator(mean_mutations=mean_mutations)
+	sim = Simulator(mean_mutations=mean_mutations, chromosome_order=chromosome_order)
 
 	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
 
@@ -19,14 +19,14 @@ def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
-	update_mean_mutations=120, auto_reduce_magnitude=0.6):
+	update_mean_mutations=120, auto_reduce_magnitude=0.6, chromosome_order=15):
 
 
 	phenotype_template = {
-	    'advantageous': (0, 0.5 * 100 )
+	    'advantageous': (0, 0.5 * 10**chromosome_order )
 	}
 
-	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template)
+	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template, chromosome_order=chromosome_order)
 
 	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
@@ -40,14 +40,14 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 	update_mean_mutations=120, p_division_function=pDivisionFunction.constant(0.5), \
-	auto_reduce_magnitude=0.6):
+	auto_reduce_magnitude=0.6, chromosome_order=15):
 	
 
 	phenotype_template = {
-	    'advantageous': (0, 0.5 * 100 )
+	    'advantageous': (0, 0.5 * 10**chromosome_order )
 	}
 
-	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template)
+	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template, chromosome_order=chromosome_order)
 
 	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 

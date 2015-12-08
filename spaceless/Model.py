@@ -1,5 +1,6 @@
 import random
 import time
+import sys
 import numpy as np
 from collections import Counter
 
@@ -284,7 +285,9 @@ class pDivisionFunction(object):
 
 
 class Cell(object):
-	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericCell', cell_type=1, phenotypes=False, p_division_function=pDivisionFunction.constant(0.5), parent_name=None, max_divisions=-1):
+	def __init__(self, mean_mutations=0, chromosome_order=15, ploidy=2, name='GenericCell', \
+		cell_type=1, phenotypes=False, p_division_function=pDivisionFunction.constant(0.5), \
+		parent_name=None, max_divisions=-1):
 		self.cell_type = cell_type
 		self.genome = Genome(mean_mutations=mean_mutations, chromosome_order=chromosome_order, name=name+'_g', ploidy=ploidy)
 		self.phenotype = Phenotype( {} if not phenotypes else phenotypes )
@@ -295,7 +298,8 @@ class Cell(object):
 		self.generation = 0
 		self.date_of_birth = 0
 		self.number_of_divisions = 0
-		self.p_regeneration = 0.4
+		self.p_tum_csc = 0.4
+		self.p_csc_tum = 0.05
 		# self.ORIGINAL_DIVISON_FUNCTION = p_division_function
 		self.max_divisions = max_divisions
 		self.child_max_divisions = 10
@@ -312,74 +316,63 @@ class Cell(object):
 			Conducts a mitosis event and returns a new child cell
 		"""
 
-		# if not self.p_division_function.__name__ == 'const_fn':
-		# 	raw_input('not constant function')
-		# print('----')
-		# print self.number_of_divisions
-		# print self.max_divisions
 
-
-		# print 'Mitosis of cell_type:'+str(self.cell_type)
-		if self.cell_type != 3 and self.max_divisions != -1 and self.number_of_divisions > self.max_divisions:
+		if (self.cell_type != 3 or self.max_divisions != -1) and self.number_of_divisions > self.max_divisions:
 			# we are not a CSC
-			# we do not have inifite division potential
-			# and the number of divisions this cell has taken is far more than
+			# NOR do we have inifite division potential
+			# and the number of divisions this cell has taken is more than
 			# the maximum number of divisions it can take.
-			# print('Max divisions reached')
 			return None
 
+		# we have paseed the initial conditions required for division, let's now divide!
 		if not name:
 			name = self.name+'child'
 
-
-
 		self.number_of_divisions += 1
 
+		new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
+		new_cell.max_divisions = self.max_divisions
+		new_cell.number_of_divisions = self.number_of_divisions
 
 
-		if self.cell_type == 3:
+		if self.cell_type == 3: # we are a CSC
 			r = np.random.rand()
-			# print(r)
-			# print(self.p_regeneration)
-			if r < self.p_regeneration:
-				# create CSC
-				# print self.p_regeneration
-
-				# print('---->>CREATING CSC')
-				# raw_input()
-				new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
+			
+			if r < self.p_tum_csc:
+				# tumor progeny spontaneously becomes a CSC!!
 				new_cell.max_divisions = -1
 				new_cell.child_max_divisions = self.child_max_divisions
-				new_cell.p_regeneration = self.p_regeneration
+				new_cell.p_csc_tum = self.p_csc_tum
+				new_cell.p_tum_csc = self.p_tum_csc
+
 			else:
-				# print('---->>CREATING REGULAR CANCER')
-				new_cell = Cell(name=name, cell_type = 2, p_division_function=self.p_division_function)
-				new_cell.max_divisions = self.child_max_divisions
-				# new_cell.p_regeneration = 0
+				# tumorcell must remain a tumor cell
+				new_cell.cell_type = 2 # change it's type back to 2
+				new_cell.max_divisions = self.child_max_divisions 
 
-		else:
-			# print('--->REPLICATING SELF')
-			new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
-			new_cell.max_divisions = self.max_divisions
-
-		# pass down all traits from parent
-		# in the event of CSC, we do have a max divisions
-		# but since we are CSC it is bypassed in this code.
-		
+			r = np.random.rand() # regenerate a new random number for independence
+			if r < self.p_csc_tum: # lost the capacity to be CSC any more
+				self.cell_type = 2
+				self.max_divisions = 10
+		#endif (CSC division logic)
 
 		# mutate and replicate the genome
 		new_mutations = self.genome.mutate()
 
 		self.phenotype.evaluate(new_mutations)
 
+		# pass down these things to the progeny
 		new_cell.genome = self.genome.replicate(name=name+'g')
-
-		# replicating other things to pass down.
 		new_cell.phenotype = self.phenotype.replicate()
 		new_cell.attributes = dict( self.attributes.items() )
+
+		# allows for tracing back of parents
 		new_cell.parent_name = self.name
+
+		# which generation this cell belongs to
 		new_cell.generation = self.generation + 1
-		# new_cell.cell_type = self.cell_type
+
+		# the dae of irth of this cell
 		new_cell.date_of_birth = dob
 		
 		return new_cell
@@ -464,19 +457,25 @@ class Simulator(object):
 		print('Simulation started at '+str(time.ctime()))
 		start_time = time.time()
 		for i in xrange(time_steps):
+			# implements an auto reducing proportion to ensure that we don't
+			# just select the whole population again and again
 			if proportion_divide == 'auto_reduce' or auto_reduce:
 				magnitude = kwargs.get('auto_reduce_magnitude', 0.75)
 				auto_reduce = True
 				proportion_divide = 1./float(2 + magnitude*self.time) + 0.02
+
 			num_cells_to_divide = int(proportion_divide*len(self.cells.values())+1)
+
 			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
 				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
 			self.time += 1
 			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , **kwargs)
+			sys.stdout.flush()
 		end_time = time.time()
 
 		print('Simulation ended at '+str(time.ctime()))
 		print('Total time taken:'+str((end_time - start_time))+'seconds')
+		sys.stdout.flush()
 
 	def create_cancer(self, update_mean_mutations=2, p_division_function=pDivisionFunction.sigmoid()):
 		"""
@@ -499,7 +498,7 @@ class Simulator(object):
 		self.attributes['cancer_created'] = True
 		return selected_cell_id
 
-	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.02, max_divisions=4, p_division_function=pDivisionFunction.sigmoid()):
+	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.4, max_divisions=4, p_division_function=pDivisionFunction.sigmoid()):
 
 		"""
 			Creates a CSC in the simulation
@@ -507,7 +506,7 @@ class Simulator(object):
 		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 		self.cells[cancer_id].cell_type = 3
 		# print(str(self.cells[cancer_id].p_regeneration))
-		self.cells[cancer_id].p_regeneration = 0.02
+		self.cells[cancer_id].p_tum_csc = 0.4
 
 		# print(str(self.cells[cancer_id].p_regeneration))
 		# raw_input()
