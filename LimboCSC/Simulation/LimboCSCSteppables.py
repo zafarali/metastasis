@@ -294,9 +294,13 @@ class MitosisSteppable(MitosisSteppableBase):
         #     childCell.type = self.CANCER1
         #     childCell.targetVolume = 40
 
+        print 'updated target volume'
         if simulate_flag:
             genomes[parentCell.id].mutate()
             genomes[childCell.id] = genomes[parentCell.id].replicate( name = childCell.id )
+
+        print 'created new genome'
+
 
         childCell.lambdaVolume = 1.5
         parentCell.lambdaVolume = 1.5
@@ -305,17 +309,26 @@ class MitosisSteppable(MitosisSteppableBase):
         # else:
         #     childCell.type = parentCell.type
 
+        print 'updated lambda volume'
+
         if parentCell.type == self.NORMAL:
+            print 'normal cell'
             # we do not need to do any updating here since we already decreased the number of divisions
             # for the parent.
+            print 'parent divisions left:'
+            print divisions_left[parentCell.id]
             divisions_left[childCell.id] = divisions_left[parentCell.id]
+
             childCell.type = parentCell.type
+            print 'updated cell type'
 
         elif parentCell.type == self.CANCER1:
             # parent is a regular tumor cell ==> child is also a tumor cell
             childCell.type = self.CANCER1
 
             # we do not need to -1 here because we already decreased it for the parent
+            print 'parent divisions left:'
+            print divisions_left[parentCell.id]
             divisions_left[childCell.id] = divisions_left[parentCell.id]
 
         elif parentCell.type == self.CANCER2:
@@ -323,18 +336,23 @@ class MitosisSteppable(MitosisSteppableBase):
 
             # the default mode for every CSC division event
             childCell.type = self.CANCER1 # child is a regular tumor
+
+            print 'print global csc progeny', GLOBAL['CSC_progeny_max_divisions']
+
             divisions_left[childCell.id] = GLOBAL['CSC_progeny_max_divisions']
             
             r = np.random.rand()
 
             if r < 1 - GLOBAL['p_csc_csc']:
+                print 'CSC-->TUM (spontaenous loss of CSC'
                 # CSC has spontaenously lost its capability of unlimited reproduction
                 parentCell.type = self.CANCER1
-                division_events[parentCell.id] = GLOBAL['CSC_progeny_max_divisions']
+                divisions_left[parentCell.id] = GLOBAL['CSC_progeny_max_divisions']
 
             r = np.random.rand()
 
-            if r < GLOBAL['tum_csc']:
+            if r < GLOBAL['p_tum_csc']:
+                print 'CSC gave birth to another CSC'
                 # the progeny of the CSC will (spontaneously) become a  CSC instead of a cancer
                 childCell.type = self.CANCER2
                 divisions_left[childCell.id] = -1
