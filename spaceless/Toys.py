@@ -69,7 +69,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 	# obtain genomes
 	g = sorted_sim.sorted_genomes
 
-	for i in range(1,max_iteration):
+	for i in range(1,max_iteration,10):
 		for t in thresholds:
 			# repeated estimation
 			to_be_averaged = []
@@ -77,12 +77,12 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 				to_be_processed, N_real = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
 				fa = Post.frequency_analyze(to_be_processed, subsample=subsample)
 				to_be_averaged.append(Post.get_stats(*fa))
-
+			print '->Completed processing a threshold=',t
 			avgd = tuple(np.mean(np.array(to_be_averaged), axis=0))
 
 			this_iteration = (N_real, t) + avgd
 			stats.append(this_iteration)
-
+		print 'Completed sampling of N=',iteration_magnitude*i
 	return stats
 
 
