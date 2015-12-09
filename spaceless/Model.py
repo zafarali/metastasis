@@ -466,7 +466,7 @@ class Simulator(object):
 			if proportion_divide == 'auto_reduce' or auto_reduce:
 				magnitude = kwargs.get('auto_reduce_magnitude', 0.75)
 				auto_reduce = True
-				proportion_divide = 1./float(2 + magnitude*self.time) + 0.02
+				proportion_divide = 1./float(2 + magnitude*self.time) 
 
 			num_cells_to_divide = int(proportion_divide*len(self.cells.values())+1)
 

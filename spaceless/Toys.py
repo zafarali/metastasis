@@ -73,7 +73,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 		for t in thresholds:
 			# repeated estimation
 			to_be_averaged = []
-			for r in range(0,20):
+			for r in range(0,10):
 				to_be_processed, N_real = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
 				fa = Post.frequency_analyze(to_be_processed, subsample=subsample)
 				to_be_averaged.append(Post.get_stats(*fa))
