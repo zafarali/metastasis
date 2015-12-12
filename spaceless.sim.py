@@ -53,7 +53,7 @@ else:
 
 	file_name = './spaceless_data/'+MODEL_TYPE+'.'+str(INIT_STEPS)+'.'+str(POST_STEPS)+'.'+str(AUTO_REDUCE_MAGNITUDE)+'.'+time.ctime()
 
-	vals = Toys.regular_processor(sim, subsample=100, max_iteration=150, iteration_magnitude=100, thresholds=[0, 0.00001])
+	vals = Toys.regular_processor(sim, subsample=100, max_iteration=150, iteration_magnitude=100, thresholds=[0, 0.00001, 0.2, 0.4, 0.6, 0.8, 0.9, 1])
 	# print sim.sorted_genomes
 	print 'total cells:',len(sim.cells)
 	print '-----'

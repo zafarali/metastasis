@@ -164,8 +164,10 @@ def split_genomes(genomes, N, t=0):
 	# pick the final subsample size based on the minimum.
 	subsample_normal = min(len(genomes['normal']), num_normal_cells)
 	normal_genomes = random.sample(genomes['normal'], subsample_normal)
-
-	proportion_cancer =  len(cancer_genomes) / float(len(normal_genomes))
+	if t != 1:
+		proportion_cancer =  len(cancer_genomes) / float(len(normal_genomes))
+	else:
+		proportion_cancer = 1.0
 	genomes_to_return = normal_genomes + cancer_genomes
 	return ( genomes_to_return , len(genomes_to_return), proportion_cancer )
 
