@@ -53,9 +53,10 @@ else:
 
 	file_name = './spaceless_data/'+MODEL_TYPE+'.'+str(INIT_STEPS)+'.'+str(POST_STEPS)+'.'+str(AUTO_REDUCE_MAGNITUDE)+'.'+time.ctime()
 
-	vals = Toys.regular_processor(sim, subsample=100, max_iteration=150, iteration_magnitude=100, thresholds=[0.1,0.4,0.8,1])
+	vals = Toys.regular_processor(sim, subsample=100, max_iteration=150, iteration_magnitude=100, thresholds=[0, 0.00001])
 	# print sim.sorted_genomes
 	print 'total cells:',len(sim.cells)
+	print '-----'
 	print vals
 
 	with open(file_name+'stats.csv', 'w') as f:

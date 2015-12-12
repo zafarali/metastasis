@@ -4,6 +4,8 @@ import sys
 import numpy as np
 from collections import Counter
 
+np.random.seed(123)
+
 class Mutation(object):
 	def __init__(self, locus):
 		self.locus = int( locus )

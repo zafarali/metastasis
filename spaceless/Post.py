@@ -1,14 +1,19 @@
 from collections import Counter
 import numpy as np
 import random
-
-def frequency_analyze( genomes, subsample = 0, threshold=0, cell_types=[] ):
+np.random.seed(123)
+random.seed(123)
+def frequency_analyze( genomes, subsample = 0, threshold = None):
 	"""
 		Returns the frequency distribution of mutations in the genomes
 		@params:
 			genomes: the genomes we wish to analyze
 			subsample: the random subsample size of genomes we wish to pick
 	"""
+
+	if threshold is not None:
+		raise ValueError('Thresholding must be done before frequency_analyze')
+
 	counter = Counter()
 	# create a random sample
 	
@@ -16,26 +21,10 @@ def frequency_analyze( genomes, subsample = 0, threshold=0, cell_types=[] ):
 
 
 	iteration = 0
-	while True:
-		idx = range( len( genomes ) )
-		selected_idx = np.random.choice( idx, size=subsample, replace=False )
-		# assert threshold !=0 and cell_types
 
-		if threshold == 0: break
-		if iteration > 10: 
-			print('Thresholding could not be met')
-			break
 
-		cell_types = np.array(cell_types)
-		selected_cell_types = cell_types[selected_idx]
-		cell_counts = Counter( selected_cell_types.tolist() )
-
-		normal = cell_counts[1]
-		cancer = cell_counts[2]
-
-		proportion_cancer = float(cancer) / float(normal + cancer)
-		iteration += 1
-		if proportion_cancer > threshold: break
+	idx = range( len( genomes ) )
+	selected_idx = np.random.choice( idx, size=subsample, replace=False )
 
 
 	for index in selected_idx:
@@ -156,7 +145,8 @@ def split_genomes(genomes, N, t=0):
 	available_sample_size = len(genomes['cancer'])+len(genomes['normal'])
 
 	if N > available_sample_size:
-		return random.sample(genomes['cancer'] + genomes['normal'], available_sample_size), available_sample_size
+		proportion_cancer =  len(genomes['cancer']) / float(len(genomes['normal']))
+		return random.sample(genomes['cancer'] + genomes['normal'], available_sample_size), available_sample_size, proportion_cancer
 
 	# number of cancer cells wanted in the final sample
 	num_cancer_cells = int(N*t)
@@ -173,6 +163,8 @@ def split_genomes(genomes, N, t=0):
 	subsample_normal = min(len(genomes['normal']), num_normal_cells)
 	normal_genomes = random.sample(genomes['normal'], subsample_normal)
 
-	return normal_genomes + cancer_genomes, len(normal_genomes + cancer_genomes)
+	proportion_cancer =  len(cancer_genomes) / float(len(normal_genomes))
+	genomes_to_return = normal_genomes + cancer_genomes
+	return ( genomes_to_return , len(genomes_to_return), proportion_cancer )
 
 

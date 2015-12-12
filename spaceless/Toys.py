@@ -62,7 +62,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
-	stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D') ]
+	stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', 'sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
 
 	# sort genomes
 
@@ -74,15 +74,18 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 			# repeated estimation
 			to_be_averaged = []
 			for r in range(0,10):
-				to_be_processed, N_real = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
+				to_be_processed, N_real, proportion_cancer = Post.split_genomes(g, N=iteration_magnitude*i, t=t)
 				fa = Post.frequency_analyze(to_be_processed, subsample=subsample)
-				to_be_averaged.append(Post.get_stats(*fa))
+				to_be_averaged.append( Post.get_stats(*fa) + ( proportion_cancer, ) )
+				# to_be_averaged.append(proportion_cancer)
 			print '->Completed processing a threshold=',t
 			avgd = tuple(np.mean(np.array(to_be_averaged), axis=0))
+			sds = tuple(np.std(np.array(to_be_averaged), axis=0))
 
-			this_iteration = (N_real, t) + avgd
+			this_iteration = (N_real, t) + avgd + sds
 			stats.append(this_iteration)
 		print 'Completed sampling of N=',iteration_magnitude*i
+	print 'regular_processor successfully completed'
 	return stats
 
 
