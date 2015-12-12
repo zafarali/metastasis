@@ -145,19 +145,21 @@ def split_genomes(genomes, N, t=0):
 	available_sample_size = len(genomes['cancer'])+len(genomes['normal'])
 
 	if N > available_sample_size:
-		proportion_cancer =  len(genomes['cancer']) / float(len(genomes['normal']))
-		return random.sample(genomes['cancer'] + genomes['normal'], available_sample_size), available_sample_size, proportion_cancer
+		print('Not enough available samples to obtain ', N,' from ', available_sample_size)
+		N = available_sample_size
+		print('Setting N=',available_sample_size)
+
 
 	# number of cancer cells wanted in the final sample
 	num_cancer_cells = int(N*t)
-
-
 	# pick the final subsample size based on the minimum
 	subsample_cancer = min( len(genomes['cancer']), num_cancer_cells )
+	num_normal_cells = N-subsample_cancer
+
+
 	cancer_genomes = random.sample(genomes['cancer'],  subsample_cancer)
 
 	# the number of normal cells need to make up the remaining cells
-	num_normal_cells = N-subsample_cancer
 
 	# pick the final subsample size based on the minimum.
 	subsample_normal = min(len(genomes['normal']), num_normal_cells)
