@@ -536,6 +536,10 @@ class Simulator(object):
 			selection_distribution = SelectionDistribution.equal
 
 		p_dist = selection_distribution(celllist)
+		unique_p = np.unique(p_dist)
+		print len(unique_p)
+		print 'non-zero min:',unique_p[1]
+		print 'max:',unique_p[-1]
 
 		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
