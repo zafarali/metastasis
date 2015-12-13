@@ -5,14 +5,16 @@ import time
 
 def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 	update_mean_mutations=120, auto_reduce_magnitude=0.6, chromosome_order=15):
-	
+	# phenotype_template = {
+	#     'advantageous': (0, 0.5 * 10**chromosome_order )
+	# }
 	sim = Simulator(mean_mutations=mean_mutations, chromosome_order=chromosome_order)
 
-	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=init_steps, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.create_cancer(update_mean_mutations=update_mean_mutations, p_division_function=pDivisionFunction.constant(0.5))
 
-	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.sort_genomes()
 
@@ -33,7 +35,7 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim.create_cancer(update_mean_mutations=update_mean_mutations)
 
-	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.sort_genomes()
 
@@ -54,7 +56,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 	sim.create_CSC(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
 
-	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=0.6)
+	sim.run(time_steps=post_steps, stop_normal_divisions=True, proportion_divide='auto_reduce', auto_reduce_magnitude=auto_reduce_magnitude)
 
 	sim.sort_genomes()
 

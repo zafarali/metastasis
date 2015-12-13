@@ -326,7 +326,7 @@ class Cell(object):
 			and self.number_of_divisions > self.max_divisions
 
 		# print 'skip criterion met?', skip_criterion
-		
+
 		if (self.cell_type != 3 and self.max_divisions != -1) \
 			and self.number_of_divisions > self.max_divisions:
 			
@@ -489,7 +489,7 @@ class Simulator(object):
 		end_time = time.time()
 
 		print('Simulation ended at '+str(time.ctime()))
-		print('Total time taken:'+str((end_time - start_time))+'seconds')
+		print('Total time taken:'+str((time.time() - start_time))+'seconds')
 		sys.stdout.flush()
 
 	def create_cancer(self, update_mean_mutations=2, p_division_function=pDivisionFunction.sigmoid()):
