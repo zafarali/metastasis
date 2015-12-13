@@ -317,17 +317,24 @@ class Cell(object):
 		"""
 			Conducts a mitosis event and returns a new child cell
 		"""
+		# print '----'
+		# print 'number_of_divisions',self.number_of_divisions
+		# print 'max_divisions:',self.max_divisions
+		# print 'infinite divisions?',self.max_divisions == -1
+		# print 'cell_type:',self.cell_type
+		skip_criterion = (self.cell_type != 3 and self.max_divisions != -1) \
+			and self.number_of_divisions > self.max_divisions
 
-
+		# print 'skip criterion met?', skip_criterion
+		
 		if (self.cell_type != 3 and self.max_divisions != -1) \
 			and self.number_of_divisions > self.max_divisions:
+			
 			# we are not a CSC
 			# NOR do we have inifite division potential
 			# and the number of divisions this cell has taken is more than
 			# the maximum number of divisions it can take.
-			print self.number_of_divisions
-			print self.max_divisions
-			print self.max_divisions != -1
+
 			return None
 
 		# we have paseed the initial conditions required for division, let's now divide!
@@ -348,6 +355,7 @@ class Cell(object):
 				# tumor progeny spontaneously becomes a CSC!!
 				new_cell.max_divisions = -1
 				new_cell.child_max_divisions = self.child_max_divisions
+				new_cell.number_of_divisions = 0
 				new_cell.p_csc_tum = self.p_csc_tum
 				new_cell.p_tum_csc = self.p_tum_csc
 
@@ -355,6 +363,7 @@ class Cell(object):
 				# tumorcell must remain a tumor cell
 				new_cell.cell_type = 2 # change it's type back to 2
 				new_cell.max_divisions = self.child_max_divisions 
+				new_cell.number_of_divisions = 0
 
 			r = np.random.rand() # regenerate a new random number for independence
 			if r < self.p_csc_tum: # lost the capacity to be CSC any more
@@ -531,7 +540,6 @@ class Simulator(object):
 				selection_distribution = SelectionDistribution.aged
 			else:
 				selection_distribution = SelectionDistribution.cancer_only
-
 		else:	
 			selection_distribution = SelectionDistribution.equal
 
