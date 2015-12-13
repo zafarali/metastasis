@@ -545,7 +545,8 @@ class Simulator(object):
 		else:
 			print 'only unique element:',unique_p
 
-		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
+		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0])-1)
+		pick_size = pick_size if pick_size > 0 else 0
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
 		# index of the biggest cell so far
