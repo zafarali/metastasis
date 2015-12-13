@@ -537,9 +537,13 @@ class Simulator(object):
 
 		p_dist = selection_distribution(celllist)
 		unique_p = np.unique(p_dist)
-		print len(unique_p)
-		print 'non-zero min:',unique_p[1]
-		print 'max:',unique_p[-1]
+
+		if len(unique_p)>1:
+			print 'total unique elements:', len(unique_p)
+			print 'non-zero min:',unique_p[1]
+			print 'max:',unique_p[-1]
+		else:
+			print 'only unique element:',unique_p
 
 		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]) )
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
