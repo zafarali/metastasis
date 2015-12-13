@@ -91,7 +91,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 			stats.append(this_iteration)
 		print 'Completed sampling of N=',iteration_magnitude*i
 	print('regular_processor successfully completed at '+str(time.ctime()))
-	print('Total time taken:'+str((end_time - start_time))+'seconds')
+	print('Total time taken:'+str((time.time() - start_time))+'seconds')
 	return stats
 
 
