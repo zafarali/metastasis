@@ -26,7 +26,7 @@ def build_MD(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 	phenotype_template = {
-	    'advantageous': (0, 0.5 * 10**chromosome_order )
+	    'advantageous': (0, 0.1 * 10**chromosome_order )
 	}
 
 	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template, chromosome_order=chromosome_order)
@@ -47,7 +47,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 	
 
 	phenotype_template = {
-	    'advantageous': (0, 0.5 * 10**chromosome_order )
+	    'advantageous': (0, 0.1 * 10**chromosome_order )
 	}
 
 	sim = Simulator(mean_mutations=mean_mutations, phenotypes=phenotype_template, chromosome_order=chromosome_order)
@@ -90,6 +90,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 			this_iteration = (N_real, t) + avgd + sds
 			stats.append(this_iteration)
 		print 'Completed sampling of N=',iteration_magnitude*i
+		sys.stdout.flush()
 	print('regular_processor successfully completed at '+str(time.ctime()))
 	print('Total time taken:'+str((time.time() - start_time))+'seconds')
 	return stats
