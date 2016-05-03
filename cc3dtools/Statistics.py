@@ -117,9 +117,10 @@ class Statistics(object):
 		return final_sample, N_true, proportion_cancer
 
 
-	def simple_stats(self):
+	def simple_stats(self, eccentricities, Ns, ts):
 
-		stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', 'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
+		stats = [ ('eccentricity', 'N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', \
+			'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
 		
 		## this is a massive loop.....
 		## i don't know how i can simplify this
@@ -133,10 +134,10 @@ class Statistics(object):
 					for i in xrange(10):
 						# repeat for averaging
 						sample, N_true, proportion_cancer = self.random_sampling(\
-							eccentricity=es, )
+							eccentricity=es, N=N, t=t )
 						selected_cells = [ cell.id for cell in sample ]
 						fa = self.pp.frequency_analyze( selected_cells )
-						to_be_averaged.append( ( N_true, t ) +self.get_stats( fa ) + ( proportion_cancer, ) )
+						to_be_averaged.append( ( N_true, t ) + self.get_stats( fa ) + ( proportion_cancer, ) )
 					# end repeat samplers
 					avgd = tuple( np.mean( np.array(to_be_averaged), axis=0) )
 					sds = tuple( np.sd( np.array(to_be_averaged), axis=0) )
@@ -154,6 +155,6 @@ class Statistics(object):
 		SH = S/PostProcess.H(fa[1]-1)
 		D = Epi-SH
 
-		return (S,SH, Epi, D)
+		return (S, SH, Epi, D)
 
 
