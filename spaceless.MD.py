@@ -33,7 +33,7 @@ file_name = './spaceless_data/MD.'+time.ctime()
 # plt.legend()
 # plt.show()
 
-vals = regular_processor(sim)
+vals = regular_processor(sim, thresholds=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
 
 statistics = np.array(vals[1:])
 plt.figure('DvsN')
@@ -78,6 +78,48 @@ plt.title('SH vs sample size (for different thresholds')
 plt.legend()
 plt.show()
 
+
+plt.figure('Dvst')
+to_plot = 5
+threshold = np.where(statistics[:,0] == 525)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=525', c='r')
+threshold = np.where(statistics[:,0] == 775)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=775', c='g')
+threshold = np.where(statistics[:,0] == 1025)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1025', c='b')
+threshold = np.where(statistics[:,0] == 1900)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1900', c='y')
+plt.title('D vs t (for different N)')
+plt.legend()
+plt.show()
+
+plt.figure('Svst')
+to_plot = 3
+threshold = np.where(statistics[:,0] == 525)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=525', c='r')
+threshold = np.where(statistics[:,0] == 775)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=775', c='g')
+threshold = np.where(statistics[:,0] == 1025)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1025', c='b')
+threshold = np.where(statistics[:,0] == 1900)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1900', c='y')
+plt.title('SH vs t (for different N)')
+plt.legend()
+plt.show()
+
+plt.figure('epivst')
+to_plot = 4
+threshold = np.where(statistics[:,0] == 525)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=525', c='r')
+threshold = np.where(statistics[:,0] == 775)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=775', c='g')
+threshold = np.where(statistics[:,0] == 1025)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1025', c='b')
+threshold = np.where(statistics[:,0] == 1900)
+plt.scatter(statistics[threshold,1], statistics[threshold,to_plot], label='N=1900', c='y')
+plt.title('Pi vs t (for different N)')
+plt.legend()
+plt.show()
 
 
 print(vals)

@@ -322,20 +322,27 @@ class Cell(object):
 		# print 'max_divisions:',self.max_divisions
 		# print 'infinite divisions?',self.max_divisions == -1
 		# print 'cell_type:',self.cell_type
-		skip_criterion = (self.cell_type != 3 and self.max_divisions != -1) \
-			and self.number_of_divisions > self.max_divisions
 
-		# print 'skip criterion met?', skip_criterion
 
-		if (self.cell_type != 3 and self.max_divisions != -1) \
-			and self.number_of_divisions > self.max_divisions:
+		if ( self.cell_type != 3 ):
+			## not a CSC, need to check if we have inifite divisions
+			if self.max_divisions != - 1:
+				# we do not have infinite divisions
+				if(self.number_of_divisions > self.max_divisions):
+					# we have reached the maximum divisions, 
+					# we cannot continue with the mitotic event
+					# print 'skipped division event'
+					return None
+
+		# if (self.cell_type != 3 and self.max_divisions != -1) \
+		# 	or self.number_of_divisions > self.max_divisions:
 			
-			# we are not a CSC
-			# NOR do we have inifite division potential
-			# and the number of divisions this cell has taken is more than
-			# the maximum number of divisions it can take.
+		# 	# we are not a CSC
+		# 	# NOR do we have inifite division potential
+		# 	# and the number of divisions this cell has taken is more than
+		# 	# the maximum number of divisions it can take.
 
-			return None
+		# 	return None
 
 		# we have paseed the initial conditions required for division, let's now divide!
 		if not name:
@@ -562,6 +569,9 @@ class Simulator(object):
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
 		# go over all cells that need to divide and then ask them to mitosis.
 		for cell_id in cellids_to_divide:
+			assert not( cell_id == 1 and stop_normal_divisions ), 'selected a normal cell for division in stop_normal_divisions mode'
+			# if cell_id == 1 and stop_normal_divisions:
+			# 	raw_input('broken!!!')
 			new_cell = self.cells[cell_id].mitosis(name=str(biggest_index), dob=self.time)
 			# print 'new_cell:',new_cell
 			if new_cell is not None:
