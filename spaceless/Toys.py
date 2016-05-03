@@ -2,6 +2,7 @@ import Post
 from Model import Simulator, pDivisionFunction
 import numpy as np
 import time
+import sys
 
 def build_SD(init_steps=200, post_steps=500, mean_mutations=50, \
 	update_mean_mutations=120, auto_reduce_magnitude=0.6, chromosome_order=15):
@@ -64,7 +65,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 
-def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
+def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=25, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
 	stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', 'sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
 
 	# sort genomes
@@ -73,7 +74,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=100, 
 	g = sorted_sim.sorted_genomes
 	print('Processing started at '+str(time.ctime()))
 	start_time = time.time()
-	for i in range(1,max_iteration,10):
+	for i in range(1,max_iteration,5):
 		print 'Sampling N=',iteration_magnitude*i
 		for t in thresholds:
 			# repeated estimation
