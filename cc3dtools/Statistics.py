@@ -117,36 +117,41 @@ class Statistics(object):
 		return final_sample, N_true, proportion_cancer
 
 
-	def simple_stats(self, eccentricities, Ns, ts):
+	def simple_stats(self, e, N, t):
+		"""
+			Calculates statistics for a certains, e, N, t
+			@params:
+				e / 0 < float <= 1
+					eccentricity of the sample
+				N / int
+					size of the sample
+				t / 0 < float <=1 
+					the thresholding value
+			@returns:
+				tuple of:
+				(ecc, N, T, S, SH, Epi, D, proportion_cancer)
+				and corresponding standard deviations
 
-		stats = [ ('eccentricity', 'N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', \
-			'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
-		
-		## this is a massive loop.....
-		## i don't know how i can simplify this
-		for es in eccentricities:
-			# run over all eccentricies
-			for N in Ns:
-				# run over all sample sizes
-				for t in ts:
-					# run over all thresholds
-					to_be_averaged = []
-					for i in xrange(10):
-						# repeat for averaging
-						sample, N_true, proportion_cancer = self.random_sampling(\
-							eccentricity=es, N=N, t=t )
-						selected_cells = [ cell.id for cell in sample ]
-						fa = self.pp.frequency_analyze( selected_cells )
-						to_be_averaged.append( ( N_true, t ) + self.get_stats( fa ) + ( proportion_cancer, ) )
-					# end repeat samplers
-					avgd = tuple( np.mean( np.array(to_be_averaged), axis=0) )
-					sds = tuple( np.sd( np.array(to_be_averaged), axis=0) )
-					stats.append( (es,) + avgd + sds )
-				# end for loop for thresholds
-			# end for loop for Ns
-		# end for loop for eccentricities
+				returns None if no sample could be generated
+		"""	
+		to_be_averaged = []
+		for i in xrange(10):
+			# repeat for averaging
+			sample, N_true, proportion_cancer = self.random_sampling(\
+				eccentricity=e, N=N, t=t )
+			selected_cells = [ cell.id for cell in sample ]
+			if not N_true:
+				print 'failed to generate a sample'
+				continue
+			fa = self.pp.frequency_analyze( selected_cells )
+			to_be_averaged.append( ( N_true, t ) + self.get_stats( fa ) + ( proportion_cancer, ) )
+		# end repeat samplers
+		if len(to_be_averaged) == 0:
+			return None
+		avgd = tuple( np.mean( np.array(to_be_averaged), axis=0) )
+		sds = tuple( np.sd( np.array(to_be_averaged), axis=0) )
+		return (e,) + avgd + sds 
 
-		return stats
 
 	def get_stats(self, fa):
 

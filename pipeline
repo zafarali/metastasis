@@ -275,10 +275,13 @@ if SPEC_lookup( 'global' , 'multilineage' ):
 	Sampling
 """
 
+gc = None
+pp = None
 
-if SPEC_lookup( 'global' , 'sample' ):
 
+if SPEC_lookup( 'global' , 'sample') or SPEC_lookup( 'global', 'simple_sample'):
 	try:
+
 		if FILES['genomes'].split('.')[-1] == 'csv':
 			print2('Converting csv file to gen2 file')
 			from cc3dtools.Genome import csv_to_gen2
@@ -290,7 +293,13 @@ if SPEC_lookup( 'global' , 'sample' ):
 		print2('Loaded GenomeCompare module')
 		pp = PostProcess(end_file=FILES['finish'], gc=gc, skip_types=skip_types)
 		print2('Loaded PostProcess module')
+	except Exception as e:
+		print2('(!) Unable to load preprocess or genome model'+str(e))
+		raise e
 
+if SPEC_lookup( 'global' , 'sample' ):
+
+	try:
 		for i, sampling in enumerate(sampling_strategies):
 
 			print2('Saving sample ' + str(i + 1) + ', method: '+ str( sampling[u'method'] ))
@@ -488,9 +497,48 @@ if SPEC_lookup( 'global' , 'sample' ):
 			#endif pickles
 		#endfor
 	except Exception as e:
-		print2('(!) Unable to load PostProcess and Genomes to allow sampling: \n'+str(e))
+		print2('(!) Unable to conduct sampling: \n'+str(e))
 		raise e
 #endif
+
+
+from cc3dtools.Statistics import Statistics
+
+
+if SPEC_lookup( 'global' , 'simple_sample'):
+	## create a statistics generator module
+	statistics_generator = Statistics(pp)
+	eccentricities = [ 0.25, 0.5, 0.75, 1 ]
+	Ns = [ 500, 750, 1000, 1250, 1500, 1750, 2000, 2250 ]
+	ts = [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
+	stats = [ ('eccentricity', 'N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', \
+		'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
+		## i don't know how i can simplify this
+	for es in eccentricities:
+		# run over all eccentricies
+		print2('Sampling eccentricity= '+str(es))
+		for N in Ns:
+			# run over all sample sizes
+			print2('-> Sampling N='+str(N))
+			for t in ts:
+				print2('--> Sampling t='+str(t))
+				# run over all thresholds
+				try:
+					new_stats = Statistics.simple_stats(e=es, t=t, N=N)
+				except Exception as e:
+					print2('(!) Exception occured '+str(e))
+				if new_stats:
+					stats.append(new_stats)
+			# end threshold loop
+		# end number loop
+	# end eccentricity loop
+	print2('Completed sampling')
+	with open( current_dir + '/modern_stats.csv', 'w' ) as f:
+		w = csv.writer(f)
+		for row in stats:
+			w.writerow(row)
+	print2('Completed saving')
+
 
 
 """
