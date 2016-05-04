@@ -509,7 +509,7 @@ if SPEC_lookup( 'global' , 'simple_sample'):
 	## create a statistics generator module
 	statistics_generator = Statistics(pp)
 	eccentricities = [ 0.25, 0.5, 0.75, 1 ]
-	Ns = [ 500, 750, 1000, 1250, 1500, 1750, 2000, 2250 ]
+	Ns = [ 1250, 1500, 1750, 2000, 2250, 3000, ]
 	ts = [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 	stats = [ ('eccentricity', 'N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', \
 		'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
@@ -523,17 +523,20 @@ if SPEC_lookup( 'global' , 'simple_sample'):
 			for t in ts:
 				print2('--> Sampling t='+str(t))
 				# run over all thresholds
-				try:
-					new_stats = Statistics.simple_stats(e=es, t=t, N=N)
-				except Exception as e:
-					print2('(!) Exception occured '+str(e))
+				new_stats = False
+				new_stats = statistics_generator.simple_stats(e=es, t=t, N=N)
+				# try:
+				# 	new_stats = statistics_generator.simple_stats(e=es, t=t, N=N)
+				# except Exception as e:
+				# 	print2('(!) Exception occured '+str(e))
+
 				if new_stats:
 					stats.append(new_stats)
 			# end threshold loop
 		# end number loop
 	# end eccentricity loop
 	print2('Completed sampling')
-	with open( current_dir + '/modern_stats.csv', 'w' ) as f:
+	with open( FILES['out'] + '/modern_stats.csv', 'w' ) as f:
 		w = csv.writer(f)
 		for row in stats:
 			w.writerow(row)

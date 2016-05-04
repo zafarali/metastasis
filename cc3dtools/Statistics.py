@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.path import Path
-import PostProcess
+from PostProcess import PostProcess, H, number_of_segregating_sites, proportion_pairwise_differences
 
 # from mpl_toolkits.mplot3d import Axes3D
 # from collections import Counter
@@ -63,7 +63,7 @@ class Statistics(object):
 		# equate the two areas
 		a = lambda N, ecc: np.sqrt( ( average_area * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
 		b = lambda N, ecc: np.sqrt( ( ( average_area * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
-		radii = [a, b]
+		radii = [a(N, eccentricity), b(N, eccentricity)]
 
 		# sample N_samples times
 		threshold_met = False
@@ -73,19 +73,23 @@ class Statistics(object):
 
 		final_sample = []
 		proportion_cancer = None
+		x_gen = generate_coordinate()
+		y_gen = generate_coordinate()
+		angle_gen = generate_coordinate()
 
 		while not threshold_met and max_out < 10:
 			# generate coordinates
-			x = generate_coordinate()
-			y = generate_coordinate()
-			angle = generate_angle()
+			x = x_gen.next()
+			y = y_gen.next()
+			angle = angle_gen.next()
 
 			# sample from the patch
 			normal_sample = self.pp.cells_in_ellipse_at(x, y, \
 				0 ,radii, type_restrictions = [ 1 ], rotate_by = angle )
 			cancer_sample = self.pp.cells_in_ellipse_at(x, y, 0, radii, \
 				type_restrictions = [ 2 , 3 ], rotate_by = angle )
-			
+			print 'normal sample:',normal_sample
+			print 'cancer sample:',cancer_sample
 			N_true = len(normal_sample) + len(cancer_sample)
 
 			if N_true < N:
@@ -104,6 +108,10 @@ class Statistics(object):
 
 			normal_subsample = random.sample(normal_sample, N_subsample_normal)
 			cancer_subsample = random.sample(cancer_sample, N_subsample_cancer)
+			print 'size of cancer_subsample:', len(cancer_subsample)
+			print 'size of normal_subsample:',len(normal_subsample)
+			print 'type of subsample size', type(len(normal_subsample))
+			print 'float of the sum:', float( len(cancer_subsample) + len(normal_subsample) )
 
 			proportion_cancer =  len(cancer_subsample) / float( len(cancer_subsample) + len(normal_subsample) )
 
@@ -113,7 +121,8 @@ class Statistics(object):
 
 			final_sample = normal_subsample + cancer_subsample
 		#end while
-
+		if not N_true:
+			print 'could not get a big enough sample'
 		return final_sample, N_true, proportion_cancer
 
 
@@ -144,10 +153,13 @@ class Statistics(object):
 				print 'failed to generate a sample'
 				continue
 			fa = self.pp.frequency_analyze( selected_cells )
+			if fa[1] == 0:
+				print 'failed to generate a sample'
+				continue
 			to_be_averaged.append( ( N_true, t ) + self.get_stats( fa ) + ( proportion_cancer, ) )
 		# end repeat samplers
 		if len(to_be_averaged) == 0:
-			return None
+			return False
 		avgd = tuple( np.mean( np.array(to_be_averaged), axis=0) )
 		sds = tuple( np.sd( np.array(to_be_averaged), axis=0) )
 		return (e,) + avgd + sds 
@@ -155,9 +167,12 @@ class Statistics(object):
 
 	def get_stats(self, fa):
 
-		Epi = PostProcess.proportion_pairwise_differences(fa)
-		S = PostProcess.number_of_segregating_sites(fa)
-		SH = S/PostProcess.H(fa[1]-1)
+		Epi = proportion_pairwise_differences(fa)
+		S = number_of_segregating_sites(fa)
+		print 'fa[0]', fa[0]
+		print 'fa[1]',fa[1]
+
+		SH = S/H(fa[1]-1)
 		D = Epi-SH
 
 		return (S, SH, Epi, D)
