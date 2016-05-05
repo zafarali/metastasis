@@ -36,8 +36,8 @@ class Ellipse():
         """
             checks if a test point is inside the defined ellipse.
         """    
-        term_1 = ( self.cos_rotate_by * (x_test - self.x_0) + self.sin_rotate_by * (y_test - self.y_0) / self.a )**2
-        term_2 = ( self.sin_rotate_by * (x_test - self.x_0) + self.cos_rotate_by * (y_test - self.y_0) / self.b )**2
+        term_1 = ((self.cos_rotate_by * (x_test - self.x_0) + self.sin_rotate_by * (y_test - self.y_0)) / self.a )**2
+        term_2 = ((self.sin_rotate_by * (x_test - self.x_0) + self.cos_rotate_by * (y_test - self.y_0)) / self.b )**2
         
         return ( term_1 + term_2 ) <= 1
         
