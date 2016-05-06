@@ -161,7 +161,7 @@ class Statistics(object):
 		if len(to_be_averaged) == 0:
 			return False
 		avgd = tuple( np.mean( np.array(to_be_averaged), axis=0) )
-		sds = tuple( np.sd( np.array(to_be_averaged), axis=0) )
+		sds = tuple( np.std( np.array(to_be_averaged), axis=0) )
 		return (e,) + avgd + sds 
 
 
