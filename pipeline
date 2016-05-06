@@ -508,8 +508,8 @@ from cc3dtools.Statistics import Statistics
 if SPEC_lookup( 'global' , 'simple_sample'):
 	## create a statistics generator module
 	statistics_generator = Statistics(pp)
-	eccentricities = [ 0.25, 0.5, 0.75, 1 ]
-	Ns = [ 1250, 1500, 1750, 2000, 2250, 3000, ]
+	eccentricities = [ 0.25, 0.5, 0.75, 0.99 ]
+	Ns = [ 1250, 1500, 1750, 2000, 2250, 3000 ]
 	ts = [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 ]
 	stats = [ ('eccentricity', 'N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', \
 		'sd_N', 'sd_t','sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
