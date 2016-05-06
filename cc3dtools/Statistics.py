@@ -88,8 +88,8 @@ class Statistics(object):
 				0 ,radii, type_restrictions = [ 1 ], rotate_by = angle )
 			cancer_sample = self.pp.cells_in_ellipse_at(x, y, 0, radii, \
 				type_restrictions = [ 2 , 3 ], rotate_by = angle )
-			print 'normal sample:',normal_sample
-			print 'cancer sample:',cancer_sample
+			# print 'normal sample:',normal_sample
+			# print 'cancer sample:',cancer_sample
 			N_true = len(normal_sample) + len(cancer_sample)
 
 			if N_true < N:
@@ -100,30 +100,30 @@ class Statistics(object):
 
 			# the size of the cancer cells we must pick to get this
 			# threshold:
-			N_cancer_subsample = int(N_true*t)
+			N_cancer_subsample = int(N*t)
 
 			# we pick the minimum of the available and our required size
 			N_subsample_cancer = min( len(cancer_sample), N_cancer_subsample )
-			N_subsample_normal = min( len(normal_sample), N_true - subsample_cancer )
+			N_subsample_normal = min( len(normal_sample), N - N_subsample_cancer )
 
 			normal_subsample = random.sample(normal_sample, N_subsample_normal)
 			cancer_subsample = random.sample(cancer_sample, N_subsample_cancer)
-			print 'size of cancer_subsample:', len(cancer_subsample)
-			print 'size of normal_subsample:',len(normal_subsample)
-			print 'type of subsample size', type(len(normal_subsample))
-			print 'float of the sum:', float( len(cancer_subsample) + len(normal_subsample) )
+			# print 'size of cancer_subsample:', len(cancer_subsample)
+			# print 'size of normal_subsample:',len(normal_subsample)
+			# # print 'type of subsample size', type(len(normal_subsample))
+			# print 'total size of the sample:', float( len(cancer_subsample) + len(normal_subsample) )
 
 			proportion_cancer =  len(cancer_subsample) / float( len(cancer_subsample) + len(normal_subsample) )
 
 			if proportion_cancer >= t:
 				threshold_met = True
-				break	
-
-			final_sample = normal_subsample + cancer_subsample
+				final_sample = normal_subsample + cancer_subsample
+			else:
+				max_out+=1
 		#end while
-		if not N_true:
+		if not N_true or max_out == 9:
 			print 'could not get a big enough sample'
-		return final_sample, N_true, proportion_cancer
+		return final_sample, N, proportion_cancer
 
 
 	def simple_stats(self, e, N, t):
@@ -169,8 +169,8 @@ class Statistics(object):
 
 		Epi = proportion_pairwise_differences(fa)
 		S = number_of_segregating_sites(fa)
-		print 'fa[0]', fa[0]
-		print 'fa[1]',fa[1]
+		# print 'fa[0]', fa[0]
+		# print 'fa[1]',fa[1]
 
 		SH = S/H(fa[1]-1)
 		D = Epi-SH
