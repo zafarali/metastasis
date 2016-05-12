@@ -533,8 +533,7 @@ class Simulator(object):
 
 			num_cells_to_divide = int(proportion_divide*len(self.cells.values())+1)
 
-			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
-				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
+			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) )
 			self.time += 1
 			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , **kwargs)
 			sys.stdout.flush()
@@ -622,6 +621,7 @@ class Simulator(object):
 		# pick_size = pick_size if pick_size > 0 else 0
 		# cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
+		print('Number of cells dividing:' + str(len(cellids_to_divide)))
 
 		biggest_index = max(idx)
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
