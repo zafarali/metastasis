@@ -516,7 +516,7 @@ class Simulator(object):
 		}
 		self.time = 0
 
-	def run(self, time_steps = 100, proportion_divide=0.5, stop_normal_divisions=False,age_mode=False, **kwargs):
+	def run(self, time_steps = 100, proportion_divide=0.5, stop_normal_divisions=False, **kwargs):
 		"""
 			Runs the model for time_steps
 		"""
@@ -536,8 +536,7 @@ class Simulator(object):
 			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
 				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
 			self.time += 1
-			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , \
-				age_mode=age_mode , **kwargs)
+			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , **kwargs)
 			sys.stdout.flush()
 		end_time = time.time()
 
@@ -586,45 +585,50 @@ class Simulator(object):
 		return cancer_id
 
 	def step(self, proportion_divide=0.5, stop_normal_divisions = False, \
-		selection_distribution=None, age_mode=False, **kwargs):
+		selection_distribution=None, **kwargs):
 
 		idx, celllist = zip(*self.cells.items())
 
-		if stop_normal_divisions:
-			if age_mode:
-				# print('AGE MODE ON')
-				selection_distribution = SelectionDistribution.aged
-			else:
-				selection_distribution = SelectionDistribution.cancer_only
-		else:	
-			selection_distribution = SelectionDistribution.equal
+		
+		# generate the likelihood of every cell dividing.
+		division_probabilities = np.array( [ cell.p_division2(self.time, stop_normal_divisions) for cell in celllist ] )
+		
+		# generate a random draw
+		draws = np.random.random( size=len(division_probabilities) )
 
-		p_dist = selection_distribution(celllist, time=self.time)
-		unique_p = np.unique(p_dist)
+		# the cells which will be dividing:
+		cellids_to_divide = idx[draws < division_probabilities]
 
-		if len(unique_p)>1:
-			print 'total unique elements:', len(unique_p)
-			print 'non-zero min:',unique_p[1]
-			print 'max:',unique_p[-1]
-		else:
-			print 'only unique element:',unique_p
+		# if stop_normal_divisions:
+		# 	if age_mode:
+		# 		# print('AGE MODE ON')
+		# 		selection_distribution = SelectionDistribution.aged
+		# 	else:
+		# 		selection_distribution = SelectionDistribution.cancer_only
+		# else:	
+		# 	selection_distribution = SelectionDistribution.equal
 
-		pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]))
-		pick_size = pick_size if pick_size > 0 else 0
-		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
+		# p_dist = selection_distribution(celllist, time=self.time)
+		# unique_p = np.unique(p_dist)
 
-		## new mechanics
-		division_probabilities = SelectionDistribution.unity(celllist)
-		normal_values = np.random.random( size=len(division_probabilities) )
-		division_probabilities[division_probabilities > normal_values]
+		# if len(unique_p)>1:
+		# 	print 'total unique elements:', len(unique_p)
+		# 	print 'non-zero min:',unique_p[1]
+		# 	print 'max:',unique_p[-1]
+		# else:
+		# 	print 'only unique element:',unique_p
+
+		# pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]))
+		# pick_size = pick_size if pick_size > 0 else 0
+		# cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
+
 
 		biggest_index = max(idx)
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
 		# go over all cells that need to divide and then ask them to mitosis.
 		for cell_id in cellids_to_divide:
 			assert not( cell_id == 1 and stop_normal_divisions ), 'selected a normal cell for division in stop_normal_divisions mode'
-			# if cell_id == 1 and stop_normal_divisions:
-			# 	raw_input('broken!!!')
+
 			new_cell = self.cells[cell_id].mitosis(name=str(biggest_index), dob=self.time)
 			# print 'new_cell:',new_cell
 			if new_cell is not None:
