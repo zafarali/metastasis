@@ -591,12 +591,22 @@ class Simulator(object):
 		
 		# generate the likelihood of every cell dividing.
 		division_probabilities = np.array( [ cell.p_division2(self.time, stop_normal_divisions) for cell in celllist ] )
-		
+		print(division_probabilities)
 		# generate a random draw
 		draws = np.random.random( size=len(division_probabilities) )
 
 		# the cells which will be dividing:
-		cellids_to_divide = idx[draws < division_probabilities]
+		index_to_divide = draws < division_probabilities
+		number_of_dividing_cells = np.sum(index_to_divide)
+
+		if number_of_dividing_cells > 0:
+			cellids_to_divide = idx[index_to_divide]
+		else:
+			print('Did not divide any cells')
+			return
+
+		print('Number of cells dividing:' + str(number_of_dividing_cells))
+
 
 		# if stop_normal_divisions:
 		# 	if age_mode:
@@ -621,9 +631,7 @@ class Simulator(object):
 		# pick_size = pick_size if pick_size > 0 else 0
 		# cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
-		print('Number of cells dividing:' + str(len(cellids_to_divide)))
-
-		biggest_index = max(idx)
+		biggest_index = max(idx) if number_of_dividing_cells > 0 else 0
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
 		# go over all cells that need to divide and then ask them to mitosis.
 		for cell_id in cellids_to_divide:
