@@ -248,6 +248,10 @@ class pDivisionFunction(object):
 		return sig_fn
 
 	@staticmethod
+	def sigmoid2(a=0.01,c=0,):
+		pass
+
+	@staticmethod
 	def maturity(age, func=lambda: 0.5):
 		"""
 			Returns some division function iff the age of maturity has been reached.
@@ -313,6 +317,31 @@ class Cell(object):
 		return self.p_division_function(self, **kwargs)
 		# pass
 
+	def p_division2(self, time, mutation_effect=False):
+		"""
+			Returns the probability of this cell dividing
+			@time: the current time of the simulation,
+					used to calculate the age of a cell
+			@mutation_effect / false: 
+					boolean representing if the mutation has an 
+					effect on the probability of dividing.
+					If true, the probability is higher at 
+					lower ages (thus divides earlier)
+		"""
+
+		# @TODO: needs work
+		# if n = number of advantageous mutations 
+		# @TODO: as n-->infinity
+		# we want c --> 0
+		## 4.3 picked because it means that the probability of dividing at age 8
+		## is 0.5
+		a = -0.5 #arbitriary increase in middle curve depth
+		arbitriary_number = 4.4
+		c = arbitriary_number/float(self.phenotype.get_counts()['advantageous']) if mutation_effect else arbitriary_number
+		x = time - self.date_of_birth
+		return 1. / ( 1 + np.exp( -( a*x - c ) ) )
+
+
 	def mitosis(self, name=False, dob=0):
 		"""
 			Conducts a mitosis event and returns a new child cell
@@ -348,10 +377,11 @@ class Cell(object):
 		if not name:
 			name = self.name+'child'
 
-		self.number_of_divisions += 1
-
 		new_cell = Cell(name=name, cell_type = self.cell_type, p_division_function=self.p_division_function)
 		new_cell.max_divisions = self.max_divisions
+		
+		# tracks the number of divisions until this cell was born
+		self.number_of_divisions += 1 
 		new_cell.number_of_divisions = self.number_of_divisions
 
 
@@ -383,7 +413,7 @@ class Cell(object):
 
 		self.phenotype.evaluate(new_mutations)
 
-		# pass down these things to the progeny
+		# pass down these genome and phenotype to the progeny
 		new_cell.genome = self.genome.replicate(name=name+'g')
 		new_cell.phenotype = self.phenotype.replicate()
 		new_cell.attributes = dict( self.attributes.items() )
@@ -396,6 +426,7 @@ class Cell(object):
 
 		# the dae of irth of this cell
 		new_cell.date_of_birth = dob
+		self.date_of_birth = dob
 		
 		return new_cell
 
@@ -410,6 +441,12 @@ class Cell(object):
 			Returns the date of birth of this cell.
 		"""
 		return self.date_of_birth
+
+	def age(self, time):
+		"""
+			Returns the age of this cell given some @time
+		"""
+		return time - self.date_of_birth
 
 	def number_of_divisions(self):
 		"""
@@ -429,6 +466,7 @@ class SelectionDistribution(object):
 			Returns probabilities of division for each cell normalized among 
 			the population
 		"""
+		# raise DeprecationWarning()
 		raw_dist = np.array([ cell.p_division(**kwargs) for cell in cell_array ])
 		return raw_dist / float(np.sum(raw_dist))
 	@staticmethod
@@ -451,6 +489,12 @@ class SelectionDistribution(object):
 		raw_dist = np.array( [ cell.p_division(**kwargs) if (cell.number_of_divisions < cell.max_divisions \
 			or cell.max_divisions == -1) and cell.is_cancer() else 0 for cell in cell_array ] )
 		return raw_dist / float( np.sum( raw_dist ) )
+	@staticmethod
+	def unity(cell_array, **kwargs):
+		"""
+			Returns the p_division unscaled.
+		"""
+		return np.array( [ cell.p_division(**kwargs) for cell in cell_array ] )
 
 
 # DEFAULT_CELL_ATTRIBUTES = { 'mean_mutations':1, 'chromosome_order':2, 'ploidy':2 }
@@ -465,13 +509,14 @@ class Simulator(object):
 
 		phenotypes = {} if not phenotypes else phenotypes
 
-		self.cells = dict( zip( cellindicies, [ Cell( name=str(i), phenotypes=phenotypes, mean_mutations=mean_mutations, chromosome_order=chromosome_order, ploidy=ploidy) for i in cellindicies ]) )
+		self.cells = dict( zip( cellindicies, [ Cell( name=str(i), phenotypes=phenotypes, \
+			mean_mutations=mean_mutations, chromosome_order=chromosome_order, ploidy=ploidy) for i in cellindicies ]) )
 		self.attributes = {
 			'cancer_created': False
 		}
 		self.time = 0
 
-	def run(self, time_steps = 100, proportion_divide=0.5, stop_normal_divisions=False,**kwargs):
+	def run(self, time_steps = 100, proportion_divide=0.5, stop_normal_divisions=False,age_mode=False, **kwargs):
 		"""
 			Runs the model for time_steps
 		"""
@@ -491,7 +536,8 @@ class Simulator(object):
 			print( 'step: '+str(i+1) + ' of '+str(time_steps) + ' / Total Time: ' +str(self.time) + ' / auto_reduce: '+str(auto_reduce)+\
 				', proportion_divide: '+str(proportion_divide) +' i.e. approx '+str(num_cells_to_divide)+' cells' )
 			self.time += 1
-			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , **kwargs)
+			self.step( proportion_divide=proportion_divide , stop_normal_divisions=stop_normal_divisions , \
+				age_mode=age_mode , **kwargs)
 			sys.stdout.flush()
 		end_time = time.time()
 
@@ -520,12 +566,14 @@ class Simulator(object):
 		self.attributes['cancer_created'] = True
 		return selected_cell_id
 
-	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.4, max_divisions=4, p_division_function=pDivisionFunction.sigmoid()):
+	def create_CSC(self, update_mean_mutations=2, p_regeneration=0.4, max_divisions=4, \
+		p_division_function=pDivisionFunction.sigmoid()):
 
 		"""
 			Creates a CSC in the simulation
 		"""
-		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations, p_division_function=p_division_function)
+		cancer_id = self.create_cancer(update_mean_mutations=update_mean_mutations, \
+			p_division_function=p_division_function)
 		self.cells[cancer_id].cell_type = 3
 		# print(str(self.cells[cancer_id].p_regeneration))
 		self.cells[cancer_id].p_tum_csc = 0.4
@@ -537,7 +585,8 @@ class Simulator(object):
 
 		return cancer_id
 
-	def step(self, proportion_divide=0.5, stop_normal_divisions = False, selection_distribution=None, age_mode=False, **kwargs):
+	def step(self, proportion_divide=0.5, stop_normal_divisions = False, \
+		selection_distribution=None, age_mode=False, **kwargs):
 
 		idx, celllist = zip(*self.cells.items())
 
@@ -550,7 +599,7 @@ class Simulator(object):
 		else:	
 			selection_distribution = SelectionDistribution.equal
 
-		p_dist = selection_distribution(celllist)
+		p_dist = selection_distribution(celllist, time=self.time)
 		unique_p = np.unique(p_dist)
 
 		if len(unique_p)>1:
@@ -564,7 +613,11 @@ class Simulator(object):
 		pick_size = pick_size if pick_size > 0 else 0
 		cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
 
-		# index of the biggest cell so far
+		## new mechanics
+		division_probabilities = SelectionDistribution.unity(celllist)
+		normal_values = np.random.random( size=len(division_probabilities) )
+		division_probabilities[division_probabilities > normal_values]
+
 		biggest_index = max(idx)
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
 		# go over all cells that need to divide and then ask them to mitosis.
