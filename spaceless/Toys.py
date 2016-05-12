@@ -66,7 +66,7 @@ def build_CSC_reg(init_steps=200, post_steps=500, mean_mutations=50, \
 
 
 def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=25, thresholds = [ 0.1, 0.5, 0.9, 1 ], subsample=0):
-	stats = [ ('N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', 'sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
+	stats = [ ('blank','N', 't', 'S', 'SH', 'Epi', 'D', 'proportion_cancer', 'sd_S', 'sd_SH', 'sd_Epi', 'sd_D', 'sd_in_proportion' ) ]
 
 	# sort genomes
 
@@ -74,7 +74,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=25, t
 	g = sorted_sim.sorted_genomes
 	print('Processing started at '+str(time.ctime()))
 	start_time = time.time()
-	for i in range(1,max_iteration,5):
+	for i in range(1,max_iteration,10):
 		print 'Sampling N=',iteration_magnitude*i
 		for t in thresholds:
 			# repeated estimation
@@ -88,7 +88,7 @@ def regular_processor(sorted_sim, max_iteration = 100, iteration_magnitude=25, t
 			avgd = tuple(np.mean(np.array(to_be_averaged), axis=0))
 			sds = tuple(np.std(np.array(to_be_averaged), axis=0))
 
-			this_iteration = (N_real, t) + avgd + sds
+			this_iteration = (0,N_real, t) + avgd + sds
 			stats.append(this_iteration)
 		print 'Completed sampling of N=',iteration_magnitude*i
 		sys.stdout.flush()
