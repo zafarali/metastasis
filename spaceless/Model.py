@@ -335,10 +335,30 @@ class Cell(object):
 		# we want c --> 0
 		## 4.3 picked because it means that the probability of dividing at age 8
 		## is 0.5
-		a = -0.5 #arbitriary increase in middle curve depth
+		a = 0.3 #arbitriary increase in curve steepness
 		arbitriary_number = 4.4
-		c = arbitriary_number/float(self.phenotype.get_counts()['advantageous']) if mutation_effect else arbitriary_number
+		n = self.phenotype.get_counts().get('advantageous', False)
+
+		# check if we are in cancer mode...
+		if mutation_effect:
+			if self.cell_type == 1:
+				# check if we are normal, if normal, never divide.
+				return 0
+			else:
+				# nor normal.
+				if not n:
+					# no advantageous mutations because we do not have 
+					# that phenotype,
+					#give it a fixed growth advantage
+					c = arbitriary_number - 2.2	
+				else:
+					# growth advantage increases with more number of mutaitons
+					c = arbitriary_number/float(n)
+		else:
+			c = arbitriary_number
+
 		x = time - self.date_of_birth
+
 		return 1. / ( 1 + np.exp( -( a*x - c ) ) )
 
 
@@ -587,25 +607,31 @@ class Simulator(object):
 		selection_distribution=None, **kwargs):
 
 		idx, celllist = zip(*self.cells.items())
-
+		idx = np.array(idx)
 		
 		# generate the likelihood of every cell dividing.
 		division_probabilities = np.array( [ cell.p_division2(self.time, stop_normal_divisions) for cell in celllist ] )
-		print(division_probabilities)
+		# print('unique probabilities:',npss.unique(division_probabilities))
 		# generate a random draw
 		draws = np.random.random( size=len(division_probabilities) )
 
 		# the cells which will be dividing:
-		index_to_divide = draws < division_probabilities
-		number_of_dividing_cells = np.sum(index_to_divide)
+		index_to_divide = np.where(draws < division_probabilities)
+		number_of_dividing_cells = len(index_to_divide[0])
 
 		if number_of_dividing_cells > 0:
-			cellids_to_divide = idx[index_to_divide]
+
+			
+			if number_of_dividing_cells > 30:
+				index_to_divide = np.random.choice(index_to_divide[0], size=30, replace=False)
+				cellids_to_divide = idx[index_to_divide]
+			else:
+				cellids_to_divide = idx[index_to_divide[0]]
+
+			print('Number of cells dividing: ' + str(number_of_dividing_cells))
 		else:
 			print('Did not divide any cells')
 			return
-
-		print('Number of cells dividing:' + str(number_of_dividing_cells))
 
 
 		# if stop_normal_divisions:
@@ -629,19 +655,25 @@ class Simulator(object):
 
 		# pick_size = min( int(proportion_divide*len(celllist)+1) , len(np.nonzero(p_dist)[0]))
 		# pick_size = pick_size if pick_size > 0 else 0
-		# cellids_to_divide = np.random.choice(idx, size=pick_size, replace=False, p = p_dist)
+		# cellids_to_divide = 
 
 		biggest_index = max(idx) if number_of_dividing_cells > 0 else 0
 		# print 'Cells Picked: '+str(len(cellids_to_divide))+' from '+str(pick_size)
 		# go over all cells that need to divide and then ask them to mitosis.
-		for cell_id in cellids_to_divide:
-			assert not( cell_id == 1 and stop_normal_divisions ), 'selected a normal cell for division in stop_normal_divisions mode'
+
+		skipped = 0
+		divided = 0
+		for cell_id in list(cellids_to_divide):
+			assert not( self.cells[cell_id].cell_type == 1 and stop_normal_divisions ), 'selected a normal cell for division in stop_normal_divisions mode'
 
 			new_cell = self.cells[cell_id].mitosis(name=str(biggest_index), dob=self.time)
 			# print 'new_cell:',new_cell
 			if new_cell is not None:
 				biggest_index = biggest_index+1
 				self.cells[biggest_index] = new_cell
+				divided +=1
+
+		print('Skipped: '+str(skipped)+', Divided: '+str(divided))
 
 
 	def cell_stats(self):
