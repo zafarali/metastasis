@@ -628,7 +628,7 @@ class Simulator(object):
 			else:
 				cellids_to_divide = idx[index_to_divide[0]]
 
-			print('Number of cells dividing: ' + str(number_of_dividing_cells))
+			print('Number of cells dividing: ' +str(len(cellids_to_divide)) +' / ' +str(number_of_dividing_cells))
 		else:
 			print('Did not divide any cells')
 			return
