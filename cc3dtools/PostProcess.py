@@ -661,7 +661,8 @@ class PostProcess( object ):
 
 		return filter( lambda r: this_ellipse.is_inside(r.x, r.y), r_vectors )
 
-	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False , cancer_only=False, percentage_cancer=False):
+	def eccentric_sampling_strategy( self , N_points ,  max_cells , radius = 50 , min_cells = 20 , \
+		ecc_steps = 0.1 , cell_steps = 5 , lattice_size = 1000, simple= False , cancer_only=False, percentage_cancer=False):
 		"""
 			samples according to the eccentricity strategy, WARN: this doesn't return a tuple of distance, cellids
 			@params:
@@ -702,6 +703,11 @@ class PostProcess( object ):
 		
 
 		average_area = 70.0 #average area of a cell
+		# from calculations of the radii of the sample
+		# (area of patch = average_area * N)
+		# (area of an ellipse = pi * a * b )
+		# write a in terms of b and eccentricity
+		# equate the two areas
 		a = lambda N, ecc: np.sqrt( ( average_area * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
 		b = lambda N, ecc: np.sqrt( ( ( average_area * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
 		
@@ -766,7 +772,7 @@ class PostProcess( object ):
 					if percentage_cancer:
 						## calculate percentage of cancer cells.
 						if this_percentage_cancer >= percentage_cancer:
-							pass #meets condition, allow us to move through
+							pass # meets condition, allow us to move through
 						else:
 							xs[i], ys[i] = ( np.random.random() * 500 ) + 250, ( np.random.random() * 500 ) + 250
 							#regenerate and skip
@@ -825,8 +831,6 @@ class PostProcess( object ):
 
 					mutation_counts_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] , return_loci = True )
 					areas_segregating_sites_100.append( len( mutation_counts_100.keys() ) )
-
-
 
 				#endfor	
 
