@@ -563,6 +563,21 @@ class Simulator(object):
 		print('Total time taken:'+str((time.time() - start_time))+'seconds')
 		sys.stdout.flush()
 
+	def grow_until(self, N, stop_normal_divisions=False, **kwargs):
+		print('Simulation started at '+str(time.ctime()))
+		start_time = time.time()
+		i = 0
+		while not len(self.cells) > N:
+			print('step:'+str(i)+' N='+str(len(self.cells))+'/'+str(N)+'. Total Time: '+str(self.time))
+			self.step(stop_normal_divisions=stop_normal_divisions, **kwargs)
+			self.time += 1
+			sys.stdout.flush()
+		end_time = time.time()
+		print('Simulation ended at '+str(time.ctime()))
+		print('Total time taken:'+str((time.time() - start_time))+'seconds')
+		sys.stdout.flush()
+
+
 	def create_cancer(self, update_mean_mutations=2, p_division_function=pDivisionFunction.sigmoid()):
 		"""
 			Creates a cancerous cell
