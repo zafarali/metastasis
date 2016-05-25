@@ -35,10 +35,15 @@ GLOBAL = {
     'cancer2_divideThreshold':42,
     'cancer1_divideThreshold':42,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.1,
-    'cancer1_additional_dV':0.1,
+    'cancer2_additional_dV':0.2, ## this doesnt do anything, just for consistency between code
+    'cancer1_additional_dV':0.2,
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
-    '_dV':0.2
+    '_dV':0.1,
+    'cancer_mutation_rate':0.002,
+    'normal_mutation_rate':0.002,
+    'rmax':0.2,
+    'rmin':0.1,
+    'xd':50
 }
 
 LATTICE = {
@@ -53,7 +58,7 @@ LATTICE = {
 }
 
 phenotype_template = {
-    'advantageous': (0, 0.1 * 10**15 )
+    'advantageous': (0, 0.00025 * 10**15 )
 }
 
 import time 
@@ -105,7 +110,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             phenotypes[cell.id] = Phenotype( phenotype_template ) # simulate phenotypes
 
             if simulate_flag and not template_flag:
-                genomes[cell.id] = Genome( mutation_rate = 1 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                genomes[cell.id] = Genome( mutation_rate = GLOBAL['normal_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             # create a cancer cell in the middle
             if not cancer_cell_created and ( cell.xCOM <= LATTICE['center_x_max'] and cell.xCOM >= LATTICE['center_x_min'] ) and ( cell.yCOM <= LATTICE['center_y_max'] and cell.yCOM >= LATTICE['center_y_min'] ):
@@ -115,10 +120,10 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             if cell.type == self.CANCER1:
 
                 if simulate_flag and not template_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 10 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                    genomes[cell.id] = Genome( mutation_rate = GLOBAL['cancer_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
                 else:
                     # this is template flag, therefore we must just update this genomes' attribute.
-                    genomes[cell.id].mutation_rate = 10
+                    genomes[cell.id].mutation_rate = GLOBAL['cancer_mutation_rate']
                     genomes[cell.id].ploidy_probability = 0.0
 
             if save_flag:
@@ -176,8 +181,9 @@ class GrowthSteppable(SteppableBasePy):
     def step(self,mcs):
         print "INSIDE GROWTH STEPPABLE"
         #                   print '----->Global targetVolume',GLOBAL['targetVolume']
-
-        y_intercept = np.log( 1 / float( GLOBAL['_dV'] ) -1 )
+        cap_R = GLOBAL['rmax']/GLOBAL['rmin']
+        y_intercept = np.log( float( cap_R ) -1 )
+        a = np.log( 99*( cap_R - 1) )/float(GLOBAL['xd'])
         # y_intercept = 0 # no 
 
         for cell in self.cellList:
@@ -196,8 +202,8 @@ class GrowthSteppable(SteppableBasePy):
                 cell.targetVolume = min( GLOBAL['dV'] + cell.targetVolume , GLOBAL['maxTargetVolume'] )
             else:
                 m = phenotypes[cell.id].get_counts()['advantageous']
-                denominator = 1 + np.exp( -( 0.01*m - y_intercept ) )
-                cell.targetVolume = min ( 1 / denominator + cell.targetVolume , GLOBAL['maxTargetVolume'] )
+                denominator = 1 + np.exp( -( a*m - y_intercept ) )
+                cell.targetVolume = min ( GLOBAL['rmax'] / denominator + cell.targetVolume , GLOBAL['maxTargetVolume'] )
 
             # cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxTargetVolume'])
 

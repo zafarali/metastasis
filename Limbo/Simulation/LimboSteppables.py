@@ -33,10 +33,12 @@ GLOBAL = {
     'cancer2_divideThreshold':42,
     'cancer1_divideThreshold':42,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.1,
-    'cancer1_additional_dV':0.1,
-    'dV':0.2,
-    '_dV':0.2
+    'cancer2_additional_dV':0.2,
+    'cancer1_additional_dV':0.2,
+    'dV':0.1,
+    '_dV':0.1,
+    'cancer_mutation_rate':0.002,
+    'normal_mutation_rate':0.002
 }
 
 LATTICE = {
@@ -95,12 +97,12 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.lambdaVolume=1.5
 
             if simulate_flag and not template_flag:
-                genomes[cell.id] = Genome( mutation_rate = 1 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                genomes[cell.id] = Genome( mutation_rate = GLOBAL['normal_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             if cell.type == self.CANCER1:
 
                 if simulate_flag and not template_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 10 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                    genomes[cell.id] = Genome( mutation_rate = GLOBAL['cancer_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             if save_flag:
                 trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
@@ -177,7 +179,7 @@ class GrowthSteppable(SteppableBasePy):
             if create_cancer_cell and not cancer_cell_created:
                 if x < LATTICE['center_x_max'] and x > LATTICE['center_x_min'] and y < LATTICE['center_y_max'] and y > LATTICE['center_y_min']:
                     cell.type = self.CANCER1
-                    genomes[cell.id].mutation_rate = 10
+                    genomes[cell.id].mutation_rate = GLOBAL['cancer_mutation_rate']
                     create_cancer_cell = False
                     cancer_cell_created = True
 

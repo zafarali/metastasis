@@ -35,10 +35,12 @@ GLOBAL = {
     'cancer2_divideThreshold':42,
     'cancer1_divideThreshold':42,
     'maxTargetVolume':75,
-    'cancer2_additional_dV':0.1,
-    'cancer1_additional_dV':0.1,
+    'cancer2_additional_dV':0.2,
+    'cancer1_additional_dV':0.2,
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
-    '_dV':0.2
+    '_dV':0.1,
+    'cancer_mutation_rate':0.002,
+    'normal_mutation_rate':0.002
 }
 
 LATTICE = {
@@ -97,7 +99,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             cell.lambdaVolume=1.5
 
             if simulate_flag and not template_flag:
-                genomes[cell.id] = Genome( mutation_rate = 1 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                genomes[cell.id] = Genome( mutation_rate = GLOBAL['normal_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
 
             # create a cancer cell in the middle
             if not cancer_cell_created and ( cell.xCOM <= LATTICE['center_x_max'] and cell.xCOM >= LATTICE['center_x_min'] ) and ( cell.yCOM <= LATTICE['center_y_max'] and cell.yCOM >= LATTICE['center_y_min'] ):
@@ -107,10 +109,10 @@ class ConstraintInitializerSteppable(SteppableBasePy):
             if cell.type == self.CANCER1:
 
                 if simulate_flag and not template_flag:
-                    genomes[cell.id] = Genome( mutation_rate = 10 , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
+                    genomes[cell.id] = Genome( mutation_rate = GLOBAL['cancer_mutation_rate'] , name = cell.id, ploidy_probability=0.0 , ploidy=2 )
                 else:
                     # this is template flag, therefore we must just update this genomes' attribute.
-                    genomes[cell.id].mutation_rate = 10
+                    genomes[cell.id].mutation_rate = GLOBAL['cancer_mutation_rate']
                     genomes[cell.id].ploidy_probability = 0.0
 
             if save_flag:
@@ -326,8 +328,9 @@ class SuperTracker(SteppableBasePy):
         SteppableBasePy.__init__(self,_simulator,_frequency)
         if save_flag:
             if template_flag:
-                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] )
-                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] )
+                preprocessor = TrackerPreprocessor( generate_logger_preprocessor( start_time = 49999 ) )
+                trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' , template = TEMPLATES['cell_tracker'] , preprocessor=preprocessor)
+                trackers['volume_tracker'] = Tracker2( file_name = save_dir+'/volume_'+time_info+'.csv' , template = TEMPLATES['volume_tracker'] , preprocessor=preprocessor)
                 print 'cell and volume trackers'
             else:
                 trackers['cell_tracker'] = Tracker2( file_name = save_dir+'/cell_count_'+time_info+'.csv' )
