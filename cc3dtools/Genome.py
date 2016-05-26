@@ -148,7 +148,7 @@ class Genome(object):
 
 		ploidy = kwargs.get( 'ploidy' , 1 )
 
-		self.mutation_rate = int( kwargs.get( 'mutation_rate' , 0 ) )
+		self.mutation_rate = float( kwargs.get( 'mutation_rate' , 0 ) )
 		assert self.mutation_rate > -1 , ' mutation rate cannot be negative '
 
 		self.annotations = {}
