@@ -40,8 +40,9 @@ GLOBAL = {
     'cancer1_additional_dV':0.1,
     'dV':0, # 0 because this is after the normal cell have grown completely, we do not need them to grow again
     '_dV':0.2,
-    'p_csc_end':0.05,
-    'p_csc':0.4
+    'p_csc_csc': 0.95, #probability that a CSC remains a CSC
+    'p_tum_csc': 0.4, # probability that a tumor becomes CSC
+    'CSC_progeny_max_divisions':10 #maximum number of divisons the progeny of CSCs will have.
 }
 
 LATTICE = {
@@ -126,7 +127,7 @@ class ConstraintInitializerSteppable(SteppableBasePy):
                     # this is template flag, therefore we must just update this genomes' attribute.
                     genomes[cell.id].mutation_rate = 10
                     genomes[cell.id].ploidy_probability = 0.0
-                    divisions_left[cell.id] = -1
+                    divisions_left[cell.id] = -1 #unlimited cell divisions
                     
             if save_flag:
                 trackers['start_tracker'].stash( [ cell.id, cell.type , genomes[cell.id].mutation_rate ] )    
@@ -208,8 +209,8 @@ class GrowthSteppable(SteppableBasePy):
             if cell.type == self.NORMAL:
                 cell.targetVolume = min( GLOBAL['dV'] + cell.targetVolume , GLOBAL['maxTargetVolume'] )
             else:
-                m = phenotypes[cell.id].get_counts()['advantageous']
-                denominator = 1 + np.exp( -( 0.01*m - y_intercept ) )
+                m = phenotypes[cell.id].get_counts()['advantageous'] #obtain number of mutations
+                denominator = 1 + np.exp( -( 0.01*m - y_intercept ) ) # calculate the denominator of the logistic equation
                 cell.targetVolume = min ( 1 / denominator + cell.targetVolume , GLOBAL['maxTargetVolume'] )
 
             # cell.targetVolume = min(0.05 + cell.targetVolume if cell.targetVolume < GLOBAL['divideThreshold'] + 3 else cell.targetVolume, GLOBAL['maxTargetVolume'])
@@ -274,6 +275,9 @@ class MitosisSteppable(MitosisSteppableBase):
                 continue
 
 
+            # if:
+            #    (1) you have reached the division_threshold
+            #    (2) AND number of divisions left is != 0 (i.e infinite or some nonzero value)
             if ( ( cell.type == self.CANCER2 and cell.volume > GLOBAL['cancer2_divideThreshold'] ) or \
             ( cell.type == self.CANCER1 and cell.volume > GLOBAL['cancer1_divideThreshold'] ) or \
             cell.volume > GLOBAL['divideThreshold'] ) and \
@@ -321,7 +325,7 @@ class MitosisSteppable(MitosisSteppableBase):
 
             genomes[childCell.id] = genomes[parentCell.id].replicate( name = childCell.id )
             phenotypes[childCell.id] = phenotypes[parentCell.id].replicate()
-
+        
 
         childCell.lambdaVolume = 1.5
         parentCell.lambdaVolume = 1.5
@@ -330,31 +334,75 @@ class MitosisSteppable(MitosisSteppableBase):
         # else:
         #     childCell.type = parentCell.type
 
+        print 'updated lambda volume'
+
         if parentCell.type == self.NORMAL:
+            print 'normal cell'
+            # we do not need to do any updating here since we already decreased the number of divisions
+            # for the parent.
+            print 'parent divisions left:'
+            print divisions_left[parentCell.id]
             divisions_left[childCell.id] = divisions_left[parentCell.id]
+
             childCell.type = parentCell.type
-        else:
-            # logic for CSCs
-            if parentCell.type == self.CANCER2:
-                r = np.random.rand()
-                if r < GLOBAL['p_csc_end']:
-                    # CSC spontaneously looses its capability..
-                    parentCell.type = self.CANCER1
-                    divisions_left[childCell.id] = 10 # 10 more divisions only.
-                    divisions_left[parentCell.id] = 10
-                    childCell.type = parentCell.type
-                else:
-                    childCell.type = self.CANCER1
-                    divisions_left[childCell.id] = 10
+            print 'updated cell type'
 
-                if r < GLOBAL['p_csc']:
-                    # the child cell will be a CSC!
-                    childCell.type = self.CANCER2
-                    divisions_left[childCell.id] = -1
+        elif parentCell.type == self.CANCER1:
+            # parent is a regular tumor cell ==> child is also a tumor cell
+            childCell.type = self.CANCER1
 
-            else:
-                divisions_left[childCell.id] = 10
-                childCell.type = self.CANCER1
+            # we do not need to -1 here because we already decreased it for the parent
+            print 'parent divisions left:'
+            print divisions_left[parentCell.id]
+            divisions_left[childCell.id] = divisions_left[parentCell.id]
+
+        elif parentCell.type == self.CANCER2:
+            # we now have a CSC
+
+            # the default mode for every CSC division event
+            childCell.type = self.CANCER1 # child is a regular tumor
+
+            print 'print global csc progeny', GLOBAL['CSC_progeny_max_divisions']
+
+            divisions_left[childCell.id] = GLOBAL['CSC_progeny_max_divisions']
+            
+            r = np.random.rand()
+
+            if r < 1 - GLOBAL['p_csc_csc']:
+                print 'CSC-->TUM (spontaenous loss of CSC'
+                # CSC has spontaenously lost its capability of unlimited reproduction
+                parentCell.type = self.CANCER1
+                divisions_left[parentCell.id] = GLOBAL['CSC_progeny_max_divisions']
+
+            r = np.random.rand()
+
+            if r < GLOBAL['p_tum_csc']:
+                print 'CSC gave birth to another CSC'
+                # the progeny of the CSC will (spontaneously) become a  CSC instead of a cancer
+                childCell.type = self.CANCER2
+                divisions_left[childCell.id] = -1
+        #endif (logic for division)
+            # # logic for CSCs
+            # if parentCell.type == self.CANCER2:
+            #     r = np.random.rand()
+            #     if r < GLOBAL['p_csc_end']:
+            #         # CSC spontaneously looses its capability..
+            #         parentCell.type = self.CANCER1
+            #         divisions_left[childCell.id] = 10 # 10 more divisions only.
+            #         divisions_left[parentCell.id] = 10
+            #         childCell.type = parentCell.type
+            #     else:
+            #         childCell.type = self.CANCER1
+            #         divisions_left[childCell.id] = 10
+
+            #     if r < GLOBAL['p_csc']:
+            #         # the child cell will be a CSC!
+            #         childCell.type = self.CANCER2
+            #         divisions_left[childCell.id] = -1
+
+            # else:
+            #     divisions_left[childCell.id] = 10
+            #     childCell.type = self.CANCER1
   
         # # attempt to obtain the proliferating front
         # if parentCell.type != self.NORMAL:
