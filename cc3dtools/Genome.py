@@ -20,7 +20,7 @@ class Chromosome(object):
 		self.name = kwargs.get( 'name' , '' )
 
 		self.chromosome_order = int ( kwargs.get( 'chromosome_order' , 15 ) )
-		self.mutation_rate = int ( kwargs.get( 'mutation_rate' , 0 ) )
+		self.mutation_rate = float ( kwargs.get( 'mutation_rate' , 0 ) )
 		assert self.mutation_rate > - 1 , 'mutation rate cannot be negative'
 
 		self.annotations = {}
