@@ -123,7 +123,7 @@ def spatial_plot( start_file = None , end_file = None , type_colors = ( 'r', 'b'
 
 
 class SpacePlot ( object ):
-	def __init__ ( self , start_file = None , end_file = None , type_colors = ( 'r', 'b', 'g', 'y' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' , skip_types = [] ):
+	def __init__ ( self , start_file = None , end_file = None , type_colors = ( 'b', 'r', 'y', 'g' ) , format = ( 'id' , 'type' , 'x', 'y', 'z' ) , projection = '2d' , skip_types = [] ):
 		"""
 			This class allows us to make spatial plots
 		"""
@@ -147,7 +147,7 @@ class SpacePlot ( object ):
 				# data converstion
 				data['id'] = int( data['id'] )
 				data['type'] = int( data['type'] )
-				
+
 				if data['type'] in skip_types:
 					continue
 
@@ -184,7 +184,7 @@ class SpacePlot ( object ):
 
 	def plot_all( self , hide_numbers = True , plot_stack = None , save_fig = None ):
 		"""
-			plots all genomes in space according to type_colors and projection 
+			plots all genomes in space according to type_colors and projection
 		"""
 
 		# use the already built function
@@ -209,16 +209,16 @@ class SpacePlot ( object ):
 			this will print 1,2,3,4 in one color and 5,6,7,8 in another
 			@params:
 				args:	[mandatory]
-					sequence of clusters of Individuals 
-				depth / str / 'UNKNOWN DEPTH': 
+					sequence of clusters of Individuals
+				depth / str / 'UNKNOWN DEPTH':
 					depth of the plot
 				hide_numbers / bool / True
 					hide the display of numbers in the plot
 
 
 				*these parameters can be overriden for this plot:
-				type_colors: 
-					color mappings for each type of individual 
+				type_colors:
+					color mappings for each type of individual
 				projection:
 					2d or 3d
 
@@ -275,9 +275,9 @@ class SpacePlot ( object ):
 			# we map the individuals id in the cluster to obtain all the data
 
 			cells_with_data = map( individual_to_cell_data , cluster )
-			
+
 			selected_color = colormap( cluster_id ) if len(args) > 4 else np.random.rand(3,1)
-		
+
 			for cell in cells_with_data:
 
 				# cell died, thus we just skip plotting it
@@ -297,18 +297,18 @@ class SpacePlot ( object ):
 						ax.text( cell.x+0.5 , cell.y+0.5 , cell.z , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
 				else:
 					plt.plot( cell.x , cell.y , marker = marker, color = selected_color )
-					
+
 					if not hide_numbers:
 						plt.text( cell.x+0.5 , cell.y+0.5 , str( cell.id ) , horizontalalignment = 'center' , color = selected_color )
-		
+
 
 
 
 		# everything else must be plotted in gray!
 		for _ , data in self.cells.items():
-			
+
 			# skip if this has already been plotted!
-			if cell.id in plotted_ids: 
+			if cell.id in plotted_ids:
 				continue
 
 			# select the color gray
@@ -367,7 +367,7 @@ class PostProcess( object ):
 				gc / GenomeCompare / [mandatory]
 		"""
 		if not pickle_import:
-			self.gc = gc 
+			self.gc = gc
 			self.cell_locations = {}
 			self.cells_available = []
 			# save the locations of all the cells
@@ -408,7 +408,7 @@ class PostProcess( object ):
 		pass
 
 		results = {}
-		
+
 		num_loops = 0
 
 		start_time = time.time()
@@ -432,7 +432,7 @@ class PostProcess( object ):
 			results[i] = {}
 
 			for j in self.cells_available:
-				
+
 				num_loops += 1
 
 				if i == j: # do not compute when i == j as they are just 0
@@ -507,7 +507,7 @@ class PostProcess( object ):
 		self.__executed__ = True
 
 		end_time = time.time()
-		
+
 		print 'Completed\n Total Number of comparisons:' + str( num_loops )
 		print 'Number of cells ' + str( len( self.cells_available ) )
 		print 'Total Time:' + str( end_time - start_time ) + 's'
@@ -518,7 +518,7 @@ class PostProcess( object ):
 		"""
 		assert self.__executed__ == True, 'You must first PostProcess.execute() before you can access other methods'
 
-		return self.data[c1][c2] 
+		return self.data[c1][c2]
 
 		pass
 
@@ -528,16 +528,16 @@ class PostProcess( object ):
 			@params:
 				cellids / list of int / [mandatory]
 					the list of cell ids that you want to sample from the larger space
-					for best results and to actually get 'cluster' data you will select cellids that are close together 
+					for best results and to actually get 'cluster' data you will select cellids that are close together
 					spatially.
 			@returns:
 				Frequency / Counter and the number of cells / int
 		"""
-		
+
 		counter = Counter()
 
 		for cellid in cellids:
-			# get the loci 
+			# get the loci
 			try:
 				mutated_loci = self.gc.get_by_name( cellid ).get_mutated_loci( form = 'set' )
 			except Exception as e:
@@ -564,7 +564,8 @@ class PostProcess( object ):
 		"""
 
 		# get all cancer cells, extract the location data from it into a numpy array
-		r_vectors = map( lambda cell: np.array([ cell.x, cell.y, cell.z ]) , filter( lambda cell: cell.type == 2 or cell.type == 3, self.cell_locations ) )
+		r_vectors = map( lambda cell: np.array([ cell.x, cell.y, cell.z ]) , \
+		filter( lambda cell: cell.type == 2 or cell.type == 3, self.cell_locations.values() ) )
 
 		# since it is now in a numpy array, we can do elementwise-summation:
 		R_CM = np.sum( r_vectors , axis = 0 ) / float( len( r_vectors ) )
@@ -622,7 +623,7 @@ class PostProcess( object ):
 		r_vectors = filtered_list
 		# first map the cell_locations into a new dict
 		# r_vectors = map( lambda x: { 'id': x[0], 'x': x[1][0], 'y': x[1][1], 'z': x[1][2], 'type':x[1][3] } ,  filtered_list )
-		return filter( lambda r: r.x - x **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors ) 
+		return filter( lambda r: (r.x - x) **2 + ( r.y - y )**2 + ( r.z - z )**2 <= radius**2, r_vectors )
 
 	def cells_in_ellipse_at( self , x , y , z , radii , type_restrictions = None , rotate_by = 0 , ecc = None ):
 		"""
@@ -670,11 +671,11 @@ class PostProcess( object ):
 					number of points to select to calculate pi over.
 				max_cells / int :
 					the maximum number of cells that we use from each sample
-				radius / float : 
+				radius / float :
 					the major radius
 				min_cells / int / 20:
 					the minimum number of cells that we use from each sample
-				ecc_steps / float / 0.1 
+				ecc_steps / float / 0.1
 					a number less that 1, which defines the step size between eccentricity selections
 				cell_steps / int / 5
 					number of cells to increase our selection of the sample from
@@ -682,7 +683,7 @@ class PostProcess( object ):
 					size of the lattice
 
 		"""
-		
+
 		assert min_cells < max_cells, 'min cells must be less than max_cells'
 		assert ecc_steps < 1 and ecc_steps > 0 , 'ecc_steps must be greater than 0 and less than 1'
 		assert cell_steps < max_cells and cell_steps > 0 , 'cell_steps must be less than the max and greater than 0'
@@ -693,14 +694,14 @@ class PostProcess( object ):
 
 		eccentiricies = np.arange( 0 , 1 , ecc_steps )
 		# number_of_cells_list = np.arange( min_cells, max_cells , cell_steps )
-		
+
 		number_of_cells_list = [ 50, 100 , 200 , 300, 400, 500, 600, 750, 1000, 1250, 1500, 2000 ] # magic numbers (kinda)
 
 		if simple:
 			number_of_cells = [ 2000 ]
 
-		RANDOM_ANGLES = np.random.random( size = N_points * 2 ) * 2 * np.pi 
-		
+		RANDOM_ANGLES = np.random.random( size = N_points * 2 ) * 2 * np.pi
+
 
 		average_area = 70.0 #average area of a cell
 		# from calculations of the radii of the sample
@@ -710,7 +711,7 @@ class PostProcess( object ):
 		# equate the two areas
 		a = lambda N, ecc: np.sqrt( ( average_area * N ) / ( np.pi * np.sqrt( 1 - ecc**2 ) ) )
 		b = lambda N, ecc: np.sqrt( ( ( average_area * N ) * np.sqrt( 1 - ecc**2 ) ) / np.pi )
-		
+
 		results = []
 
 		largeA_N = []
@@ -758,15 +759,15 @@ class PostProcess( object ):
 						a( N , eccentricity ) ,
 						b( N , eccentricity )
 					]
-					
+
 					# print '--->sampling at:(x,y,theta,r)=',x,y,angle,radii_new
 
 					sample = []
-	
+
 					sample = self.cells_in_ellipse_at( x , y , 0 , radii_new , rotate_by = angle , type_restrictions = type_restrictions)
 					# order the sample by distance of each cell in the sample to the center of x,y
 					sample = self.order_cells_by_distance_to( sample , x , y )
-					
+
 					this_percentage_cancer = self.calculate_percentage_of_cancer(sample)
 
 					if percentage_cancer:
@@ -776,7 +777,7 @@ class PostProcess( object ):
 						else:
 							xs[i], ys[i] = ( np.random.random() * 500 ) + 250, ( np.random.random() * 500 ) + 250
 							#regenerate and skip
-							continue 
+							continue
 
 
 					percentage_cancers.append(this_percentage_cancer)
@@ -793,14 +794,14 @@ class PostProcess( object ):
 
 					analyzed = self.frequency_analyze( selected_cells )
 					E_of_pis.append( proportion_pairwise_differences( analyzed ) )
-					
+
 					m_distance = mean_distances_between_cells( sample[:N-1] )
-					
+
 					mean_distances.append( m_distance )
 
 
 					mutation_counts = self.frequency_analyze( selected_cells , return_loci = True )
-					segregating_sites.append( len( mutation_counts.keys() ) )	
+					segregating_sites.append( len( mutation_counts.keys() ) )
 
 
 					###################### NEW STATISTIC #########################
@@ -823,7 +824,7 @@ class PostProcess( object ):
 					areas_E_of_pis_100.append( proportion_pairwise_differences( analyzed_100 ) )
 
 					m_distance = mean_distances_between_cells( random_subsample_50 )
-					
+
 					areas_mean_distances.append( m_distance )
 
 					mutation_counts_50 = self.frequency_analyze(  [ cell.id for cell in random_subsample_50 ] , return_loci = True )
@@ -832,14 +833,14 @@ class PostProcess( object ):
 					mutation_counts_100 = self.frequency_analyze( [ cell.id for cell in random_subsample_100 ] , return_loci = True )
 					areas_segregating_sites_100.append( len( mutation_counts_100.keys() ) )
 
-				#endfor	
+				#endfor
 
 				##################### MODIFIED TAJIMAS D ####################
 
 				if N == 2000:
 					### LARGEST POSSIBLE AREA OBTAINABLE, now let's do subsampling
 					large_sample = list( large_sample )
-					
+
 					k_S_sampling_k = [] # holds k values for this calculation
 					k_S_sampling_S = [] # holds S values for this calculation
 
@@ -858,13 +859,13 @@ class PostProcess( object ):
 
 						k_S_sampling_S.append(S_k)
 						k_S_sampling_k.append(k)
-					
+
 					largeA_N.append( {'eccentricity':eccentricity, 'k':k_S_sampling_k, 'S':k_S_sampling_S } )
 
 				# print '-->E_of_pis',E_of_pis
 				E_of_pi = np.mean( E_of_pis )
 				d_0 = np.mean( mean_distances ) # mean distances between cells in a sample
-				
+
 
 				S = np.mean( segregating_sites ) # S = number of segregating sites
 
@@ -885,7 +886,7 @@ class PostProcess( object ):
 
 				current_object['areas'].append( {
 					'area': mean_A ,
-					'N' : N, 
+					'N' : N,
 					'N_points_selected':selected_points,
 					'percentage_cancer':mean_percentage_cancers,
 					'subsample_100': {
@@ -907,23 +908,23 @@ class PostProcess( object ):
 		return { 'results' : results, 'largeA_N':largeA_N }
 
 	def cluster_return( self , *args, **kwargs ):
-		"""	
+		"""
 			DEPRECATED use PostProcess.sample_circular()
 		"""
 		raise DeprecationWarning('PLEASE USE PostProcess.sample_circular() in future code.')
 
 	def sample_circular( self , x , y , z , theta, step_size , steps , cluster_radius , **kwargs ):
 		"""
-			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular 
+			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular
 			regions of cluster_radius, we travel in a theta direction.
 			@params:
-				x,y,z / float,float,float 
+				x,y,z / float,float,float
 					location from which we want to start our search
 				theta / int
 					angle (in radians) at which we want to search
 				step_size / int
 					the step sizes we want to increment our search by
-				steps / int 
+				steps / int
 					the total number of steps to take
 				cluster_radius / int
 					the radius of the cluster we wish to sample
@@ -937,18 +938,19 @@ class PostProcess( object ):
 		"""
 		return self.sample_ellipsoid( x, y, z, theta, step_size, steps, ( cluster_radius, cluster_radius, 1 ), **kwargs )
 
+
 	def sample_ellipsoid( self , x , y , z , theta , step_size , steps , radii , type_restrictions = None , show_line_plot = False , return_plot_stack = False ):
 		"""
-			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular 
+			searches in incremental step_size's from x,y,z and returns the nearest neighbours in the circular
 			regions of cluster_radius, we travel in a theta direction.
 			@params:
-				x,y,z / float,float,float 
+				x,y,z / float,float,float
 					location from which we want to start our search
 				theta / int
 					angle (in radians) at which we want to search
 				step_size / int
 					the step sizes we want to increment our search by
-				steps / int 
+				steps / int
 					the total number of steps to take
 				radii / tuple / ( int , int )
 					a tuple of (semiminor_axis , semimajor_axis) for scaling the ellipse
@@ -1011,7 +1013,7 @@ class PostProcess( object ):
 		rect_vertices = [ [ 0 , 0 ] , [ 0 , edge_lengths[0] ], [ edge_lengths[1] , edge_lengths[0] ] , [ edge_lengths[1] , 0 ] ]
 
 		return self.sample_polygon( x, y, z, theta, step_size, steps, rect_vertices , **kwargs )
-	
+
 	def sample_square ( self , x , y , z , theta , step_size , steps , width , **kwargs ):
 
 		square_vertices = [ [ 0 , 0 ] , [ 0 , width ], [ width , width ] , [ width , 0 ] ]
@@ -1042,7 +1044,7 @@ class PostProcess( object ):
 		"""
 
 		filtered_list = self.cell_locations.values()
-		
+
 		# remove the points which do not have the required type.
 		if type_restrictions:
 			assert type( type_restrictions ) is list , 'type_restrictions must be a list of ints representing types'
@@ -1064,8 +1066,8 @@ class PostProcess( object ):
 			distance_travelled = step * step_size
 
 			position_x = x + distance_travelled * cos_theta
-			position_y = y + distance_travelled * sin_theta 
-			
+			position_y = y + distance_travelled * sin_theta
+
 			current_polygon_points =  polygon_template + [ position_x , position_y ]
 
 			if return_plot_stack:
@@ -1098,7 +1100,7 @@ class PostProcess( object ):
 
 	def calculate_percentage_of_cancer( self , sample , cancer_types = [ 2 , 3 ] , normal_types = [ 1 ]):
 		""" calculates the percentage of cancer cells in the sample """
-		
+
 		if len(sample) == 0:
 			return 0
 
@@ -1123,10 +1125,10 @@ class PostProcess( object ):
 		"""
 		raise FutureWarning('This method is deprecated, use PostProcess.sample_analyze() instead')
 
-	
+
 	def sample_analyze( self , sample ):
 		"""
-			returns the 1D frequencies of each cluster 
+			returns the 1D frequencies of each cluster
 			@params:
 				sample: list of ( distance , [cell ids list] )
 					this is often returned from a sampling strategy.
@@ -1155,7 +1157,7 @@ class PostProcess( object ):
 			freqs.append( self.frequency_analyze( cluster , return_loci = True )  )
 
 
-		joint = [ ( freqs[0].get( k , 0 ) , freqs[1].get( k , 0 ) ) for k in set( freqs[0].keys() + freqs[1].keys() ) ] 
+		joint = [ ( freqs[0].get( k , 0 ) , freqs[1].get( k , 0 ) ) for k in set( freqs[0].keys() + freqs[1].keys() ) ]
 		self.joint = joint
 		joint_frequency = Counter(joint)
 		self.joint_frequency = joint_frequency # @TODO: remove this
@@ -1179,7 +1181,7 @@ class PostProcess( object ):
 				frequency_results / results from PostProcess.frequency_analyze()
 				title / str / ''
 					title to append to the plot
-				plot_stack / list 
+				plot_stack / list
 					must contain arguments  to be executed for plotting by plt.plot
 		"""
 
@@ -1233,7 +1235,7 @@ class PostProcess( object ):
 				frequency_results / results from PostProcess.frequency_analyze_ND()
 				title / str / ''
 					title to append to the plot
-		"""		
+		"""
 
 		frequency_results , N_1, N_2 = frequency_results
 
@@ -1241,12 +1243,12 @@ class PostProcess( object ):
 		if len( frequency_results ):
 			# plt.imshow(  , interpolation = 'nearest' )
 			plt.figure()
-			
+
 			plt.imshow( frequency_results , interpolation = 'nearest' , norm=LogNorm() , extent=[0, 1, 1, 0] )
-			
+
 			if xlim:
 				plt.xlim( xlim )
-			
+
 			if ylim:
 				plt.ylim( ylim )
 			else:
@@ -1262,7 +1264,7 @@ class PostProcess( object ):
 			plt.xlabel('proportion of cells in cluster 1 (N=' + str( N_1 ) + ')')
 			plt.ylabel('proportion of cells in cluster 2 (N=' + str( N_2 ) +')')
 			plt.title('2D Frequency Distribution of Inter-Cluster Mutations '+title)
-			
+
 			if save_fig:
 				plt.savefig( save_fig+'_dpi100.png' , format='png', transparent=False, dpi=100)
 				plt.savefig( save_fig+'_dpi100.pdf' , format='pdf', transparent=False, dpi=100)
@@ -1294,7 +1296,7 @@ class PostProcess( object ):
 		color = plt.cm.rainbow(np.linspace(0,1,len(results)))
 
 		for i, result in enumerate(results):
-			ecc = result['eccentricity']   
+			ecc = result['eccentricity']
 			x = []
 			y = []
 		#     labels.append('e='+str(ecc))
@@ -1349,7 +1351,7 @@ class TimeSeriesPlotters( object ):
 
 		t = normal[:,0]
 
-		y0 = normal[:,2] 
+		y0 = normal[:,2]
 		y1 = cancer1[:,2]
 		y2 = cancer2[:,2]
 		a = allcells[:,2]
@@ -1358,7 +1360,7 @@ class TimeSeriesPlotters( object ):
 
 
 	@staticmethod
-	def cell_counts_plot( cell_counts , file_name = './cell_count.png' ):		
+	def cell_counts_plot( cell_counts , file_name = './cell_count.png' ):
 		"""
 			CELL NUMBER PLOTS
 		"""
@@ -1391,7 +1393,7 @@ class TimeSeriesPlotters( object ):
 		plt.cla()
 
 	@staticmethod
-	def cell_proportions_plot( cell_counts , file_name = './cell_proportions.png' ):		
+	def cell_proportions_plot( cell_counts , file_name = './cell_proportions.png' ):
 		"""
 			CELL NUMBER PLOTS
 		"""
@@ -1487,7 +1489,7 @@ class TimeSeriesPlotters( object ):
 def proportion_pairwise_differences ( allele_frequencies ):
 	"""
 		Calculates E(pi) = the expected proportion of pairwise
-						differences 
+						differences
 		@params:
 			allele_frequencies:
 				the output from PostProcess.sample_analyze(sample)[:][1]
@@ -1502,10 +1504,10 @@ def proportion_pairwise_differences ( allele_frequencies ):
 	frequency_results , number_of_cells = allele_frequencies
 
 	if len( frequency_results ):
-		# 
+		#
 		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
 		# print 'frequency_of_mutations=',frequency_of_mutations
-		number_of_mutations = np.array(number_of_mutations)  
+		number_of_mutations = np.array(number_of_mutations)
 
 		x = number_of_mutations / (2 * float(number_of_cells) ) # proportion of cells in cluster mutated.
 		# multiply by 2 to account for diploidy
@@ -1522,9 +1524,9 @@ def proportion_pairwise_differences ( allele_frequencies ):
 		## X_l = pairwise proportional difference at site l
 		individual_pis = 2 * x * y * np.array(frequency_of_mutations)
 		# print 'individual pis=', individual_pis
-		E_of_pi = np.sum( individual_pis ) 
+		E_of_pi = np.sum( individual_pis )
 
-		return E_of_pi 
+		return E_of_pi
 
 	return 0
 
@@ -1542,25 +1544,25 @@ def number_of_segregating_sites ( allele_frequencies ):
 	frequency_results , number_of_cells = allele_frequencies
 
 	if len( frequency_results ):
-		# 
+		#
 		number_of_mutations, frequency_of_mutations = zip( *frequency_results.items() )
 		# print 'frequency_of_mutations=',frequency_of_mutations
 		# print 'number_of_mutations=',number_of_mutations
 		# print '',f
-		number_of_mutations = np.array(number_of_mutations)  
+		number_of_mutations = np.array(number_of_mutations)
 
 		# multiply by 2 to account for diploidy
 
-		S = np.sum( np.ones( len(number_of_mutations) - 1 ) * np.array(frequency_of_mutations[:-1]) ) 
+		S = np.sum( np.ones( len(number_of_mutations) - 1 ) * np.array(frequency_of_mutations[:-1]) )
 
 		return S
 
 	return 0
-	
-	
+
+
 def distance_between ( a , b ):
-	q = b[0] - a[0] 
-	p = b[1] - a[1] 
+	q = b[0] - a[0]
+	p = b[1] - a[1]
 	r = b[2] - a[2]
 	return math.sqrt( (p * p) + (q * q) + (r * r) )
 
@@ -1627,7 +1629,7 @@ class EccentricityProcessing(object):
 
 	@staticmethod
 	def plot_S_vs_A(parsed, file_name, marker=False, loglog=False):
-		
+
 		plt.figure()
 
 		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
@@ -1663,7 +1665,7 @@ class EccentricityProcessing(object):
 		plt.savefig( file_name , format='png',  bbox_inches='tight')
 		plt.clf()
 		plt.cla()
-	
+
 	@staticmethod
 	def plot_Epi_vs_A(parsed, file_name, marker=False, loglog=False):
 		color = plt.cm.summer(np.linspace(0,1,len(parsed)))
