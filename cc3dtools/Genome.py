@@ -497,7 +497,7 @@ def gen2_to_dict( file_name , force_loci = False , key_as_int = False ):
 				genome_details['chromosome_data'] = []
 				continue
 			else:
-				genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
+				genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': float(row[1]) , 'loci': map( int , row[2:] ) } )
 			#endif
 		#endfor
 
