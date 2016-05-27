@@ -491,7 +491,7 @@ def gen2_to_dict( file_name , force_loci = False , key_as_int = False ):
 
 				current_G = int( row[1] ) if key_as_int else str( row[1] )
 
-				genome_details['mutation_rate'] = int( row[2] )
+				genome_details['mutation_rate'] = float( row[2] )
 				genome_details['ploidy_probability'] = float( row[3] )
 				genome_details['genome_order'] = int( row[4] )
 				genome_details['chromosome_data'] = []
