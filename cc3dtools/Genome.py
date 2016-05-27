@@ -20,7 +20,7 @@ class Chromosome(object):
 		self.name = kwargs.get( 'name' , '' )
 
 		self.chromosome_order = int ( kwargs.get( 'chromosome_order' , 15 ) )
-		self.mutation_rate = int ( kwargs.get( 'mutation_rate' , 0 ) )
+		self.mutation_rate = float ( kwargs.get( 'mutation_rate' , 0 ) )
 		assert self.mutation_rate > - 1 , 'mutation rate cannot be negative'
 
 		self.annotations = {}
@@ -491,13 +491,13 @@ def gen2_to_dict( file_name , force_loci = False , key_as_int = False ):
 
 				current_G = int( row[1] ) if key_as_int else str( row[1] )
 
-				genome_details['mutation_rate'] = int( row[2] )
+				genome_details['mutation_rate'] = float( row[2] )
 				genome_details['ploidy_probability'] = float( row[3] )
 				genome_details['genome_order'] = int( row[4] )
 				genome_details['chromosome_data'] = []
 				continue
 			else:
-				genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': int(row[1]) , 'loci': map( int , row[2:] ) } )
+				genome_details['chromosome_data'].append( { 'name': str(row[0]) , 'mutation_rate': float(row[1]) , 'loci': map( int , row[2:] ) } )
 			#endif
 		#endfor
 
